@@ -11,6 +11,7 @@ from dlt.sources.helpers import requests
 from .helpers import get_path_with_retry, get_url_with_retry, validate_month_string
 from .settings import UNOFFICIAL_CHESS_API_URL
 
+from datetime import datetime
 
 @dlt.source(name="chess")
 def source(
@@ -114,6 +115,11 @@ def players_games(
         print(f"Getting archive from {url}")
         try:
             games = get_url_with_retry(url).get("games", [])
+            username = url.split("/")[5] # extract username from url: https://api.chess.com/pub/player/{username}
+            for game in games:
+                game["username"] = username
+                game["archive_url"] = url
+                game["log_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return games  # type: ignore
         except requests.HTTPError as http_err:
             # sometimes archives are not available and the error seems to be permanent

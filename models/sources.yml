@@ -7,3 +7,10 @@ sources:
     tables:
       - name: players_games
         description: "chess.com games played"
+        
+  - name: stockfish
+    description: "Raw data calculated by Stockfish for each game and move"
+    schema: stg_stockfish
+    tables: 
+      - name: players_games_moves
+        description: "Stockfish calculated moves"

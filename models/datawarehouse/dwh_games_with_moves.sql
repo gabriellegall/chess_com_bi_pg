@@ -2,8 +2,7 @@
     materialized = 'incremental',
     unique_key = ['uuid','move_number'],
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
-        "CLUSTER {{ this.render() }} USING idx_{{ this.name }}_uuid"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)"
     ]
 ) }}
 
@@ -87,4 +86,94 @@ WITH games_scope AS (
     AND games_moves.move_number = games_times.move_number
 )
 
-SELECT * FROM score_defintion
+, previous_score AS (
+  SELECT 
+    *,
+    LAG(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC)                      AS prev_score_playing,
+    score_playing - LAG(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC)      AS variance_score_playing
+  FROM score_defintion
+)
+
+, position_definition AS (
+  SELECT 
+    *,
+    -- Playing
+    CASE 
+      WHEN is_playing_turn 
+          AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }} 
+          AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} 
+          AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} 
+          THEN 'Massive Blunder'
+      WHEN is_playing_turn 
+          AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_blunder'] }} 
+          AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} 
+          AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} 
+          THEN 'Blunder'
+      WHEN is_playing_turn 
+          AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} 
+          THEN 'Mistake'
+      ELSE NULL END AS miss_category_playing,
+    CASE 
+      WHEN is_playing_turn 
+          AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} 
+          THEN move_number
+      ELSE NULL END AS miss_move_number_playing,
+    CASE 
+      WHEN is_playing_turn 
+          AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }} 
+          AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} 
+          AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} 
+          THEN move_number
+      ELSE NULL END AS massive_blunder_move_number_playing,
+    -- Opponent
+    CASE
+      WHEN NOT is_playing_turn 
+          AND variance_score_playing >= {{ var('score_thresholds')['variance_score_massive_blunder'] }} 
+          AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} 
+          AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} 
+          THEN 'Massive Blunder'
+      WHEN NOT is_playing_turn 
+          AND variance_score_playing >= {{ var('score_thresholds')['variance_score_blunder'] }} 
+          AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} 
+          AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} 
+          THEN 'Blunder'
+      WHEN NOT is_playing_turn 
+          AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} 
+          THEN 'Mistake'
+      ELSE NULL END AS miss_category_opponent,
+    CASE 
+      WHEN NOT is_playing_turn 
+          AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} 
+          THEN move_number
+      ELSE NULL END AS miss_move_number_opponent,
+    CASE  
+      WHEN ABS(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+      WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
+      WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
+      ELSE NULL END AS position_status_playing
+  FROM previous_score
+)
+
+, prev_position_definition AS (
+  SELECT 
+    *,
+    LAG(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing
+  FROM position_definition
+)
+
+, context_definition AS (
+  SELECT 
+    *,
+    CASE  
+      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Even', 'Disadvantage')   THEN 'Throw'
+      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Advantage')              THEN 'Missed Opportunity' 
+      ELSE NULL END AS miss_context_playing
+  FROM prev_position_definition
+)
+
+SELECT 
+  *,
+  FIRST_VALUE (
+    CASE WHEN COALESCE(miss_category_playing, miss_category_opponent) = 'Massive Blunder' THEN playing_turn_name ELSE NULL END) -- To do: test if IGNORE NULLS matters
+    OVER (PARTITION BY uuid, username ORDER BY move_number ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_blunder_playing_turn_name
+FROM context_definition

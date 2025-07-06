@@ -1,1 +1,2 @@
 - rename uuid to game_uuid everywhere
+- find a way to make incremental updates

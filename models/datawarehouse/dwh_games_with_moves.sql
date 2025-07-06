@@ -16,7 +16,7 @@ WITH games_scope AS (
     AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
     AND rated
     {% if is_incremental() %}
-    AND log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})
+    AND uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
     {% endif %}
 )
 

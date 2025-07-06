@@ -15,5 +15,5 @@ SELECT
 FROM {{ source('stockfish', 'players_games_moves') }}
 
 {% if is_incremental() %}
-WHERE log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})
+WHERE uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
 {% endif %}

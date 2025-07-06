@@ -7,4 +7,9 @@ stg_games_times:
 stg_games_moves:
 	@cd scripts\stockfish && python chess_games_moves_pipeline.py
 
+dbt_build:
+	dbt build
+
 stg_all: stg_games stg_games_times stg_games_moves
+
+run_all: stg_all dbt_build

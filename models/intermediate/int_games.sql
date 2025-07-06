@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'uuid',
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (uuid)"
     ]
 ) }}
 
@@ -12,7 +12,7 @@ WITH incremental_partition AS (
     FROM {{ source('chess_com', 'players_games') }} 
 
     {% if is_incremental() %}
-    WHERE log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})
+    WHERE uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
     {% endif %}
 )
 

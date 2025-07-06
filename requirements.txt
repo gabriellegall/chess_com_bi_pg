@@ -1,1 +1,7 @@
 dbt-postgres
+dlt[postgres]
+pandas
+sqlalchemy
+
+python-chess
+stockfish

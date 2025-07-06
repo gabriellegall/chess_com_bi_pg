@@ -5,7 +5,7 @@ def run_pipeline():
     pipeline = dlt.pipeline(
         pipeline_name="chess_games_pipeline",
         destination='postgres',
-        dataset_name="chess_com",
+        dataset_name="stg_chess_com",
     )
 
     data = source(

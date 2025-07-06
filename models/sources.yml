@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: chess_com
+    description: "Raw data ingested from the chess.com API"
+    schema: stg_chess_com
+    tables:
+      - name: players_games
+        description: "chess.com games played"

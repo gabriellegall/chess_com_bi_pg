@@ -1,2 +1,3 @@
 - rename uuid to game_uuid everywhere
-- find a way to make incremental updates
+- finalize the datawarehouse layer
+- use docker compose to connect Metabase + Postgres

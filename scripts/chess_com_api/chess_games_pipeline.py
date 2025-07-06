@@ -10,13 +10,13 @@ def run_pipeline():
 
     data = source(
         ["zundorn", "piwi100"],
-        start_month="2023/01",
+        start_month="2025/06",
     )
 
     info = pipeline.run(
         data.with_resources("players_games"),
         write_disposition="merge",
-        primary_key="uuid"
+        primary_key="uuid" # To do: update it to [username] x [uuid] and test with players playing each others
     )
 
     print(info)

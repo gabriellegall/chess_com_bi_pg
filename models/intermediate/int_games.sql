@@ -1,7 +1,25 @@
-WITH filter_table AS (
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'uuid',
+    post_hook=[
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+    ]
+) }}
+
+WITH incremental_partition AS (
     SELECT 
         *
     FROM {{ source('chess_com', 'players_games') }} 
+
+    {% if is_incremental() %}
+    WHERE log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})
+    {% endif %}
+)
+
+, filter_table AS (
+    SELECT 
+        *
+    FROM incremental_partition
     WHERE TRUE 
         AND LENGTH(pgn) > 0 -- Only games respecting this condition are processed by Stockfish
         AND rules = 'chess' -- Only games respecting this condition are processed by Stockfish

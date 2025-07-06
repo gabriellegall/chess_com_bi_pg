@@ -1,24 +1,15 @@
-{{ config(enabled=false) }}
+{{ config(
+    materialized = 'incremental',
+    unique_key = ['uuid','move_number'],
+    post_hook=[
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)"
+    ]
+) }}
 
-{# WITH games_times AS (
-  SELECT 
-    g.username,
-    g.uuid AS game_uuid,
-    match[1] AS game_time -- each match as a separate row, e.g. '{[%clk 1:23:45.67]}'
-  FROM {{ source('chess_com', 'players_games') }} g
-  CROSS JOIN LATERAL regexp_matches(g.pgn, '\{\[%clk [^\]]+\]\}', 'g') AS match
-),
+SELECT 
+    *
+FROM {{ source('times', 'games_times') }}
 
-extract_time AS (
-  SELECT 
-    username,
-    game_uuid,
-    game_time,
-    substring(game_time FROM '\{\[%clk ([^\]]+)\]\}') AS time_remaining,
-    CAST(substring(game_time FROM '\{\[%clk (\d{1,2}):') AS INTEGER) AS time_part_remaining_hours,
-    CAST(substring(game_time FROM '\{\[%clk \d{1,2}:(\d{2}):') AS INTEGER) AS time_part_remaining_minutes,
-    CAST(substring(game_time FROM '\{\[%clk \d{1,2}:\d{2}:(\d{2}(?:\.\d+)?)\}') AS NUMERIC) AS time_part_remaining_seconds
-  FROM games_times
-)
-
-SELECT * FROM extract_time  #}
+{% if is_incremental() %}
+WHERE log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})
+{% endif %}

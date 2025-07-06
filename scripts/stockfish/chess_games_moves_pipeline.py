@@ -12,6 +12,8 @@ import platform
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process
 
+print("🚀 Starting games moves processing")
+
 def analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
     # Load the PGN
     game = chess.pgn.read_game(io.StringIO(pgn))

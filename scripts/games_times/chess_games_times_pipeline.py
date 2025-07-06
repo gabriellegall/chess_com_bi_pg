@@ -8,6 +8,8 @@ from sqlalchemy import text
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process
 
+print("🚀 Starting games times processing")
+
 def extract_move_data(pgn):
     clocks = re.findall(r'\[%clk (\d+):(\d{2}):(\d{2}(?:\.\d)?)\]', pgn)
     return [
@@ -20,7 +22,7 @@ def extract_move_data(pgn):
     ]
 
 target_schema   = "stg_times"
-target_table    = "player_games_times"
+target_table    = "players_games_times"
 
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table)

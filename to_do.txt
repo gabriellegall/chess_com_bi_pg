@@ -1,3 +1,5 @@
+- check the time split
+- update the incremental update to [uuid] x [username]
 - rename uuid to game_uuid everywhere
 - finalize the datawarehouse layer
 - use docker compose to connect Metabase + Postgres

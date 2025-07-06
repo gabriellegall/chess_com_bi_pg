@@ -16,7 +16,7 @@ def run_pipeline():
     info = pipeline.run(
         data.with_resources("players_games"),
         write_disposition="merge",
-        primary_key="uuid" # To do: update it to [username] x [uuid] and test with players playing each others
+        primary_key=["uuid", "username"]
     )
 
     print(info)

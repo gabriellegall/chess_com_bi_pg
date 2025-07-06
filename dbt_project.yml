@@ -19,6 +19,12 @@ models:
     intermediate:
       +schema: int
       +materialized: table
+    datawarehouse:
+      +schema: dwh
+      +materialized: table
+seeds:
+  chess_com_bi_pg:
+    +schema: stg_seeds
 
 vars:
   data_conversion:

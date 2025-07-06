@@ -5,3 +5,4 @@ sqlalchemy
 
 python-chess
 stockfish
+python-dotenv

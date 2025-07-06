@@ -8,7 +8,7 @@
 
 SELECT 
     *
-FROM {{ source('times', 'games_times') }}
+FROM {{ source('times', 'players_games_times') }}
 
 {% if is_incremental() %}
 WHERE log_timestamp > (SELECT MAX(log_timestamp) FROM {{ this }})

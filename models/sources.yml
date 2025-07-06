@@ -19,5 +19,5 @@ sources:
     description: "Raw data calculated with Python to extract durations for each game and move"
     schema: stg_times
     tables: 
-      - name: games_times
+      - name: players_games_times
         description: "Python calculated move durations"

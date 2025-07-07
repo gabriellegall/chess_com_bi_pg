@@ -9,7 +9,7 @@ def run_pipeline():
     )
 
     data = source(
-        ["zundorn", "piwi100"],
+        ["zundorn", "piwi100", "chessman1ray"],
         start_month="2025/06",
     )
 

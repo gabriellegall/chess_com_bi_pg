@@ -1,7 +1,7 @@
 {{ config(
-    enabled=True,
-    materialized='table'
-) }}
+    materialized='materialized_view'
+  ) 
+}}
 
 WITH username_info AS (
   SELECT 

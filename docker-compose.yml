@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  analytical_db:
+    image: postgres:16
+    container_name: chess_postgres_container
+    restart: always
+    environment:
+      POSTGRES_DB: chess
+      POSTGRES_USER: glegall
+      POSTGRES_PASSWORD: AsidDe5845edDikkDee
+    volumes:
+      - analytical_data:/var/lib/postgresql/data 
+    ports:
+      - "5433:5432"
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: chess_metabase_container
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - analytical_db
+
+volumes:
+  analytical_data:

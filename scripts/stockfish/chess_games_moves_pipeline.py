@@ -8,6 +8,7 @@ import chess.engine
 import io
 import asyncio
 import platform
+import yaml
 
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process
@@ -79,8 +80,12 @@ def get_stockfish_path():
     return "/usr/games/stockfish"
 
 # Import the data to process
-target_schema   = "stg_stockfish"
-target_table    = "players_games_moves"
+config_path = os.path.join(os.path.abspath('..'), 'config.yml')
+with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+target_schema   = config["postgres"]["schemas"]["stockfish"]
+target_table    = config["postgres"]["tables"]["stockfish"]
 
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table)

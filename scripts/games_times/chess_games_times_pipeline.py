@@ -4,6 +4,7 @@ import pandas as pd
 import re
 from datetime import datetime
 from sqlalchemy import text
+import yaml
 
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process
@@ -21,8 +22,12 @@ def extract_move_data(pgn):
         for i, (h, m, s) in enumerate(clocks)
     ]
 
-target_schema   = "stg_times"
-target_table    = "players_games_times"
+config_path = os.path.join(os.path.abspath('..'), 'config.yml')
+with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+target_schema   = config["postgres"]["schemas"]["games_times"]
+target_table    = config["postgres"]["tables"]["games_times"]
 
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table)
@@ -44,8 +49,8 @@ if not games.empty:
         name        = target_table,
         con         = engine,
         schema      = target_schema,
-        if_exists   = 'append',
-        index       = False
+        if_exists   = 'append', # If the table exists
+        index       = False # Ignore the df index
     )
 
     print(f"✅ Inserted {len(games_expanded)} rows into `{target_schema}.{target_table}`.")

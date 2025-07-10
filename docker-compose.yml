@@ -23,5 +23,12 @@ services:
     depends_on:
       - analytical_db
 
+  dbt:
+    image: gabriellegall/chess-com-bi-pg:latest
+    container_name: chess_dbt_container
+    depends_on:
+      - analytical_db
+    working_dir: /app
+
 volumes:
   analytical_data:

@@ -2,16 +2,17 @@ import pandas as pd
 from sqlalchemy import create_engine, inspect
 import os
 from dotenv import load_dotenv
+import yaml
 
 def get_engine():
 
     load_dotenv()
 
-    db_name = os.getenv("DB_NAME")
-    db_user = os.getenv("DB_USER")
+    db_name     = os.getenv("DB_NAME")
+    db_user     = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
-    db_host = os.getenv("DB_HOST")
-    db_port = os.getenv("DB_PORT")
+    db_host     = os.getenv("DB_HOST")
+    db_port     = os.getenv("DB_PORT")
 
     return create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
 
@@ -24,9 +25,12 @@ def table_with_prefix_exists(engine, schema_name, table_prefix):
 
 def games_to_process(engine, schema, table):
 
-    # Declare the games table
-    schema_games = "stg_chess_com"
-    table_games  = "players_games"
+    config_path = os.path.join(os.path.abspath('..'), 'config.yml')
+    with open(config_path, "r") as f:
+            config = yaml.safe_load(f)
+
+    schema_games = config["postgres"]["schemas"]["chess_com_api"]
+    table_games  = "players_games" # DLT built-in table name
 
     if table_with_prefix_exists(engine, schema, table):
 

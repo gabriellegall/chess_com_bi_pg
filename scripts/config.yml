@@ -1,0 +1,14 @@
+api:
+  usernames:
+    - piwi100
+    - Zundorn
+  start_month: "2024/01"
+
+postgres:
+  schemas:
+    chess_com_api:  "stg_chess_com"
+    stockfish:      "stg_stockfish"
+    games_times:    "stg_times"
+  tables:
+    stockfish:      "players_games_moves"
+    games_times:    "players_games_times"

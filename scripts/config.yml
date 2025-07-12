@@ -2,6 +2,13 @@ api:
   usernames:
     - piwi100
     - Zundorn
+    - leprechess
+    - bgdu33
+    - quentinusdesbois
+    - romainpct
+    # - gokhvttttgxdddhjkig345
+    # - yorek99
+    # - ashutoshkhurana568
   start_month: "2024/01"
 
 postgres:

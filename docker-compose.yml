@@ -29,6 +29,7 @@ services:
     depends_on:
       - analytical_db
     working_dir: /app
+    env_file: .env
 
 volumes:
   analytical_data:

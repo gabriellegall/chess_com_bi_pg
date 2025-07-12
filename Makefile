@@ -8,16 +8,13 @@ stg_games_times:
 stg_games_moves:
 	@cd scripts/stockfish && python chess_games_moves_pipeline.py
 
-dbt_build:
-	dbt build
-
-stg_all: stg_games stg_games_times stg_games_moves
-
-run_all: stg_all dbt_build
+run_all: 
+	python run.py
 
 # Docker Desktop
 CURDIR := $(shell cd)
 docker_build_project:
+	dbt clean
 	docker build -t chess-com-bi-pg .
 
 docker_run_project:
@@ -31,3 +28,12 @@ docker_hub_push: docker_build_project
 docker_hub_pull_and_run:
 	docker pull gabriellegall/chess-com-bi-pg:latest
 	docker run --rm -it -v ${CURDIR}/data:/app/data gabriellegall/chess-com-bi-pg:latest
+
+# Local postgres for debugging (if needed)
+docker_postgres:
+	docker run --name chess_local_postgres_container \
+	-e POSTGRES_PASSWORD=AsidDe5845edDikkDee \
+	-e POSTGRES_USER=glegall \
+	-e POSTGRES_DB=chess \
+	-p 5432:5432 \
+	-d postgres

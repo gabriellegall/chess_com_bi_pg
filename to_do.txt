@@ -1,8 +1,15 @@
+-- Infra
+- Check how to backup Metabase
+- Check how to backup Postgres
+- Check how to log DBT
+
+-- Project
+- improve the .envs consistency
 - rename the stg folders to be consistent in the logic
 - check the time split (just 1 game example)
-- update the incremental update to [uuid] x [username] and test it
-- rename uuid to game_uuid everywhere
+- update the DLT incremental update to [uuid] x [username] and test it
+- rename uuid to game_uuid everywhere (?)
 - finalize the datawarehouse layer
-- use docker compose to connect Metabase + Postgres
 
+-- Chess
 - check the openers in the API data of chess.com

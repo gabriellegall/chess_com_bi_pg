@@ -23,7 +23,7 @@ def table_with_prefix_exists(engine, schema_name, table_prefix):
     
     return any(t.startswith(table_prefix) for t in tables)
 
-def games_to_process(engine, schema, table):
+def games_to_process(engine, schema, table, limit=100):
 
     config_path = os.path.join(os.path.abspath('..'), 'config.yml')
     with open(config_path, "r") as f:
@@ -48,9 +48,10 @@ def games_to_process(engine, schema, table):
             target_table.uuid IS NULL
             AND LENGTH(game.pgn) > 0
             AND game.rules = 'chess'
-        GROUP BY 1
+        GROUP BY game.uuid
+        LIMIT {limit}
         """
     else:
-        query = f"SELECT uuid, pgn FROM {schema_games}.{table_games}"
+        query = f"SELECT uuid, pgn FROM {schema_games}.{table_games} LIMIT {limit}"
     
     return query

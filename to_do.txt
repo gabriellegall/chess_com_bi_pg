@@ -1,7 +1,5 @@
 -- Infra
 - Test the .env in Docker Compose
-- Check how to backup Metabase
-- Check how to backup Postgres
 - Check how to log DBT
 
 -- Project

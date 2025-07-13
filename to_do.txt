@@ -6,12 +6,9 @@
 
 -- Project
 - order by end_time DESC for helper.py
-- improve the .envs consistency
 - rename the stg folders to be consistent in the logic
 - check the time split (just 1 game example)
 - update the DLT incremental update to [uuid] x [username] and test it
-- rename uuid to game_uuid everywhere (?)
-- finalize the datawarehouse layer
 
 -- Chess
 - check the openers in the API data of chess.com

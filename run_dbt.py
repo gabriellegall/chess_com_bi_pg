@@ -8,7 +8,7 @@ import os
 def run_pipeline():
 
     load_dotenv()
-    subprocess.run(["dbt", "test"], check=True)
+    subprocess.run(["dbt", "run"], check=True)
 
 if __name__ == "__main__":
     run_pipeline()

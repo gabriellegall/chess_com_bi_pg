@@ -1,9 +1,11 @@
 -- Infra
+- Test the .env in Docker Compose
 - Check how to backup Metabase
 - Check how to backup Postgres
 - Check how to log DBT
 
 -- Project
+- order by end_time DESC for helper.py
 - improve the .envs consistency
 - rename the stg folders to be consistent in the logic
 - check the time split (just 1 game example)

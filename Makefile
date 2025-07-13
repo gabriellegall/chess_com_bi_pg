@@ -11,23 +11,14 @@ stg_games_moves:
 run_all: 
 	python run.py
 
-# Docker Desktop
-CURDIR := $(shell cd)
+# Docker Hub
 docker_build_project:
 	dbt clean
 	docker build -t chess-com-bi-pg .
 
-docker_run_project:
-	docker run --rm -it chess-com-bi-pg
-
-# Docker Hub
 docker_hub_push: docker_build_project
 	docker tag chess-com-bi-pg gabriellegall/chess-com-bi-pg:latest
 	docker push gabriellegall/chess-com-bi-pg:latest
-
-docker_hub_pull_and_run:
-	docker pull gabriellegall/chess-com-bi-pg:latest
-	docker run --rm -it -v ${CURDIR}/data:/app/data gabriellegall/chess-com-bi-pg:latest
 
 # Local postgres for debugging (if needed)
 docker_postgres:

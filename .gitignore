@@ -6,3 +6,4 @@ profiles.yml
 venv
 .env
 to_do.txt
+chess_backup.dump

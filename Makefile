@@ -8,9 +8,6 @@ stg_games_times:
 stg_games_moves:
 	@cd scripts/stockfish && python chess_games_moves_pipeline.py
 
-run_all: 
-	python run.py
-
 # Docker Hub
 docker_build_project:
 	dbt clean

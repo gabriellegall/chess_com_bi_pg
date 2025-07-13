@@ -40,7 +40,7 @@ def run_pipeline_forever():
             # Admin
             requests.get(URL, timeout=5)
             print(f"✅ Healthcheck ping sent.")
-            time.sleep(3600)
+            time.sleep(60)
 
         except Exception as e:
             requests.get(URL + "/fail", timeout=5)

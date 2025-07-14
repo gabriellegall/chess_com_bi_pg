@@ -20,7 +20,9 @@ WITH define_expected_moves AS (
 ),
 
 expected_move_numbers AS (
-    SELECT generate_series(1, 60, 5) AS move_number
+    SELECT 1 AS move_number
+    UNION ALL
+    SELECT generate_series(5, 60, 5) AS move_number
 ),
 
 expanded_moves AS (
@@ -60,12 +62,18 @@ SELECT
     playing_as,
     move_number,
     COALESCE(
-        score_playing,
-        LAST_VALUE(score_playing) OVER (
-            PARTITION BY uuid, username 
-            ORDER BY move_number 
-            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        jm.score_playing,
+        -- Postgres equivalent of LAST_VALUE IGNORE NULLS:
+        (
+            SELECT s2.score_playing
+            FROM joined_moves s2
+            WHERE s2.uuid = jm.uuid
+              AND s2.username = jm.username
+              AND s2.move_number <= jm.move_number
+              AND s2.score_playing IS NOT NULL
+            ORDER BY s2.move_number DESC
+            LIMIT 1
         )
     ) AS score_playing
-FROM joined_moves
+FROM joined_moves jm
 ORDER BY end_time DESC

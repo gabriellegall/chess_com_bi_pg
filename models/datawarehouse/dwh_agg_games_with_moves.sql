@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = ['uuid','game_phase'],
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)"
     ]
 ) }}
 WITH aggregate_fields AS (

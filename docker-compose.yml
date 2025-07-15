@@ -1,16 +1,12 @@
-version: '3.8'
-
 services:
   analytical_db:
     image: postgres:16
     container_name: chess_postgres_container
     restart: always
-    env_file:
-      - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: chess
+      POSTGRES_USER: glegall
+      POSTGRES_PASSWORD: AsidDe5845edDikkDee
     volumes:
       - analytical_data:/var/lib/postgresql/data 
     ports:
@@ -31,7 +27,13 @@ services:
     depends_on:
       - analytical_db
     working_dir: /app
-    env_file: .env
+    environment:
+      DB_NAME: chess
+      DB_USER: glegall
+      DB_PASSWORD: AsidDe5845edDikkDee
+      DB_HOST: analytical_db
+      DB_PORT: 5432
+      HEALTHCHECK_URL: "https://hc-ping.com/06a2accf-4595-485f-aa59-d508b3b7e110"
 
 volumes:
   analytical_data:

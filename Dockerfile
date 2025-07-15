@@ -15,5 +15,4 @@ COPY . .
 
 RUN dbt deps
 
-# CMD ["/bin/bash"]
-CMD ["make", "run_all"]
+CMD ["python", "run_all.py"]

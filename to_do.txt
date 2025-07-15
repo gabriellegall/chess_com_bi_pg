@@ -1,12 +1,8 @@
--- Infra
-- Test the .env in Docker Compose
-- Check how to log DBT
-
--- Project
-- order by end_time DESC for helper.py
-- rename the stg folders to be consistent in the logic
-- check the time split (just 1 game example)
-- update the DLT incremental update to [uuid] x [username] and test it
+-- Rename the postgres container for consistency
+-- Rename the stg folders to be consistent in the logic
+-- Order by end_time DESC for helper.py
+-- Deploy Postgres and Metabase on the VPS
+-- Deploy regular DBT jobs
 
 -- Chess
 - check the openers in the API data of chess.com

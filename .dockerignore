@@ -2,10 +2,10 @@ target/
 dbt_packages/
 scripts/__pycache__
 logs/
-profiles.yml
 .user.yml
 venv
 .env
 to_do.txt
-chess_backup.dump
+chess_backup.
+metabase
 notes.txt

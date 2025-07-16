@@ -12,6 +12,37 @@ api:
     - ashutoshkhurana568
     # chess.com:
     - oignons52
+    # Reddit users:
+    - dapipshark
+    - sajmansito
+    - beng_16
+    - 62westwallaby
+    - xn312fx
+    - sluciano3
+    - glenmsheppard
+    - jaebr8
+    - max_otto_stierlitz
+    - kkgttv
+    - chesstrogen
+    - typicalplayer11
+    - meachumz
+    - febar92
+    - monksc
+    - allem34
+    - nadis_z
+    - rogerick
+    - babystinkboog
+    - nyylp844
+    - jamesi05
+    - somedrewguy
+    - voidlr
+    - veddntt
+    - bonbonfrosch
+    - karthik704
+    - grosgogtjopie
+    - jveitch24
+    - playing_in_alg2
+    - l46w4ll
   start_month: "2024/01"
 
 postgres:

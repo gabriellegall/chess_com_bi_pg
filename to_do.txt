@@ -1,8 +1,8 @@
 -- Rename the postgres container for consistency
 -- Rename the stg folders to be consistent in the logic
 -- Order by end_time DESC for helper.py
--- Deploy Postgres and Metabase on the VPS
--- Deploy regular DBT jobs
+-- Deploy Watchtower
+-- Find a way to run regular DBT tests (each 100 execution)
 
 -- Chess
-- check the openers in the API data of chess.com
+-- check the openers in the API data of chess.com

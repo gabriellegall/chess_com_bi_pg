@@ -60,7 +60,7 @@ def players_profiles(players: List[str]) -> Iterator[TDataItem]:
     for username in players:
         yield _get_profile(username)
 
-
+# Updated function to account for 404 not found
 @dlt.resource(write_disposition="replace", selected=False)
 def players_archives(players: List[str]) -> Iterator[List[TDataItem]]:
     """
@@ -71,8 +71,15 @@ def players_archives(players: List[str]) -> Iterator[List[TDataItem]]:
         Iterator[List[TDataItem]]: An iterator over list of player archive data.
     """
     for username in players:
-        data = get_path_with_retry(f"player/{username}/games/archives")
-        yield data.get("archives", [])
+        try:
+            data = get_path_with_retry(f"player/{username}/games/archives")
+            yield data.get("archives", [])
+        except requests.HTTPError as http_err:
+            if http_err.response.status_code == 404:
+                print(f"[SKIP] No archives found for user '{username}' (404).")
+                yield []
+            else:
+                raise
 
 
 # Updated function for write_disposition="merge". The latest_checked_archive is identified and re-scanned on every run to integrate new games played.

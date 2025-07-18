@@ -34,6 +34,18 @@ services:
       DB_HOST: analytical_db
       DB_PORT: 5432
       HEALTHCHECK_URL: "https://hc-ping.com/06a2accf-4595-485f-aa59-d508b3b7e110"
+      HEALTHCHECK_URL_DBT_TEST: "https://hc-ping.com/eef29fb9-24d6-4b2b-9e93-994100a89b1c"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: chess_watchtower_container
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_SCHEDULE=0 0 0 * * * 
+      - TZ=Europe/Paris
+    command: chess_dbt_container
 
 volumes:
   analytical_data:

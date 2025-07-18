@@ -35,6 +35,7 @@ games   = pd.read_sql(query, engine)
 print(f"✅ Query executed successfully — {len(games)} rows fetched.")
 
 if not games.empty:
+    games = games[['uuid', 'pgn']]
     games['move_data'] = games['pgn'].apply(extract_move_data)
     
     games_expanded = games.explode('move_data', ignore_index=True)

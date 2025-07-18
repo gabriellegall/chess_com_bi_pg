@@ -1,10 +1,11 @@
 import pandas as pd
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.engine import Engine
 import os
 from dotenv import load_dotenv
 import yaml
 
-def get_engine():
+def get_engine() -> Engine:
 
     load_dotenv()
 
@@ -16,14 +17,14 @@ def get_engine():
 
     return create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
 
-def table_with_prefix_exists(engine, schema_name, table_prefix):
+def table_with_prefix_exists(engine: Engine, schema_name: str, table_prefix: str) -> bool:
 
     inspector = inspect(engine)
     tables = inspector.get_table_names(schema=schema_name)
     
     return any(t.startswith(table_prefix) for t in tables)
 
-def games_to_process(engine, schema, table, limit=100):
+def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) -> str:
 
     config_path = os.path.join(os.path.abspath('..'), 'config.yml')
     with open(config_path, "r") as f:
@@ -38,7 +39,8 @@ def games_to_process(engine, schema, table, limit=100):
         query = f"""
         SELECT
             game.uuid,
-            MAX(game.pgn) AS pgn
+            MAX(game.pgn) AS pgn,
+            MAX(end_time) AS end_time
         FROM {schema_games}.{table_games} game
         LEFT JOIN (
             SELECT DISTINCT uuid FROM {schema}.{table}
@@ -49,6 +51,7 @@ def games_to_process(engine, schema, table, limit=100):
             AND LENGTH(game.pgn) > 0
             AND game.rules = 'chess'
         GROUP BY game.uuid
+        ORDER BY end_time DESC -- Process the fresh games first
         LIMIT {limit}
         """
     else:

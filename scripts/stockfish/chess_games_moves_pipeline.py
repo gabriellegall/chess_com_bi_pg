@@ -93,6 +93,8 @@ games   = pd.read_sql(query, engine)
 print(f"✅ Query executed successfully — {len(games)} rows fetched.")
 
 if not games.empty:
+    games = games[['uuid', 'pgn']]
+
     # Calculate all games moves for all games
     engine_path = get_stockfish_path()
     games_moves = analyze_multiple_games(games, engine_path)

@@ -12,7 +12,6 @@ snapshot-paths: ["snapshots"]
 
 clean-targets:
   - "target"
-  - "dbt_packages"
 
 models:
   chess_com_bi_pg:

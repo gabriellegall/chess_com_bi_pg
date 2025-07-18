@@ -1,2 +1,5 @@
+-- Bug
+-- Fix the incremental load bug on dwh_agg_games_with_moves
+
 -- Chess
 -- Check the openers in the API data of chess.com

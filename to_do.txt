@@ -1,5 +1,6 @@
 -- Bug
--- Fix the incremental load bug on dwh_agg_games_with_moves
+-- Find a better way to fix the incremental load bug on dwh_agg_games_with_moves. On the fly in Streamlit (?) Maybe
+-- Optimize the materialized view on dwh_recent_games_moves. (?) incremental mode - is there a way to delete old records ?
 
 -- Chess
 -- Check the openers in the API data of chess.com

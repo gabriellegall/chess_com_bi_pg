@@ -1,7 +1,11 @@
 {{ config(
-    materialized='materialized_view'
-  ) 
-}}
+    materialized = 'incremental',
+    unique_key = ['uuid','username','move_number'],
+    post_hook=[
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)"
+    ]
+) }}
 
 WITH define_expected_moves AS (
     SELECT  
@@ -16,6 +20,9 @@ WITH define_expected_moves AS (
     FROM {{ ref('dwh_games_with_moves') }}
     WHERE 
         end_time_date >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL '7 days')
+        {% if is_incremental() %}
+        AND uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+        {% endif %}
     GROUP BY uuid, username
 ),
 

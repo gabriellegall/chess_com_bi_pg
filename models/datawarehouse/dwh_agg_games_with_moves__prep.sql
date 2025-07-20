@@ -35,8 +35,6 @@ WITH aggregate_fields AS (
         MIN(time_class) AS time_class,
         MIN(time_control) AS time_control,
         MIN(first_blunder_playing_turn_name) AS first_blunder_playing_turn_name,
-        STRING_AGG(move, ' ' ORDER BY move_number ASC) FILTER (WHERE move_number <= 4) AS opener_4_moves,
-        STRING_AGG(move, ' ' ORDER BY move_number ASC) FILTER (WHERE move_number <= 4 AND is_playing_turn) AS opener_2_moves_playing,
         
         -- Measures                
         COUNT(move_number) AS nb_moves,

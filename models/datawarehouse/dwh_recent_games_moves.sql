@@ -17,9 +17,7 @@ WITH define_expected_moves AS (
         MAX(opponent_rating_range) AS opponent_rating_range,
         MAX(url) AS url,
         MAX(end_time) AS end_time,
-        MAX(playing_as) AS playing_as,
-        MAX(opener_2_moves_playing) AS opener_2_moves_playing,
-        MAX(opener_4_moves) AS opener_4_moves
+        MAX(playing_as) AS playing_as
     FROM {{ ref('dwh_games_with_moves') }}
     WHERE 
         end_time_date >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL '7 days')

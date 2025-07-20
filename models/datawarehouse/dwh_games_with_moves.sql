@@ -88,6 +88,13 @@ WITH games_scope AS (
     AND games_moves.move_number = games_times.move_number
 )
 
+--, opener_definition AS (
+--  SELECT
+--    *,
+--    STRING_AGG(CASE WHEN move_number <= 4 THEN move ELSE NULL END, ' ' ORDER BY move_number ASC) OVER (PARTITION BY uuid) AS opener_4_moves
+--  FROM score_defintion
+--)
+
 , previous_score AS (
   SELECT 
     *,

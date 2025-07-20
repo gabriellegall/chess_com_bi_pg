@@ -1,5 +1,11 @@
+-- Documentation
+-- YAML files
+-- Readme.md
+-- Clean the ',' in the .sql files
+
 -- Evolutions
--- Push the window function of dwh_agg_games_with_moves to Metabase
+-- Push the window function of dwh_agg_games_with_moves to Metabase.
+    -- Alternatively: rework the visuals to account for W/R etc. <= ELO range. This way previous metrics are inclusive.
 
 -- Chess
 -- Make a ML model to create clusters of players
@@ -8,4 +14,4 @@
     -- Massive Blunder Rate per Game Phase
     -- Ability to close won games
     -- Time left on first massive blunder
--- Make the graph "Recent games position advantage" with 30D, 14D, 7D lines
+-- Make the graph "Recent games position advantage" with last 7D, 14D, 30D lines

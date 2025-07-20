@@ -1,6 +1,11 @@
--- Bug
--- Find a better way to fix the incremental load bug on dwh_agg_games_with_moves. On the fly in Streamlit (?) Maybe
--- Optimize the materialized view on dwh_recent_games_moves. (?) incremental mode - is there a way to delete old records ?
+-- Evolutions
+-- Push the window function of dwh_agg_games_with_moves to Metabase
 
 -- Chess
--- Check the openers in the API data of chess.com
+-- Make a ML model to create clusters of players
+-- Check the openers in the API data of chess.com (e.g. 4 first moves)
+-- Make a graph showing the evolution of Key Metrics and the group benchmark (rolling window 30d)
+    -- Massive Blunder Rate per Game Phase
+    -- Ability to close won games
+    -- Time left on first massive blunder
+-- Make the graph "Recent games position advantage" with 30D, 14D, 7D lines

@@ -8,6 +8,7 @@
     -- Alternatively: rework the visuals to account for W/R etc. <= ELO range. This way previous metrics are inclusive.
 
 -- Chess
+-- Analyze to which extent it is easy to predict one's win/loss based on massive blunders/blunders
 -- Make a ML model to create clusters of players
 -- Check the openers in the API data of chess.com (e.g. 4 first moves)
 -- Make a graph showing the evolution of Key Metrics and the group benchmark (rolling window 30d)

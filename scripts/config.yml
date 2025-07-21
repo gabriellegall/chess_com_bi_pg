@@ -1,6 +1,6 @@
 api:
   usernames:
-    # friends
+    # friends:
     - piwi100
     - Zundorn
     - leprechess
@@ -10,39 +10,46 @@ api:
     - gokhvttttgxdddhjkig345
     - yorek99
     - ashutoshkhurana568
-    # chess.com:
-    - oignons52
-    # Reddit users:
-    - dapipshark
-    - sajmansito
-    - beng_16
-    - 62westwallaby
-    - xn312fx
-    - sluciano3
-    - glenmsheppard
-    - jaebr8
-    - kkgttv
-    - chesstrogen
-    - typicalplayer11
-    - meachumz
-    - febar92
-    - monksc
-    - allem34
-    - nadis_z
-    - rogerick
-    - babystinkboog
-    - nyylp844
-    - jamesi05
-    - somedrewguy
-    - voidlr
-    - veddntt
-    - bonbonfrosch
-    - karthik704
-    - grosgogtjopie
-    - jveitch24
-    - playing_in_alg2
-    - l46w4ll
-  start_month: "2024/01"
+    # blitz 300+5:
+    - aufhebungja
+    - slscharff
+    - itsdon3
+    - koli8
+    - tnvawls
+    - tandisco
+    - mr_nuke
+    - andrew_shapekin
+    - esasso
+    - arekusu22
+    - rjvrush
+    - constandean
+    - suleiman241081
+    - thewiltshirewarrior
+    - chesstickles09
+    - kekkaki42
+    - christrafer
+    - zupade
+    - rik1409
+    - girleidson
+    - chessman1ray
+    - orlandocrl
+    - hdawg94
+    - kirillolshansky
+    - jonathanhj
+    - eliaskaram84
+    - melnik63
+    - ap0lkmn
+    - pjm00
+    - ojatemate
+    - piwi100
+    - atak_66
+    - torpa1975
+    - bondpbond
+    - rc_dy
+    - justinmahi
+    - ana2
+    - thierry-l85
+  start_month: "2025/04"
 
 postgres:
   schemas:

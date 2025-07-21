@@ -36,6 +36,7 @@ def run_pipeline_forever():
             )
 
             # DBT
+            subprocess.run(["dbt", "seed"], check=True)
             subprocess.run(["dbt", "run"], check=True)
 
             # Healthcheck

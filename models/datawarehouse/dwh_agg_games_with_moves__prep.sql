@@ -45,6 +45,12 @@ WITH aggregate_fields AS (
         MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END) AS first_massive_blunder_playing_prct_time_remaining,
 
         {% for phase, values in var('game_phases').items() %}
+            {% if 'end_game_move' in values %}
+            MIN(CASE WHEN move_number = {{ values.end_game_move }} THEN prct_time_remaining ELSE NULL END) AS prct_time_remaining_{{ phase }},
+            {% endif %}
+        {% endfor %}
+
+        {% for phase, values in var('game_phases').items() %}
         COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing = 'Massive Blunder') AS nb_massive_blunder_{{ phase }}_playing,
         COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing IN ('Blunder', 'Massive Blunder')) AS nb_blunder_{{ phase }}_playing,
         {% endfor %}

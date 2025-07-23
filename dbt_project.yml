@@ -52,7 +52,7 @@ vars:
     low: 300
     mid: 500
   data_scope:
-    month_history_depth: 5
+    month_history_depth: 12
     time_class: ['blitz', 'rapid', 'bullet']
   datamart:
     min_games_played: 20

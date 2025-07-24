@@ -57,7 +57,11 @@ WITH aggregate_fields AS (
 
         STRING_AGG(massive_blunder_move_number_playing::TEXT, ', ') AS massive_blunder_move_number_playing,
         COUNT(*) FILTER (WHERE miss_context_playing = 'Throw') AS nb_throw_playing,
+        COUNT(*) FILTER (WHERE miss_context_playing = 'Throw' AND miss_category_playing = 'Blunder') AS nb_throw_blunder_playing,
+        COUNT(*) FILTER (WHERE miss_context_playing = 'Throw' AND miss_category_playing = 'Massive Blunder') AS nb_throw_massive_blunder_playing,
         COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity') AS nb_missed_opportunity_playing,
+        COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity' AND miss_category_playing = 'Blunder') AS nb_missed_opportunity_blunder_playing,
+        COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity' AND miss_category_playing = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_playing,
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score_playing) AS median_score_playing,
         MAX(score_playing) AS max_score_playing,
         MIN(score_playing) AS min_score_playing,

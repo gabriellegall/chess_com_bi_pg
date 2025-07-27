@@ -1,5 +1,3 @@
-# Bug to correct: switching to a different parameter resets the filter pane
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -7,7 +5,6 @@ import plotly.graph_objects as go
 from data.loader import load_query
 import numpy as np
 
-# --- Config ---
 st.set_page_config(layout="wide")
 
 @st.cache_data
@@ -29,20 +26,22 @@ def apply_filters(data: pd.DataFrame, filter_fields: list) -> pd.DataFrame:
 
 @st.cache_data
 def get_player_aggregates(data: pd.DataFrame, agg_dict: dict) -> pd.DataFrame:
-    return data.groupby('username').agg(agg_dict).reset_index()
+    agg_funcs = {k: v["agg"] for k, v in agg_dict.items()}
+    filtered_data = data.groupby('username').filter(lambda x: len(x) >= 30)
+    return filtered_data.groupby('username').agg(agg_funcs).reset_index()
 
-def render_kpi_boxplot(df: pd.DataFrame, kpi: str, username_to_highlight: str):
+def render_metric_boxplot(df: pd.DataFrame, metric: str, username_to_highlight: str, left_annotation: str, right_annotation: str):
     df_plot = df.copy()
     df_plot['category'] = 'Player Distribution'
 
-    highlight_value = df_plot.loc[df_plot["username"] == username_to_highlight, kpi].iloc[0]
+    highlight_value = df_plot.loc[df_plot["username"] == username_to_highlight, metric].iloc[0]
 
     fig = px.box(
         df_plot,
-        x=kpi,
+        x=metric,
         y="category",
-        title=f"Distribution of {kpi.replace('_', ' ').title()}",
-        labels={kpi: kpi.replace('_', ' ').title(), "category": ""},
+        title=f"Distribution of {metric.replace('_', ' ').title()}",
+        labels={metric: metric.replace('_', ' ').title(), "category": ""},
         orientation='h'
     )
 
@@ -57,7 +56,7 @@ def render_kpi_boxplot(df: pd.DataFrame, kpi: str, username_to_highlight: str):
 
     fig.update_layout(
         yaxis=dict(title="", showticklabels=True), 
-        xaxis_title=kpi.replace('_', ' ').title(),
+        xaxis_title=metric.replace('_', ' ').title(),
         xaxis_tickformat=".0%",
         showlegend=True,
         legend=dict(x=0.01, y=0.99, bgcolor='rgba(255,255,255,0.7)'),
@@ -65,36 +64,65 @@ def render_kpi_boxplot(df: pd.DataFrame, kpi: str, username_to_highlight: str):
     )
 
     # Annotate min/max
-    x_min = df_plot[kpi].min()
-    x_max = df_plot[kpi].max()
-    fig.add_annotation(x=x_min, y=-0.4, text="⌛Slow", showarrow=False, font=dict(color="white"))
-    fig.add_annotation(x=x_max, y=-0.4, text="⚡Fast", showarrow=False, font=dict(color="white"))
+    x_min = df_plot[metric].min()
+    x_max = df_plot[metric].max()
+    fig.add_annotation(x=x_min, y=-0.4, text=left_annotation, showarrow=False, font=dict(color="white"))
+    fig.add_annotation(x=x_max, y=-0.4, text=right_annotation, showarrow=False, font=dict(color="white"))
 
     st.plotly_chart(fig, use_container_width=True)
 
 # --- Load and filter data ---
-df_filtered = apply_filters(get_raw_data(), ["playing_as", "time_class", "playing_result"])
+df_filtered = apply_filters(get_raw_data(), ["playing_as", "time_class", "playing_result", "playing_rating_range"])
 
 agg_dict = {
-    'prct_time_remaining_mid': 'median',
-    'nb_throw_playing': 'mean',
-    'nb_throw_blunder_playing': 'mean',
-    'nb_throw_massive_blunder_playing': 'mean',
-    'nb_missed_opportunity_massive_blunder_playing': 'mean',
+    'prct_time_remaining_mid': {
+        'agg': 'median',
+        'left_annotation': '⌛Slow',
+        'right_annotation': '⚡Fast'
+    },
+    'nb_throw_playing': {
+        'agg': 'mean',
+        'left_annotation': '🎯Accurate',
+        'right_annotation': '💥Confused'
+    },
+    'nb_throw_blunder_playing': {
+        'agg': 'mean',
+        'left_annotation': '🎯Accurate',
+        'right_annotation': '💥Confused'
+    },
+    'nb_throw_massive_blunder_playing': {
+        'agg': 'mean',
+        'left_annotation': '🎯Accurate',
+        'right_annotation': '💥Confused'
+    },
+    'nb_missed_opportunity_massive_blunder_playing': {
+        'agg': 'mean',
+        'left_annotation': '🔍Attentive',
+        'right_annotation': '🙈Blind'
+    },
 }
 
 # --- Aggregate ---
 df_player_agg = get_player_aggregates(df_filtered, agg_dict)
 
-# --- Highlight player ---
+# --- Define highlighted player ---
+username_list = sorted(df_player_agg["username"].unique())
+
 username_to_highlight = st.selectbox(
-    "⭐ Select Username to Highlight", 
-    options=sorted(df_player_agg["username"].unique()), 
-    index=0
+    "⭐ Select Username to Highlight",
+    options = username_list,
+    index   = username_list.index(st.session_state.get("selected_username", "Zundorn")),
+    key     = "selected_username"
 )
 
 st.title("Chess.com BI Dashboard")
 
 # --- Render Boxplots ---
-for kpi in agg_dict:
-    render_kpi_boxplot(df_player_agg, kpi, username_to_highlight)
+for metric, config in agg_dict.items():
+    render_metric_boxplot(
+        df_player_agg,
+        metric,
+        username_to_highlight,
+        left_annotation=config["left_annotation"],
+        right_annotation=config["right_annotation"]
+    )

@@ -55,6 +55,6 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
         LIMIT {limit}
         """
     else:
-        query = f"SELECT uuid, pgn FROM {schema_games}.{table_games} LIMIT {limit}"
+        query = f"SELECT uuid, MAX(pgn) AS pgn FROM {schema_games}.{table_games} GROUP BY 1 LIMIT {limit}"
     
     return query

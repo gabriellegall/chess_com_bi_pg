@@ -13,13 +13,23 @@ SELECT
     -- Mistakes
         -- Massive blunders
         nb_massive_blunder_playing,
+        nb_massive_blunder_early_playing,
+        nb_massive_blunder_mid_playing,
+        nb_massive_blunder_late_playing,
+        nb_massive_blunder_very_late_playing,
         -- Throw
         nb_throw_playing,
         nb_throw_blunder_playing,
         nb_throw_massive_blunder_playing,
+        nb_throw_blunder_opponent,
+        nb_throw_massive_blunder_opponent,
         -- Missed opp.
+        nb_missed_opportunity_playing,
         nb_missed_opportunity_blunder_playing,
         nb_missed_opportunity_massive_blunder_playing,
+        nb_missed_opportunity_opponent,
+        nb_missed_opportunity_blunder_opponent,
+        nb_missed_opportunity_massive_blunder_opponent,
         -- Standard deviation
         std_score_playing,
         -- Time pressure
@@ -32,4 +42,5 @@ WHERE TRUE
     AND time_class              = 'blitz'
     AND time_control            = '300+5'
     AND playing_rating_range    = opponent_rating_range
-    AND playing_result IN ('Win', 'Lose')
+    AND playing_result          IN ('Win', 'Lose')
+    AND playing_as = 'White'

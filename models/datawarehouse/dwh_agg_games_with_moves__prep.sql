@@ -34,15 +34,14 @@ WITH aggregate_fields AS (
         MIN(playing_result) AS playing_result,
         MIN(time_class) AS time_class,
         MIN(time_control) AS time_control,
-        MIN(first_blunder_playing_turn_name) AS first_blunder_playing_turn_name,
         
         -- Measures                
         COUNT(move_number) AS nb_moves,
-        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder')) AS nb_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder') AS nb_massive_blunder_playing,
-        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }}) AS nb_moves_above_decisive_advantage,
+        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder'))                               AS nb_blunder_playing,
+        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder')                                             AS nb_massive_blunder_playing,
+        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }})                                  AS nb_moves_above_decisive_advantage,
         MIN(CASE WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') THEN prct_time_remaining ELSE NULL END) AS first_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END) AS first_massive_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END)               AS first_massive_blunder_playing_prct_time_remaining,
 
         {% for phase, values in var('game_phases').items() %}
             {% if 'end_game_move' in values %}
@@ -51,17 +50,22 @@ WITH aggregate_fields AS (
         {% endfor %}
 
         {% for phase, values in var('game_phases').items() %}
-        COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing = 'Massive Blunder') AS nb_massive_blunder_{{ phase }}_playing,
-        COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing IN ('Blunder', 'Massive Blunder')) AS nb_blunder_{{ phase }}_playing,
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing = 'Massive Blunder')                 AS nb_massive_blunder_{{ phase }}_playing,
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing IN ('Blunder', 'Massive Blunder'))   AS nb_blunder_{{ phase }}_playing,
         {% endfor %}
 
         STRING_AGG(massive_blunder_move_number_playing::TEXT, ', ') AS massive_blunder_move_number_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Throw') AS nb_throw_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Throw' AND miss_category_playing = 'Blunder') AS nb_throw_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Throw' AND miss_category_playing = 'Massive Blunder') AS nb_throw_massive_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity') AS nb_missed_opportunity_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity' AND miss_category_playing = 'Blunder') AS nb_missed_opportunity_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_context_playing = 'Missed Opportunity' AND miss_category_playing = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_playing,
+
+        {% set player_prefixes = ['playing', 'opponent'] %}
+        {% for prefix in player_prefixes %}
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw')                                                                 AS nb_throw_{{ prefix }},
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Blunder')                      AS nb_throw_blunder_{{ prefix }},
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Massive Blunder')              AS nb_throw_massive_blunder_{{ prefix }},
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity')                                                    AS nb_missed_opportunity_{{ prefix }},
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder')         AS nb_missed_opportunity_blunder_{{ prefix }},
+            COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }},
+        {% endfor %}
+
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score_playing) AS median_score_playing,
         MAX(score_playing) AS max_score_playing,
         MIN(score_playing) AS min_score_playing,

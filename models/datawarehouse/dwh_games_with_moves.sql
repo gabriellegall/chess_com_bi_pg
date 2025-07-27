@@ -155,18 +155,25 @@ WITH games_scope AS (
           AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} 
           THEN move_number
       ELSE NULL END AS miss_move_number_opponent,
+    -- Position
     CASE  
       WHEN ABS(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
       WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
       WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
-      ELSE NULL END AS position_status_playing
+      ELSE NULL END AS position_status_playing,
+    CASE  
+      WHEN ABS(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+      WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'   -- Opposite rule compared to _playing
+      WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage' -- Opposite rule compared to _playing
+      ELSE NULL END AS position_status_opponent
   FROM previous_score
 )
 
 , prev_position_definition AS (
   SELECT 
     *,
-    LAG(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing
+    LAG(position_status_playing)  OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing,
+    LAG(position_status_opponent) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_opponent
   FROM position_definition
 )
 
@@ -174,15 +181,16 @@ WITH games_scope AS (
   SELECT 
     *,
     CASE  
-      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Even', 'Disadvantage')   THEN 'Throw'
-      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Advantage')              THEN 'Missed Opportunity' 
-      ELSE NULL END AS miss_context_playing
+      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Even', 'Disadvantage')     THEN 'Throw'
+      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') AND prev_position_status_playing IN ('Advantage')                THEN 'Missed Opportunity' 
+      ELSE NULL END AS miss_context_playing,
+    CASE  
+      WHEN miss_category_opponent IN ('Blunder', 'Massive Blunder') AND prev_position_status_opponent IN ('Even', 'Disadvantage')   THEN 'Throw'
+      WHEN miss_category_opponent IN ('Blunder', 'Massive Blunder') AND prev_position_status_opponent IN ('Advantage')              THEN 'Missed Opportunity' 
+      ELSE NULL END AS miss_context_opponent
   FROM prev_position_definition
 )
 
 SELECT 
-  *,
-  FIRST_VALUE (
-    CASE WHEN COALESCE(miss_category_playing, miss_category_opponent) = 'Massive Blunder' THEN playing_turn_name ELSE NULL END) -- To do: test if IGNORE NULLS matters
-    OVER (PARTITION BY uuid, username ORDER BY move_number ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS first_blunder_playing_turn_name
+  *
 FROM context_definition

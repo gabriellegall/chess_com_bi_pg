@@ -16,40 +16,34 @@ def get_raw_data():
     return load_query("data/agg_games_with_moves__games.sql")
 
 def apply_dependent_filters(full_data: pd.DataFrame, dependent_data: pd.DataFrame, filter_fields: list) -> pd.DataFrame:
+
     """
     This function has two objectives:
-    1. It creates a section with select boxes for each field in `filter_fields` in a single horizontal line,
-       allowing the user to filter the data based on their selections.
-    2. It applies the user's selections to the entire dataset, returning a filtered DataFrame.
+    1. It creates a sidebar with select boxes for each field in `filter_fields`, allowing the user to filter the data based on their selections.
+    2. It applies the user's selections to the entire dataset, returning a filtered DataFrame
     """
-    st.header("Game Filters")
+    st.sidebar.header("Game Filters")
     selections = {}
 
-    # Create a number of columns equal to the number of filters
-    cols = st.columns(len(filter_fields))
-
-    # Iterate over the columns and fields simultaneously
-    for col, field in zip(cols, filter_fields):
-        with col:
-            # Get available options from the data of the selected user
-            options = sorted(list(dependent_data[field].unique()))
-            
-            if not options:
-                st.warning(f"No '{field.replace('_', ' ')}' options for this player.")
-                continue
-            
-            # Create the selectbox inside its designated column
-            selected_option = st.selectbox(
-                f"Select {field.replace('_', ' ').title()}", 
-                options=options
-            )
-            selections[field] = selected_option
+    for field in filter_fields:
+        # Get available options from the data of the selected user
+        options = sorted(list(dependent_data[field].unique()))
+        
+        if not options:
+            st.sidebar.warning(f"No '{field.replace('_', ' ')}' options for this player.")
+            continue
+        
+        # Create the selectbox in the sidebar
+        selected_option = st.sidebar.selectbox(
+            f"Select {field.replace('_', ' ').title()}", 
+            options=options
+        )
+        selections[field] = selected_option
 
     # Apply the user's selections to the entire dataset
     filtered_data = full_data.copy()
     for field, value in selections.items():
-        if value: # Ensure a selection was made
-            filtered_data = filtered_data[filtered_data[field] == value]
+        filtered_data = filtered_data[filtered_data[field] == value]
 
     return filtered_data
 
@@ -165,14 +159,14 @@ st.title("Chess.com Player Performance Benchmark")
 all_usernames = sorted(raw_data["username"].unique())
 default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
 
-selected_username = st.sidebar.selectbox(
+selected_username = st.selectbox(
     "⭐ Select a Player to Analyze",
     options=all_usernames,
     index=all_usernames.index(st.session_state.get("selected_username", default_user)),
     key="selected_username"
 )
 
-# --- 2. Dependent Filters ---
+# --- 2. Dependent Sidebar Filters ---
 user_specific_data = raw_data[raw_data['username'] == selected_username]
 
 filter_fields = ["playing_as", "time_class", "playing_result", "playing_rating_range"]

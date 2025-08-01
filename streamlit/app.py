@@ -1,5 +1,6 @@
 # To do: add the audit trail for the statistics
-# To do: add the customized message describing the performance
+# To do: remove the insights
+# To do: rework the upper pane describing the selected statistics
 
 import streamlit as st
 import pandas as pd
@@ -33,46 +34,6 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
         )
         selections[field] = selected_option
     return selections
-
-def get_performance_summary(value_all: float, value_specific: float, q1: float, q3: float, config: dict) -> str:
-    """
-    Generates a descriptive summary of a player's performance trend for a given metric.
-    """
-    if value_all is None or value_specific is None:
-        return f"<span style='color:grey'>Not enough data for a full {config['subject']} analysis.</span>"
-
-    higher_is_better = config['higher_is_better']
-
-    # Determine overall performance category
-    if (higher_is_better and value_all > q3) or (not higher_is_better and value_all < q1):
-        overall_comparison = config['good_state']
-    elif (higher_is_better and value_all < q1) or (not higher_is_better and value_all > q3):
-        overall_comparison = config['bad_state']
-    else:
-        overall_comparison = config['neutral_state']
-
-    # Determine recent performance category
-    if (higher_is_better and value_specific > q3) or (not higher_is_better and value_specific < q1):
-        recent_comparison = config['good_state']
-    elif (higher_is_better and value_specific < q1) or (not higher_is_better and value_specific > q3):
-        recent_comparison = config['bad_state']
-    else:
-        recent_comparison = config['neutral_state']
-
-    # First sentence about overall performance
-    first_sentence = f"<span style='color:grey'>Overall, </span><span style='color:white'>you are {overall_comparison} than most players {config['context']}.</span>"
-
-    # Second sentence about recent trend
-    if overall_comparison == recent_comparison:
-        second_sentence = "<span style='color:grey'>And this has </span><span style='color:white'>remained true in your recent games.</span>"
-    else:
-        if value_specific > value_all:
-            change_direction = config['change_up']
-        else:
-            change_direction = config['change_down']
-        second_sentence = f"<span style='color:grey'>However, this has changed recently as </span><span style='color:white'>you've {change_direction} your {config['subject']}.</span>"
-
-    return f"{first_sentence}<br>{second_sentence}"
 
 def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
@@ -179,7 +140,7 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
             x=[value_all],
             y=['Player Distribution'], 
             mode="markers",
-            marker=dict(color="yellowgreen", size=10, symbol="circle", line=dict(width=1, color='black')),
+            marker=dict(color="yellow", size=20, symbol="line-ns", line=dict(width=3, color='yellow')),
             name="Overall",
             showlegend=False
         ))
@@ -211,6 +172,113 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
     fig.add_annotation(x=x_max, y=-0.4, text=right_annotation, showarrow=False, font=dict(color="white"))
 
     st.plotly_chart(fig, use_container_width=True)
+
+def render_legend(username, last_n):
+    """Renders a custom legend for the plot markers."""
+    legend_html = f"""
+    <div style="display: flex; align-items: center; justify-content: flex-start; gap: 25px; font-size: 14px; padding: 1px 0 1px 15px; margin-bottom: 15px;">
+        <span style="font-weight: bold;">Legend:</span>
+        <div style="display: flex; align-items: center;">
+            <span style="color: yellow; font-size: 25px; font-weight: bold; margin-right: 8px;">|</span>
+            <span>All games by {username}</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <span style="color: yellow; font-size: 20px; margin-right: 8px;">★</span>
+            <span>Last {last_n} games by {username}</span>
+        </div>
+    </div>
+    """
+    st.markdown(legend_html, unsafe_allow_html=True)
+
+def render_plot_pair(title, metric_left, metric_right, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg):
+    """Renders a pair of metric boxplots and their breakdowns."""
+    st.header(title)
+
+    # For the left metric
+    config_left = agg_dict[metric_left]
+    value_all_left, value_specific_left = get_player_metric_values(
+        df_filtered, metric_left, username_to_highlight, config_left['agg'], last_n=last_n_games
+    )
+
+    # For the right metric
+    config_right = agg_dict[metric_right]
+    value_all_right, value_specific_right = get_player_metric_values(
+        df_filtered, metric_right, username_to_highlight, config_right['agg'], last_n=last_n_games
+    )
+
+    # --- Boxplot Rendering ---
+    col1, col2 = st.columns(2)
+    with col1:
+        render_metric_boxplot(
+            df_player_agg,
+            metric_left,
+            value_all=value_all_left,
+            value_specific=value_specific_left,
+            left_annotation=config_left["left_annotation"],
+            right_annotation=config_left["right_annotation"],
+            plot_title=config_left["plot_title"],
+            last_n_games=last_n_games
+        )
+
+    with col2:
+        render_metric_boxplot(
+            df_player_agg,
+            metric_right,
+            value_all=value_all_right,
+            value_specific=value_specific_right,
+            left_annotation=config_right["left_annotation"],
+            right_annotation=config_right["right_annotation"],
+            plot_title=config_right["plot_title"],
+            last_n_games=last_n_games
+        )
+
+    # Add toggle section for additional visuals (only for Throws and Missed Opportunities)
+    if title in ["💥 Throws (small vs. massive)", "👀 Missed Opportunities (small vs. massive)"]:
+        with st.expander(f"Breakdown by game phase"):
+            additional_metrics_left = [
+                f"{metric_left}_early", f"{metric_left}_mid", f"{metric_left}_late"
+            ]
+            additional_metrics_right = [
+                f"{metric_right}_early", f"{metric_right}_mid", f"{metric_right}_late"
+            ]
+
+            col_left, col_right = st.columns(2)
+
+            # Render additional metrics for the left column
+            with col_left:
+                for metric in additional_metrics_left:
+                    config = agg_dict[metric]
+                    value_all, value_specific = get_player_metric_values(
+                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+                    )
+                    render_metric_boxplot(
+                        df_player_agg,
+                        metric,
+                        value_all=value_all,
+                        value_specific=value_specific,
+                        left_annotation=config["left_annotation"],
+                        right_annotation=config["right_annotation"],
+                        plot_title=config["plot_title"],
+                        last_n_games=last_n_games
+                    )
+
+            # Render additional metrics for the right column
+            with col_right:
+                for metric in additional_metrics_right:
+                    config = agg_dict[metric]
+                    value_all, value_specific = get_player_metric_values(
+                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+                    )
+                    render_metric_boxplot(
+                        df_player_agg,
+                        metric,
+                        value_all=value_all,
+                        value_specific=value_specific,
+                        left_annotation=config["left_annotation"],
+                        right_annotation=config["right_annotation"],
+                        plot_title=config["plot_title"],
+                        last_n_games=last_n_games
+                    )
 
 # --- Main Application ---
 
@@ -319,179 +387,67 @@ else:
             )
             st.plotly_chart(fig_win_rate_last_n, use_container_width=True)
 
-st.divider()
+with st.container(border=True):
+    main_selections = render_main_filters(user_specific_data, filter_fields_main)
 
-main_selections = render_main_filters(user_specific_data, filter_fields_main)
+    # Combine all selections into a single dictionary
+    all_selections = {**pane_selections, **main_selections}
 
-# Combine all selections into a single dictionary
-all_selections = {**pane_selections, **main_selections}
+    # Apply the combined filters to the entire dataset
+    df_filtered = raw_data.copy()
+    for field, value in all_selections.items():
+        if value: # Ensure a selection was made
+            df_filtered = df_filtered[df_filtered[field] == value]
 
-# Apply the combined filters to the entire dataset
-df_filtered = raw_data.copy()
-for field, value in all_selections.items():
-    if value: # Ensure a selection was made
-        df_filtered = df_filtered[df_filtered[field] == value]
+    # --- 3. Aggregate Data ---
+    # Define all metrics that will be plotted
+    agg_dict = {
+        'prct_time_remaining_mid': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Distribution of Time Remaining (Mid Game)'},
+        'prct_time_remaining_late': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Distribution of Time Remaining (Late Game)'},
 
-# --- 3. Aggregate Data ---
-# Define all metrics that will be plotted
-agg_dict = {
-    'prct_time_remaining_mid': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Distribution of Time Remaining (Mid Game)'},
-    'prct_time_remaining_late': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Distribution of Time Remaining (Late Game)'},
+        'nb_throw_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '💥Confused', 'plot_title': '🟠 Small Throws'},
+        'nb_throw_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '💥Confused', 'plot_title': '🔴 Massive Throws'},
 
-    'nb_throw_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '😬Confused', 'plot_title': '🟠 Small Throws'},
-    'nb_throw_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '😬Confused', 'plot_title': '🔴 Massive Throws'},
+        'nb_missed_opportunity_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '👀Blind', 'plot_title': '🟠 Small Missed Opportunities'},
+        'nb_missed_opportunity_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '👀Blind', 'plot_title': '🔴 Massive Missed Opportunities'},
 
-    'nb_missed_opportunity_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '🙈Blind', 'plot_title': '🟠 Small Missed Opportunities'},
-    'nb_missed_opportunity_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '🙈Blind', 'plot_title': '🔴 Massive Missed Opportunities'},
+        'nb_missed_opportunity_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Early'},
+        'nb_missed_opportunity_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Mid'},
+        'nb_missed_opportunity_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Late'},
+        'nb_throw_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Early'},
+        'nb_throw_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Mid'},
+        'nb_throw_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Late'},
 
-    'nb_missed_opportunity_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Early'},
-    'nb_missed_opportunity_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Mid'},
-    'nb_missed_opportunity_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Late'},
-    'nb_throw_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Early'},
-    'nb_throw_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Mid'},
-    'nb_throw_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Late'},
-
-    'nb_missed_opportunity_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Early'},
-    'nb_missed_opportunity_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Mid'},
-    'nb_missed_opportunity_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Late'},
-    'nb_throw_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Early'},
-    'nb_throw_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Mid'},
-    'nb_throw_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Late'},
-}
-
-# Define the pairs for side-by-side plotting: (Title, (left_metric, right_metric))
-plot_pairs = [
-    ("⏳ Time Management (mid-game vs. late-game)", ("prct_time_remaining_mid", "prct_time_remaining_late")),
-    ("😬 Throws (small vs. massive)", ("nb_throw_blunder_playing", "nb_throw_massive_blunder_playing")),
-    ("🙈 Missed Opportunities (small vs. massive)", ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing")),
-]
-
-# Configuration for performance summaries
-summary_configs = {
-    'prct_time_remaining_mid': {
-        'higher_is_better': True, 'good_state': 'quicker', 'bad_state': 'slower', 'neutral_state': 'at a similar pace',
-        'change_up': 'accelerated', 'change_down': 'slowed down', 'subject': 'pace', 'context': 'up to the mid-game'
-    },
-    'prct_time_remaining_late': {
-        'higher_is_better': True, 'good_state': 'quicker', 'bad_state': 'slower', 'neutral_state': 'at a similar pace',
-        'change_up': 'accelerated', 'change_down': 'slowed down', 'subject': 'pace', 'context': 'up to the late-game'
+        'nb_missed_opportunity_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Early'},
+        'nb_missed_opportunity_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Mid'},
+        'nb_missed_opportunity_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Late'},
+        'nb_throw_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Early'},
+        'nb_throw_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Mid'},
+        'nb_throw_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Late'},
     }
-}
 
-df_player_agg = get_players_aggregates(df_filtered, agg_dict)
+    # Define the pairs for side-by-side plotting: (Title, (left_metric, right_metric))
+    plot_pairs = [
+        ("⏳ Time Management (mid-game vs. late-game)", ("prct_time_remaining_mid", "prct_time_remaining_late")),
+        ("💥 Throws (small vs. massive)", ("nb_throw_blunder_playing", "nb_throw_massive_blunder_playing")),
+        ("👀 Missed Opportunities (small vs. massive)", ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing")),
+    ]
 
-# --- 4. Render Plots ---
-if df_player_agg.empty:
-    st.warning("No player data available for the selected filters. Please adjust your selections.")
-else:
-    username_to_highlight = selected_username
-    if username_to_highlight not in df_player_agg['username'].unique():
-        st.warning(f"'{username_to_highlight}' has fewer than {last_n_games} games for these filters and cannot be shown. Highlighting the top player instead.")
-        username_to_highlight = df_player_agg['username'].iloc[0]
+    df_player_agg = get_players_aggregates(df_filtered, agg_dict)
 
-    # Loop through the defined pairs to render graphs
-    for title, (metric_left, metric_right) in plot_pairs:
-        st.header(title)
+    # --- 4. Render Plots ---
+    if df_player_agg.empty:
+        st.warning("No player data available for the selected filters. Please adjust your selections.")
+    else:
+        username_to_highlight = selected_username
+        if username_to_highlight not in df_player_agg['username'].unique():
+            st.warning(f"'{username_to_highlight}' has fewer than {last_n_games} games for these filters and cannot be shown. Highlighting the top player instead.")
+            username_to_highlight = df_player_agg['username'].iloc[0]
 
-        # For the left metric
-        config_left = agg_dict[metric_left]
-        value_all_left, value_specific_left = get_player_metric_values(
-            df_filtered, metric_left, username_to_highlight, config_left['agg'], last_n=last_n_games
-        )
+        # Render the legend
+        render_legend(username=username_to_highlight, last_n=last_n_games)
 
-        # For the right metric
-        config_right = agg_dict[metric_right]
-        value_all_right, value_specific_right = get_player_metric_values(
-            df_filtered, metric_right, username_to_highlight, config_right['agg'], last_n=last_n_games
-        )
-
-        # --- Insights Expander ---
-        if metric_left in summary_configs or metric_right in summary_configs:
-            with st.expander("Insights"):
-                insight_col1, insight_col2 = st.columns(2)
-                with insight_col1:
-                    if metric_left in summary_configs:
-                        q1_left, q3_left = df_player_agg[metric_left].quantile(0.25), df_player_agg[metric_left].quantile(0.75)
-                        summary_message = get_performance_summary(value_all_left, value_specific_left, q1_left, q3_left, summary_configs[metric_left])
-                        st.markdown(summary_message, unsafe_allow_html=True)
-                with insight_col2:
-                    if metric_right in summary_configs:
-                        q1_right, q3_right = df_player_agg[metric_right].quantile(0.25), df_player_agg[metric_right].quantile(0.75)
-                        summary_message = get_performance_summary(value_all_right, value_specific_right, q1_right, q3_right, summary_configs[metric_right])
-                        st.markdown(summary_message, unsafe_allow_html=True)
-
-        # --- Boxplot Rendering ---
-        col1, col2 = st.columns(2)
-        with col1:
-            render_metric_boxplot(
-                df_player_agg,
-                metric_left,
-                value_all=value_all_left,
-                value_specific=value_specific_left,
-                left_annotation=config_left["left_annotation"],
-                right_annotation=config_left["right_annotation"],
-                plot_title=config_left["plot_title"],
-                last_n_games=last_n_games
-            )
-
-        with col2:
-            render_metric_boxplot(
-                df_player_agg,
-                metric_right,
-                value_all=value_all_right,
-                value_specific=value_specific_right,
-                left_annotation=config_right["left_annotation"],
-                right_annotation=config_right["right_annotation"],
-                plot_title=config_right["plot_title"],
-                last_n_games=last_n_games
-            )
-
-        # Add toggle section for additional visuals (only for Throws and Missed Opportunities)
-        if title in ["😬 Throws (small vs. massive)", "🙈 Missed Opportunities (small vs. massive)"]:
-            with st.expander(f"Breakdown by game phase"):
-                additional_metrics_left = [
-                    f"{metric_left}_early", f"{metric_left}_mid", f"{metric_left}_late"
-                ]
-                additional_metrics_right = [
-                    f"{metric_right}_early", f"{metric_right}_mid", f"{metric_right}_late"
-                ]
-
-                col_left, col_right = st.columns(2)
-
-                # Render additional metrics for the left column
-                with col_left:
-                    for metric in additional_metrics_left:
-                        config = agg_dict[metric]
-                        value_all, value_specific = get_player_metric_values(
-                            df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
-                        )
-                        render_metric_boxplot(
-                            df_player_agg,
-                            metric,
-                            value_all=value_all,
-                            value_specific=value_specific,
-                            left_annotation=config["left_annotation"],
-                            right_annotation=config["right_annotation"],
-                            plot_title=config["plot_title"],
-                            last_n_games=last_n_games
-                        )
-
-                # Render additional metrics for the right column
-                with col_right:
-                    for metric in additional_metrics_right:
-                        config = agg_dict[metric]
-                        value_all, value_specific = get_player_metric_values(
-                            df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
-                        )
-                        render_metric_boxplot(
-                            df_player_agg,
-                            metric,
-                            value_all=value_all,
-                            value_specific=value_specific,
-                            left_annotation=config["left_annotation"],
-                            right_annotation=config["right_annotation"],
-                            plot_title=config["plot_title"],
-                            last_n_games=last_n_games
-                        )
-
-        st.divider()
+        # Loop through the defined pairs to render graphs
+        for title, (metric_left, metric_right) in plot_pairs:
+            with st.container(border=True):
+                render_plot_pair(title, metric_left, metric_right, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg)

@@ -1,5 +1,3 @@
-# To do: remove the hard coded last 30 games
-# To do: add the bullet chart on the winrate
 # To do: add the audit trail for the statistics
 # To do: add the customized message describing the performance
 
@@ -35,6 +33,46 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
         )
         selections[field] = selected_option
     return selections
+
+def get_performance_summary(value_all: float, value_specific: float, q1: float, q3: float, config: dict) -> str:
+    """
+    Generates a descriptive summary of a player's performance trend for a given metric.
+    """
+    if value_all is None or value_specific is None:
+        return f"<span style='color:grey'>Not enough data for a full {config['subject']} analysis.</span>"
+
+    higher_is_better = config['higher_is_better']
+
+    # Determine overall performance category
+    if (higher_is_better and value_all > q3) or (not higher_is_better and value_all < q1):
+        overall_comparison = config['good_state']
+    elif (higher_is_better and value_all < q1) or (not higher_is_better and value_all > q3):
+        overall_comparison = config['bad_state']
+    else:
+        overall_comparison = config['neutral_state']
+
+    # Determine recent performance category
+    if (higher_is_better and value_specific > q3) or (not higher_is_better and value_specific < q1):
+        recent_comparison = config['good_state']
+    elif (higher_is_better and value_specific < q1) or (not higher_is_better and value_specific > q3):
+        recent_comparison = config['bad_state']
+    else:
+        recent_comparison = config['neutral_state']
+
+    # First sentence about overall performance
+    first_sentence = f"<span style='color:grey'>Overall, </span><span style='color:white'>you are {overall_comparison} than most players {config['context']}.</span>"
+
+    # Second sentence about recent trend
+    if overall_comparison == recent_comparison:
+        second_sentence = "<span style='color:grey'>And this has </span><span style='color:white'>remained true in your recent games.</span>"
+    else:
+        if value_specific > value_all:
+            change_direction = config['change_up']
+        else:
+            change_direction = config['change_down']
+        second_sentence = f"<span style='color:grey'>However, this has changed recently as </span><span style='color:white'>you've {change_direction} your {config['subject']}.</span>"
+
+    return f"{first_sentence}<br>{second_sentence}"
 
 def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
@@ -193,10 +231,10 @@ selected_username = st.sidebar.selectbox(
 
 last_n_games = st.sidebar.slider(
     "Number of recent games to analyze",
-    min_value=20,
-    max_value=200,
+    min_value=10,
+    max_value=60,
     value=30,
-    step=5,
+    step=1,
     key="last_n_games"
 )
 
@@ -328,6 +366,18 @@ plot_pairs = [
     ("🙈 Missed Opportunities (small vs. massive)", ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing")),
 ]
 
+# Configuration for performance summaries
+summary_configs = {
+    'prct_time_remaining_mid': {
+        'higher_is_better': True, 'good_state': 'quicker', 'bad_state': 'slower', 'neutral_state': 'at a similar pace',
+        'change_up': 'accelerated', 'change_down': 'slowed down', 'subject': 'pace', 'context': 'up to the mid-game'
+    },
+    'prct_time_remaining_late': {
+        'higher_is_better': True, 'good_state': 'quicker', 'bad_state': 'slower', 'neutral_state': 'at a similar pace',
+        'change_up': 'accelerated', 'change_down': 'slowed down', 'subject': 'pace', 'context': 'up to the late-game'
+    }
+}
+
 df_player_agg = get_players_aggregates(df_filtered, agg_dict)
 
 # --- 4. Render Plots ---
@@ -342,13 +392,36 @@ else:
     # Loop through the defined pairs to render graphs
     for title, (metric_left, metric_right) in plot_pairs:
         st.header(title)
-        col1, col2 = st.columns(2)
 
         # For the left metric
         config_left = agg_dict[metric_left]
         value_all_left, value_specific_left = get_player_metric_values(
             df_filtered, metric_left, username_to_highlight, config_left['agg'], last_n=last_n_games
         )
+
+        # For the right metric
+        config_right = agg_dict[metric_right]
+        value_all_right, value_specific_right = get_player_metric_values(
+            df_filtered, metric_right, username_to_highlight, config_right['agg'], last_n=last_n_games
+        )
+
+        # --- Insights Expander ---
+        if metric_left in summary_configs or metric_right in summary_configs:
+            with st.expander("Insights"):
+                insight_col1, insight_col2 = st.columns(2)
+                with insight_col1:
+                    if metric_left in summary_configs:
+                        q1_left, q3_left = df_player_agg[metric_left].quantile(0.25), df_player_agg[metric_left].quantile(0.75)
+                        summary_message = get_performance_summary(value_all_left, value_specific_left, q1_left, q3_left, summary_configs[metric_left])
+                        st.markdown(summary_message, unsafe_allow_html=True)
+                with insight_col2:
+                    if metric_right in summary_configs:
+                        q1_right, q3_right = df_player_agg[metric_right].quantile(0.25), df_player_agg[metric_right].quantile(0.75)
+                        summary_message = get_performance_summary(value_all_right, value_specific_right, q1_right, q3_right, summary_configs[metric_right])
+                        st.markdown(summary_message, unsafe_allow_html=True)
+
+        # --- Boxplot Rendering ---
+        col1, col2 = st.columns(2)
         with col1:
             render_metric_boxplot(
                 df_player_agg,
@@ -361,11 +434,6 @@ else:
                 last_n_games=last_n_games
             )
 
-        # For the right metric
-        config_right = agg_dict[metric_right]
-        value_all_right, value_specific_right = get_player_metric_values(
-            df_filtered, metric_right, username_to_highlight, config_right['agg'], last_n=last_n_games
-        )
         with col2:
             render_metric_boxplot(
                 df_player_agg,

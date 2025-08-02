@@ -1,7 +1,3 @@
-# To do: add the audit trail for the statistics
-# To do: remove the insights
-# To do: rework the upper pane describing the selected statistics
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -40,7 +36,7 @@ def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> di
     Creates select boxes in the main content area for each field in `filter_fields`,
     arranging them in columns, and returns the user's selections as a dictionary.
     """
-    st.header("Game Filters")
+    st.header("Players Benchmark")
     selections = {}
     
     # Create a number of columns equal to the number of filters
@@ -291,7 +287,7 @@ all_usernames = sorted(raw_data["username"].unique())
 default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
 
 selected_username = st.sidebar.selectbox(
-    "⭐ Select a Player to Analyze",
+    "Select a Player to Analyze",
     options=all_usernames,
     index=all_usernames.index(st.session_state.get("selected_username", default_user)),
     key="selected_username"
@@ -316,76 +312,94 @@ filter_fields_main = ["playing_as", "playing_result"]
 # Render filters and get selections from both locations
 pane_selections = render_sidebar_filters(user_specific_data, filter_fields_pane)
 
-# --- Win Rate Chart (affected by pane filters only) ---
-st.header("Win Rate by Color")
+def calculate_win_loss_draw(df: pd.DataFrame) -> pd.DataFrame:
+    """Adds is_win, is_loss, is_draw columns to the DataFrame."""
+    df['is_win'] = (df['playing_result'] == 'Win').astype(int)
+    df['is_loss'] = (df['playing_result'] == 'Loss').astype(int)
+    df['is_draw'] = (df['playing_result'] == 'Draw').astype(int)
+    return df
+
+def render_summary_header(df: pd.DataFrame, last_n: int, username: str):
+    """Renders a summary header with KPIs and gauges for White and Black pieces."""
+    
+    # Calculate win rates using the same function as the bar charts for consistency
+    win_rate_data, win_rate_data_recent = get_player_metric_values(
+        df, 'is_win', username, 'mean', last_n=last_n, aggregation_dimension='playing_as'
+    )
+
+    # Identify the last N games overall for the user with current filters
+    recent_games_overall = df.sort_values('end_time', ascending=False).head(last_n)
+
+    df_white = df[df['playing_as'] == 'White']
+    df_black = df[df['playing_as'] == 'Black']
+
+    col1, col2 = st.columns(2)
+
+    for color, data in [('White', df_white), ('Black', df_black)]:
+        container = col1 if color == 'White' else col2
+        with container:
+            emoji = "⚪" if color == "White" else "⚫"
+            st.subheader(f"{emoji} Playing as {color}")
+            
+            if data.empty:
+                st.info(f"No games played as {color} with current filters.")
+                continue
+
+            # Overall stats
+            total_games = len(data)
+            
+            # Recent stats: count how many of the overall recent games were played with this color
+            total_recent_games = len(recent_games_overall[recent_games_overall['playing_as'] == color])
+
+            # Get win rates from pre-calculated dataframes
+            wr_overall_series = win_rate_data[win_rate_data['playing_as'] == color]['is_win']
+            win_rate_overall = wr_overall_series.iloc[0] * 100 if not wr_overall_series.empty else 0
+
+            wr_recent_series = win_rate_data_recent[win_rate_data_recent['playing_as'] == color]['is_win']
+            win_rate_recent = wr_recent_series.iloc[0] * 100 if not wr_recent_series.empty else 0
+
+            # --- Display Metrics & Gauges ---
+            # Overall stats row
+            sub_col1, sub_col2 = st.columns(2)
+            with sub_col1:
+                st.metric("Total Games", f"{total_games}")
+            with sub_col2:
+                st.metric(
+                    label="Overall Win Rate",
+                    value=f"{win_rate_overall:.0f}%"
+                )
+
+            st.markdown("---")
+
+            # Recent stats row
+            sub_col3, sub_col4 = st.columns(2)
+            with sub_col3:
+                st.metric(f"Recent Games (Last {last_n})", f"{total_recent_games}")
+            with sub_col4:
+                delta_vs_overall = win_rate_recent - win_rate_overall
+                st.metric(
+                    label="Recent Win Rate",
+                    value=f"{win_rate_recent:.0f}%",
+                    delta=f"{delta_vs_overall:.1f} pts vs overall",
+                )
+
+    # Add a popover at the bottom to show the raw data for recent games
+    with st.popover(f"Show data for last {last_n} games"):
+        st.dataframe(recent_games_overall, use_container_width=True)
+
+
+# Apply filters and render the summary header
 df_pane_filtered = user_specific_data.copy()
 for field, value in pane_selections.items():
     if value:
         df_pane_filtered = df_pane_filtered[df_pane_filtered[field] == value]
 
 if df_pane_filtered.empty:
-    st.warning("No data available for win rate chart with current sidebar filters.")
+    st.warning("No data available for the selected filters.")
 else:
-    col1, col2 = st.columns(2)
-
-    # Prepare data for aggregation
-    df_win_rate_data = df_pane_filtered.copy()
-    df_win_rate_data['is_win'] = (df_win_rate_data['playing_result'] == 'Win').astype(int)
-
-    # Get win rate data using the updated function
-    win_rate_data, win_rate_data_recent = get_player_metric_values(
-        df_win_rate_data, 'is_win', selected_username, 'mean', last_n=last_n_games, aggregation_dimension='playing_as'
-    )
-    win_rate_data = win_rate_data.rename(columns={'is_win': 'win_rate'})
-    win_rate_data_recent = win_rate_data_recent.rename(columns={'is_win': 'win_rate'})
-
-    with col1:
-        if win_rate_data.empty:
-            st.warning("Not enough data to calculate overall win rate by color.")
-        else:
-            fig_win_rate = px.bar(
-                win_rate_data,
-                y='playing_as',
-                x='win_rate',
-                title="Overall Win Rate",
-                labels={'playing_as': '', 'win_rate': 'Win Rate'},
-                color='playing_as',
-                color_discrete_map={'White': 'white', 'Black': 'grey'},
-                orientation='h',
-                text='win_rate'
-            )
-            fig_win_rate.update_traces(texttemplate='%{text:.0%}', textposition='inside')
-            fig_win_rate.update_layout(
-                xaxis=dict(visible=False),
-                showlegend=False,
-                height=300,
-                yaxis=dict(showgrid=False)
-            )
-            st.plotly_chart(fig_win_rate, use_container_width=True)
-
-    with col2:
-        if win_rate_data_recent.empty:
-             st.info(f"Not enough recent games for 'Last {last_n_games}' analysis with these filters.")
-        else:
-            fig_win_rate_last_n = px.bar(
-                win_rate_data_recent,
-                y='playing_as',
-                x='win_rate',
-                title=f"Last {last_n_games} Games Win Rate",
-                labels={'playing_as': '', 'win_rate': 'Win Rate'},
-                color='playing_as',
-                color_discrete_map={'White': 'white', 'Black': 'grey'},
-                orientation='h',
-                text='win_rate'
-            )
-            fig_win_rate_last_n.update_traces(texttemplate='%{text:.0%}', textposition='inside')
-            fig_win_rate_last_n.update_layout(
-                xaxis=dict(visible=False),
-                showlegend=False,
-                height=300,
-                yaxis=dict(showgrid=False)
-            )
-            st.plotly_chart(fig_win_rate_last_n, use_container_width=True)
+    with st.expander(f"{selected_username} statistics", expanded=True):
+        df_pane_filtered = calculate_win_loss_draw(df_pane_filtered)
+        render_summary_header(df_pane_filtered, last_n_games, selected_username)
 
 with st.container(border=True):
     main_selections = render_main_filters(user_specific_data, filter_fields_main)

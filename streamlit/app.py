@@ -167,7 +167,7 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
         xaxis_tickformat=".0%",
         showlegend=True,
         legend=dict(x=0.01, y=0.99, bgcolor='rgba(255,255,255,0.7)'),
-        height=250,
+        height=200,
         title=dict(text="") # Ensure title is empty
     )
 
@@ -196,51 +196,44 @@ def render_legend(username, last_n):
     """
     st.markdown(legend_html, unsafe_allow_html=True)
 
-def render_plot_pair(title, metric_left, metric_right, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=None):
-    """Renders a pair of metric boxplots and their breakdowns."""
+def render_plot_row(title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=None):
+    """Renders a row of metric boxplots and their breakdowns."""
     st.subheader(title, help=help_text)
 
-    # For the left metric
-    config_left = agg_dict[metric_left]
-    value_all_left, value_specific_left = get_player_metric_values(
-        df_filtered, metric_left, username_to_highlight, config_left['agg'], last_n=last_n_games
-    )
-
-    # For the right metric
-    config_right = agg_dict[metric_right]
-    value_all_right, value_specific_right = get_player_metric_values(
-        df_filtered, metric_right, username_to_highlight, config_right['agg'], last_n=last_n_games
-    )
+    metric_values = {}
+    for metric in metrics:
+        config = agg_dict[metric]
+        value_all, value_specific = get_player_metric_values(
+            df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+        )
+        metric_values[metric] = {
+            'config': config,
+            'value_all': value_all,
+            'value_specific': value_specific
+        }
 
     # --- Boxplot Rendering ---
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"**{config_left['plot_title']}**", help=config_left.get('help'))
-        render_metric_boxplot(
-            df_player_agg,
-            metric_left,
-            value_all=value_all_left,
-            value_specific=value_specific_left,
-            left_annotation=config_left["left_annotation"],
-            right_annotation=config_left["right_annotation"],
-            last_n_games=last_n_games
-        )
-
-    with col2:
-        st.markdown(f"**{config_right['plot_title']}**", help=config_right.get('help'))
-        render_metric_boxplot(
-            df_player_agg,
-            metric_right,
-            value_all=value_all_right,
-            value_specific=value_specific_right,
-            left_annotation=config_right["left_annotation"],
-            right_annotation=config_right["right_annotation"],
-            last_n_games=last_n_games
-        )
+    cols = st.columns(len(metrics))
+    for col, metric in zip(cols, metrics):
+        with col:
+            data = metric_values[metric]
+            config = data['config']
+            st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
+            render_metric_boxplot(
+                df_player_agg,
+                metric,
+                value_all=data['value_all'],
+                value_specific=data['value_specific'],
+                left_annotation=config["left_annotation"],
+                right_annotation=config["right_annotation"],
+                last_n_games=last_n_games
+            )
 
     # Add toggle section for additional visuals (only for Throws and Missed Opportunities)
     if title in ["💥 Throws (small vs. massive)", "👀 Missed Opportunities (small vs. massive)"]:
         with st.expander(f"Breakdown by game phase"):
+            # This assumes the first two metrics are the main ones for the breakdown
+            metric_left, metric_right = metrics[0], metrics[1]
             additional_metrics_left = [
                 f"{metric_left}_early", f"{metric_left}_mid", f"{metric_left}_late"
             ]
@@ -442,46 +435,167 @@ with st.container(border=True):
     # --- 3. Aggregate Data ---
     # Define all metrics that will be plotted
     agg_dict = {
-        'prct_time_remaining_mid': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Percent of time remaining (mid game)'},
-        'prct_time_remaining_late': {'agg': 'median', 'left_annotation': '⌛Slow', 'right_annotation': '⚡Fast', 'plot_title': 'Percentage of time remaining (late game)'},
+        # Time Management Metrics
+        'prct_time_remaining_early': {
+            'agg': 'median',
+            'left_annotation': '⌛Slow',
+            'right_annotation': '⚡Fast',
+            'plot_title': 'Percent of time remaining (early game)'
+        },
+        'prct_time_remaining_mid': {
+            'agg': 'median',
+            'left_annotation': '⌛Slow',
+            'right_annotation': '⚡Fast',
+            'plot_title': 'Percent of time remaining (mid game)'
+        },
+        'prct_time_remaining_late': {
+            'agg': 'median',
+            'left_annotation': '⌛Slow',
+            'right_annotation': '⚡Fast',
+            'plot_title': 'Percentage of time remaining (late game)'
+        },
 
-        'nb_throw_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '💥Confused', 'plot_title': '🟠 Small Throws', 'help': f"A 'Blunder' is any score variance decrease between {score_thresholds_config.get('variance_score_blunder')} and {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."},
-        'nb_throw_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🎯Accurate', 'right_annotation': '💥Confused', 'plot_title': '🔴 Massive Throws', 'help': f"A 'Massive Blunder' is any score variance decrease beyond {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."},
+        # Throws Metrics
+        'nb_throw_blunder_playing': {
+            'agg': 'mean',
+            'left_annotation': '🎯Accurate',
+            'right_annotation': '💥Confused',
+            'plot_title': '🟠 Small Throws',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw (massive throws are not counted). A small throw is a throw with a decrease in centipawn advantage between {score_thresholds_config.get('variance_score_blunder')} and {score_thresholds_config.get('variance_score_massive_blunder')}."
+        },
+        'nb_throw_massive_blunder_playing': {
+            'agg': 'mean',
+            'left_annotation': '🎯Accurate',
+            'right_annotation': '💥Confused',
+            'plot_title': '🔴 Massive Throws',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive throw. A massive throw is a throw with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."
+        },
 
-        'nb_missed_opportunity_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '👀Blind', 'plot_title': '🟠 Small Missed Opportunities', 'help': f"A 'Blunder' is any score variance decrease between {score_thresholds_config.get('variance_score_blunder')} and {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."},
-        'nb_missed_opportunity_massive_blunder_playing': {'agg': 'mean', 'left_annotation': '🔍Attentive', 'right_annotation': '👀Blind', 'plot_title': '🔴 Massive Missed Opportunities', 'help': f"A 'Massive Blunder' is any score variance decrease beyond {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."},
+        # Missed Opportunities Metrics
+        'nb_missed_opportunity_blunder_playing': {
+            'agg': 'mean',
+            'left_annotation': '🔍Attentive',
+            'right_annotation': '👀Blind',
+            'plot_title': '🟠 Small Missed Opportunities',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small missed opportunity (massive missed opportunities are not counted). A small missed opportunity is a missed opportunity with a decrease in centipawn advantage between {score_thresholds_config.get('variance_score_blunder')} and {score_thresholds_config.get('variance_score_massive_blunder')}."
+        },
+        'nb_missed_opportunity_massive_blunder_playing': {
+            'agg': 'mean',
+            'left_annotation': '🔍Attentive',
+            'right_annotation': '👀Blind',
+            'plot_title': '🔴 Massive Missed Opportunities',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive missed opportunity. A massive missed opportunity is a missed opportunity with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_massive_blunder')} centipawns."
+        },
 
-        'nb_missed_opportunity_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Early'},
-        'nb_missed_opportunity_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Mid'},
-        'nb_missed_opportunity_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Missed Opportunities - Late'},
-        'nb_throw_massive_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Early'},
-        'nb_throw_massive_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Mid'},
-        'nb_throw_massive_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🔴 Massive Throws - Late'},
+        # Phase-Specific Metrics - Missed Opportunities
+        'nb_missed_opportunity_massive_blunder_playing_early': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Missed Opportunities - Early',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive missed opportunity during the early game phase (moves 1 to {game_phases_config.get('early', {}).get('end_game_move')})."
+        },
+        'nb_missed_opportunity_massive_blunder_playing_mid': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Missed Opportunities - Mid',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive missed opportunity during the mid game phase (moves {game_phases_config.get('early', {}).get('end_game_move') + 1} to {game_phases_config.get('mid', {}).get('end_game_move')})."
+        },
+        'nb_missed_opportunity_massive_blunder_playing_late': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Missed Opportunities - Late',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive missed opportunity during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
+        },
 
-        'nb_missed_opportunity_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Early'},
-        'nb_missed_opportunity_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Mid'},
-        'nb_missed_opportunity_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Missed Opportunities - Late'},
-        'nb_throw_blunder_playing_early': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Early'},
-        'nb_throw_blunder_playing_mid': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Mid'},
-        'nb_throw_blunder_playing_late': {'agg': 'mean', 'left_annotation': 'Short Games', 'right_annotation': 'Long Games', 'plot_title': '🟠 Small Throws - Late'},
+        # Phase-Specific Metrics - Throws
+        'nb_throw_massive_blunder_playing_early': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Throws - Early',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive throw during the early game phase (moves 1 to {game_phases_config.get('early', {}).get('end_game_move')})."
+        },
+        'nb_throw_massive_blunder_playing_mid': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Throws - Mid',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive throw during the mid game phase (moves {game_phases_config.get('early', {}).get('end_game_move') + 1} to {game_phases_config.get('mid', {}).get('end_game_move')})."
+        },
+        'nb_throw_massive_blunder_playing_late': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🔴 Massive Throws - Late',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 massive throw during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
+        },
+
+        # Phase-Specific Metrics - Small Missed Opportunities
+        'nb_missed_opportunity_blunder_playing_early': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Missed Opportunities - Early',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small missed opportunity during the early game phase (moves 1 to {game_phases_config.get('early', {}).get('end_game_move')})."
+        },
+        'nb_missed_opportunity_blunder_playing_mid': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Missed Opportunities - Mid',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small missed opportunity during the mid game phase (moves {game_phases_config.get('early', {}).get('end_game_move') + 1} to {game_phases_config.get('mid', {}).get('end_game_move')})."
+        },
+        'nb_missed_opportunity_blunder_playing_late': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Missed Opportunities - Late',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small missed opportunity during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
+        },
+
+        # Phase-Specific Metrics - Small Throws
+        'nb_throw_blunder_playing_early': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Throws - Early',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw during the early game phase (moves 1 to {game_phases_config.get('early', {}).get('end_game_move')})."
+        },
+        'nb_throw_blunder_playing_mid': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Throws - Mid',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw during the mid game phase (moves {game_phases_config.get('early', {}).get('end_game_move') + 1} to {game_phases_config.get('mid', {}).get('end_game_move')})."
+        },
+        'nb_throw_blunder_playing_late': {
+            'agg': 'mean',
+            'left_annotation': 'Short Games',
+            'right_annotation': 'Long Games',
+            'plot_title': '🟠 Small Throws - Late',
+            'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
+        },
     }
 
-    # Define the pairs for side-by-side plotting: (Title, (left_metric, right_metric), optional_help_text)
+    # Define the pairs for side-by-side plotting: (Title, (metrics), optional_help_text)
     plot_pairs = [
         (
-            "⏳ Time Management (mid-game vs. late-game)",
-            ("prct_time_remaining_mid", "prct_time_remaining_late"),
-            f"Time management is estimated looking at the percentage of time remaining on the clock at specific turns. For the mid-game: turn {game_phases_config.get('mid', {}).get('end_game_move')}, and for the late-game: turn {game_phases_config.get('late', {}).get('end_game_move')}."
+            "⏳ Time Management (early vs. mid vs. late-game)",
+            ("prct_time_remaining_early", "prct_time_remaining_mid", "prct_time_remaining_late"),
+            f"Time management is estimated looking at the percentage of time remaining on the clock at specific turns. For the early-game: turn {game_phases_config.get('early', {}).get('end_game_move')}, for the mid-game: turn {game_phases_config.get('mid', {}).get('end_game_move')}, and for the late-game: turn {game_phases_config.get('late', {}).get('end_game_move')}."
         ),
         (
             "💥 Throws (small vs. massive)", 
             ("nb_throw_blunder_playing", "nb_throw_massive_blunder_playing"),
-                            f"A throw is defined as a move which significantly worsens the player's position, **starting from a relatively even or disadvantageous position.** This means the engine evaluation was <= +{score_thresholds_config.get('even_score_limit')} centipawns before the move."
+            f"A throw is defined as a move which significantly worsens the player's position, **starting from a relatively even or disadvantageous position.** This means the engine evaluation advantage for the selected player was at most {score_thresholds_config.get('even_score_limit')} centipawns before the move."
         ),
         (
             "👀 Missed Opportunities (small vs. massive)", 
             ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing"),
-                            f"A missed opportunity is defined as a move which significantly worsens the player's position, **starting from an advantageous position.** This means the engine evaluation was > +{score_thresholds_config.get('even_score_limit')} centipawns before the move."
+            f"A missed opportunity is defined as a move which significantly worsens the player's position, **starting from an advantageous position.** This means the engine evaluation advantage for the selected player was at least {score_thresholds_config.get('even_score_limit')} centipawns before the move."
         ),
     ]
 
@@ -501,14 +615,14 @@ with st.container(border=True):
 
         # Loop through the defined pairs to render graphs
         for pair in plot_pairs:
-            title, (metric_left, metric_right) = pair[0], pair[1]
+            title, metrics = pair[0], pair[1]
             # Default help text comes from the left metric's config in agg_dict
-            help_text = agg_dict.get(metric_left, {}).get('help')
+            help_text = agg_dict.get(metrics[0], {}).get('help')
             # If a specific help text is provided in the pair tuple, it overrides the default
             if len(pair) > 2:
                 help_text = pair[2]
 
             with st.container(border=True):
-                render_plot_pair(
-                    title, metric_left, metric_right, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=help_text
+                render_plot_row(
+                    title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=help_text
                 )

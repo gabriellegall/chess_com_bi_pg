@@ -77,12 +77,19 @@ def get_players_aggregates(data: pd.DataFrame, agg_dict: dict, min_games: int = 
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').
     Only groups with at least `min_games` will be returned.
     """
-    agg_funcs = {k: v["agg"] for k, v in agg_dict.items()}
-    filtered_data = data.groupby(group_by_col).filter(lambda x: len(x) >= min_games)
-    
-    if filtered_data.empty:
+    # First, find which groups meet the minimum games threshold
+    group_counts = data[group_by_col].value_counts()
+    valid_groups = group_counts[group_counts >= min_games].index
+
+    if valid_groups.empty:
         return pd.DataFrame()
+
+    # Filter the original dataframe to only include valid groups
+    filtered_data = data[data[group_by_col].isin(valid_groups)]
+
+    agg_funcs = {k: v["agg"] for k, v in agg_dict.items()}
     
+    # Perform a single aggregation on the filtered data
     return filtered_data.groupby(group_by_col).agg(agg_funcs).reset_index()
 
 def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg_type: str, last_n: int, aggregation_dimension: str = None) -> tuple | pd.DataFrame:

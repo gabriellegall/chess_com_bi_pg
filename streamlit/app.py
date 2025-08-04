@@ -60,15 +60,17 @@ def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> di
                 st.warning(f"No '{field.replace('_', ' ')}' options.")
                 continue
             
-            selected_option = st.selectbox(
+            selected_option = st.radio(
                 f"Select {field.replace('_', ' ').title()}",
-                options=options
+                options=options,
+                horizontal=True,
+                label_visibility="collapsed" # Hides the label above the radio buttons
             )
             selections[field] = selected_option
     return selections
 
 @st.cache_data
-def get_players_aggregates(data: pd.DataFrame, agg_dict: dict, min_games: int = 30, group_by_col: str = 'username') -> pd.DataFrame:
+def get_players_aggregates(data: pd.DataFrame, agg_dict: dict, min_games: int = 15, group_by_col: str = 'username') -> pd.DataFrame:
     """
     This function aggregates the data for each player based on the provided aggregation dictionary.
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').
@@ -136,7 +138,19 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
         x=metric,
         y="category",
         labels={metric: metric.replace('_', ' ').title(), "category": ""},
-        orientation='h'
+        orientation='h',
+        hover_data=['username']
+    )
+
+    # Replace the default box plot with one that has jittered points and better colors for dark theme
+    fig.data[0].update(
+        boxpoints='all', 
+        jitter=0.3,
+        pointpos=0,
+        marker_color='rgba(0, 191, 255, 0.7)', 
+        marker_size=5,
+        fillcolor='rgba(0, 191, 255, 0.5)',
+        line_color='rgba(0, 191, 255, 1)'
     )
 
     # Highlight value_all
@@ -313,7 +327,7 @@ last_n_games = st.sidebar.slider(
 user_specific_data = raw_data[raw_data['username'] == selected_username]
 
 # Define filter fields for sidebar (pane) and main content area
-filter_fields_pane = ["time_class", "playing_rating_range"]
+filter_fields_pane = ["time_control", "playing_rating_range"]
 filter_fields_main = ["playing_as", "playing_result"]
 
 # Render filters and get selections from both locations
@@ -423,15 +437,6 @@ with st.container(border=True):
         if value:  # Ensure a selection was made
             df_filtered = df_filtered[df_filtered[field] == value]
 
-    # Add explanatory text that will be updated as filters change.
-    st.markdown(f"""
-    In this section, we compare the performance of **{selected_username}** with other similar players, holding constant: 
-    - Color played: **{main_selections.get('playing_as', 'N/A')}**
-    - Playing result: **{main_selections.get('playing_result', 'N/A')}**
-    - Time class: **{pane_selections.get('time_class', 'N/A')}**
-    - Rating range: **{pane_selections.get('playing_rating_range', 'N/A')}**
-    """)
-
     # --- 3. Aggregate Data ---
     # Define all metrics that will be plotted
     agg_dict = {
@@ -440,19 +445,19 @@ with st.container(border=True):
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
-            'plot_title': 'Percent of time remaining (early game)'
+            'plot_title': f"Time remaining (Early - Turn {game_phases_config.get('early', {}).get('end_game_move')})"
         },
         'prct_time_remaining_mid': {
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
-            'plot_title': 'Percent of time remaining (mid game)'
+            'plot_title': f"Time remaining (Mid - Turn {game_phases_config.get('mid', {}).get('end_game_move')})"
         },
         'prct_time_remaining_late': {
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
-            'plot_title': 'Percentage of time remaining (late game)'
+            'plot_title': f"Time remaining (Late - Turn {game_phases_config.get('late', {}).get('end_game_move')})"
         },
 
         # Throws Metrics
@@ -580,6 +585,17 @@ with st.container(border=True):
         },
     }
 
+    df_player_agg = get_players_aggregates(df_filtered, agg_dict)
+
+    # Add explanatory text that will be updated as filters change.
+    st.markdown(f"""
+    In this section, we compare the performance of **{selected_username}** with other similar players (n={len(df_player_agg)}), holding constant: 
+    - Color played: **{main_selections.get('playing_as', 'N/A')}**
+    - Playing result: **{main_selections.get('playing_result', 'N/A')}**
+    - Time control: **{pane_selections.get('time_control', 'N/A')}**
+    - Rating range: **{pane_selections.get('playing_rating_range', 'N/A')}**
+    """)
+
     # Define the pairs for side-by-side plotting: (Title, (metrics), optional_help_text)
     plot_pairs = [
         (
@@ -599,30 +615,27 @@ with st.container(border=True):
         ),
     ]
 
-    df_player_agg = get_players_aggregates(df_filtered, agg_dict)
-
     # --- 4. Render Plots ---
     if df_player_agg.empty:
         st.warning("No player data available for the selected filters. Please adjust your selections.")
     else:
         username_to_highlight = selected_username
         if username_to_highlight not in df_player_agg['username'].unique():
-            st.warning(f"'{username_to_highlight}' has fewer than {last_n_games} games for these filters and cannot be shown. Highlighting the top player instead.")
-            username_to_highlight = df_player_agg['username'].iloc[0]
+            st.warning(f"'{username_to_highlight}' has fewer than 30 games for the selected filters and cannot be benchmarked. Please adjust the filters or select another player.")
+        else:
+            # Render the legend
+            render_legend(username=username_to_highlight, last_n=last_n_games)
 
-        # Render the legend
-        render_legend(username=username_to_highlight, last_n=last_n_games)
+            # Loop through the defined pairs to render graphs
+            for pair in plot_pairs:
+                title, metrics = pair[0], pair[1]
+                # Default help text comes from the left metric's config in agg_dict
+                help_text = agg_dict.get(metrics[0], {}).get('help')
+                # If a specific help text is provided in the pair tuple, it overrides the default
+                if len(pair) > 2:
+                    help_text = pair[2]
 
-        # Loop through the defined pairs to render graphs
-        for pair in plot_pairs:
-            title, metrics = pair[0], pair[1]
-            # Default help text comes from the left metric's config in agg_dict
-            help_text = agg_dict.get(metrics[0], {}).get('help')
-            # If a specific help text is provided in the pair tuple, it overrides the default
-            if len(pair) > 2:
-                help_text = pair[2]
-
-            with st.container(border=True):
-                render_plot_row(
-                    title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=help_text
-                )
+                with st.container(border=True):
+                    render_plot_row(
+                        title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=help_text
+                    )

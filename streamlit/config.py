@@ -148,3 +148,27 @@ def get_metrics_config(game_phases_config: dict, score_thresholds_config: dict) 
             'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
         },
     }
+
+def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> list:
+    """
+    Generates the configuration for plot rows.
+    Each item in the list is a tuple defining a row in the UI:
+    (Title, (metrics_tuple), optional_help_text)
+    """
+    return [
+        (
+            "⏳ Time Management (early vs. mid vs. late-game)",
+            ("prct_time_remaining_early", "prct_time_remaining_mid", "prct_time_remaining_late"),
+            f"Time management is estimated looking at the percentage of time remaining on the clock at specific turns. For the early-game: turn {game_phases_config.get('early', {}).get('end_game_move')}, for the mid-game: turn {game_phases_config.get('mid', {}).get('end_game_move')}, and for the late-game: turn {game_phases_config.get('late', {}).get('end_game_move')}."
+        ),
+        (
+            "💥 Throws (small vs. massive)", 
+            ("nb_throw_blunder_playing", "nb_throw_massive_blunder_playing"),
+            f"A throw is defined as a move which significantly worsens the player's position, **starting from a relatively even or disadvantageous position.** This means the engine evaluation advantage for the selected player was at most {score_thresholds_config.get('even_score_limit')} centipawns before the move."
+        ),
+        (
+            "👀 Missed Opportunities (small vs. massive)", 
+            ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing"),
+            f"A missed opportunity is defined as a move which significantly worsens the player's position, **starting from an advantageous position.** This means the engine evaluation advantage for the selected player was at least {score_thresholds_config.get('even_score_limit')} centipawns before the move."
+        ),
+    ]

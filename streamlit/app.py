@@ -6,7 +6,7 @@ from data.loader import load_query
 import numpy as np
 import yaml
 from pathlib import Path
-from config import get_metrics_config
+from config import get_metrics_config, get_plot_config
 
 st.set_page_config(layout="wide")
 
@@ -457,24 +457,8 @@ with st.container(border=True):
     - Rating range: **{pane_selections.get('playing_rating_range', 'N/A')}**
     """)
 
-    # Define the pairs for side-by-side plotting: (Title, (metrics), optional_help_text)
-    plot_pairs = [
-        (
-            "⏳ Time Management (early vs. mid vs. late-game)",
-            ("prct_time_remaining_early", "prct_time_remaining_mid", "prct_time_remaining_late"),
-            f"Time management is estimated looking at the percentage of time remaining on the clock at specific turns. For the early-game: turn {game_phases_config.get('early', {}).get('end_game_move')}, for the mid-game: turn {game_phases_config.get('mid', {}).get('end_game_move')}, and for the late-game: turn {game_phases_config.get('late', {}).get('end_game_move')}."
-        ),
-        (
-            "💥 Throws (small vs. massive)", 
-            ("nb_throw_blunder_playing", "nb_throw_massive_blunder_playing"),
-            f"A throw is defined as a move which significantly worsens the player's position, **starting from a relatively even or disadvantageous position.** This means the engine evaluation advantage for the selected player was at most {score_thresholds_config.get('even_score_limit')} centipawns before the move."
-        ),
-        (
-            "👀 Missed Opportunities (small vs. massive)", 
-            ("nb_missed_opportunity_blunder_playing", "nb_missed_opportunity_massive_blunder_playing"),
-            f"A missed opportunity is defined as a move which significantly worsens the player's position, **starting from an advantageous position.** This means the engine evaluation advantage for the selected player was at least {score_thresholds_config.get('even_score_limit')} centipawns before the move."
-        ),
-    ]
+    # Define the pairs for side-by-side plotting from the config file
+    plot_config = get_plot_config(game_phases_config, score_thresholds_config)
 
     # --- 4. Render Plots ---
     if df_player_agg.empty:
@@ -488,13 +472,13 @@ with st.container(border=True):
             render_legend(username=username_to_highlight, last_n=last_n_games)
 
             # Loop through the defined pairs to render graphs
-            for pair in plot_pairs:
-                title, metrics = pair[0], pair[1]
+            for config_item in plot_config:
+                title, metrics = config_item[0], config_item[1]
                 # Default help text comes from the left metric's config in agg_dict
                 help_text = agg_dict.get(metrics[0], {}).get('help')
                 # If a specific help text is provided in the pair tuple, it overrides the default
-                if len(pair) > 2:
-                    help_text = pair[2]
+                if len(config_item) > 2:
+                    help_text = config_item[2]
 
                 with st.container(border=True):
                     render_plot_row(

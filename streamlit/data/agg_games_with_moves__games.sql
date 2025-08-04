@@ -1,6 +1,8 @@
 SELECT 
     username, 
+    nb_moves,
     time_class,
+    time_control,
     end_time,
     playing_as,
     playing_rating_range,
@@ -14,14 +16,23 @@ SELECT
         -- Massive blunders
         nb_massive_blunder_playing,
         -- Throw
-        nb_throw_playing,
-        nb_throw_blunder_playing,
-        nb_throw_massive_blunder_playing,
+        CASE WHEN nb_throw_blunder_playing > 0 THEN 1 ELSE 0 END AS nb_throw_blunder_playing,
+        CASE WHEN nb_throw_massive_blunder_playing> 0 THEN 1 ELSE 0 END AS nb_throw_massive_blunder_playing,
+        CASE WHEN nb_throw_massive_blunder_playing_early > 0 THEN 1 ELSE 0 END AS   nb_throw_massive_blunder_playing_early,
+        CASE WHEN nb_throw_massive_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS     nb_throw_massive_blunder_playing_mid,
+        CASE WHEN nb_throw_massive_blunder_playing_late > 0 THEN 1 ELSE 0 END AS    nb_throw_massive_blunder_playing_late,
+        CASE WHEN nb_throw_blunder_playing_early > 0 THEN 1 ELSE 0 END AS   nb_throw_blunder_playing_early,
+        CASE WHEN nb_throw_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS     nb_throw_blunder_playing_mid,
+        CASE WHEN nb_throw_blunder_playing_late > 0 THEN 1 ELSE 0 END AS    nb_throw_blunder_playing_late,
         -- Missed opp.
-        nb_missed_opportunity_blunder_playing,
-        nb_missed_opportunity_massive_blunder_playing,
-        -- Standard deviation
-        std_score_playing,
+        CASE WHEN nb_missed_opportunity_blunder_playing > 0 THEN 1 ELSE 0 END AS nb_missed_opportunity_blunder_playing,
+        CASE WHEN nb_missed_opportunity_massive_blunder_playing > 0 THEN 1 ELSE 0 END AS nb_missed_opportunity_massive_blunder_playing,
+        CASE WHEN nb_missed_opportunity_massive_blunder_playing_early > 0 THEN 1 ELSE 0 END AS nb_missed_opportunity_massive_blunder_playing_early,
+        CASE WHEN nb_missed_opportunity_massive_blunder_playing_mid > 0 THEN 1 ELSE 0 END   AS nb_missed_opportunity_massive_blunder_playing_mid,
+        CASE WHEN nb_missed_opportunity_massive_blunder_playing_late > 0 THEN 1 ELSE 0 END  AS nb_missed_opportunity_massive_blunder_playing_late,
+        CASE WHEN nb_missed_opportunity_blunder_playing_early > 0 THEN 1 ELSE 0 END AS nb_missed_opportunity_blunder_playing_early,
+        CASE WHEN nb_missed_opportunity_blunder_playing_mid > 0 THEN 1 ELSE 0 END   AS nb_missed_opportunity_blunder_playing_mid,
+        CASE WHEN nb_missed_opportunity_blunder_playing_late > 0 THEN 1 ELSE 0 END  AS nb_missed_opportunity_blunder_playing_late,
         -- Time pressure
         first_blunder_playing_prct_time_remaining,
         first_massive_blunder_playing_prct_time_remaining  

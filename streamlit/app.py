@@ -153,27 +153,66 @@ def render_legend(username, last_n):
     """
     st.markdown(legend_html, unsafe_allow_html=True)
 
-def render_plot_row(title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=None):
-    """Renders a row of metric boxplots and their breakdowns."""
-    st.subheader(title, help=help_text)
+def prepare_plot_data(plot_config, agg_dict, df_filtered, username_to_highlight, last_n_games):
+    """
+    Prepares a list of data structures for rendering plot rows.
+    This function handles all data calculations and decouples it from rendering.
+    """
+    prepared_data = []
+    for config_item in plot_config:
+        title = config_item['title']
+        metrics = config_item['metrics']
+        help_text = config_item.get('help_text') or agg_dict.get(metrics[0], {}).get('help')
 
-    metric_values = {}
-    for metric in metrics:
-        config = agg_dict[metric]
-        value_all, value_specific = get_player_metric_values(
-            df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
-        )
-        metric_values[metric] = {
-            'config': config,
-            'value_all': value_all,
-            'value_specific': value_specific
+        plot_data = {
+            'title': title,
+            'help_text': help_text,
+            'metrics': {},
+            'has_breakdown': config_item['has_breakdown'],
+            'breakdown_metrics': {}
         }
 
+        # Calculate main metric values
+        for metric in metrics:
+            config = agg_dict[metric]
+            value_all, value_specific = get_player_metric_values(
+                df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+            )
+            plot_data['metrics'][metric] = {
+                'config': config,
+                'value_all': value_all,
+                'value_specific': value_specific
+            }
+
+        # Calculate breakdown metric values if applicable
+        if plot_data['has_breakdown']:
+            breakdown_groups = config_item['breakdown_groups']
+            for parent_metric, breakdown_metric_list in breakdown_groups.items():
+                plot_data['breakdown_metrics'][parent_metric] = {}
+                for metric in breakdown_metric_list:
+                    config = agg_dict[metric]
+                    value_all, value_specific = get_player_metric_values(
+                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+                    )
+                    plot_data['breakdown_metrics'][parent_metric][metric] = {
+                        'config': config,
+                        'value_all': value_all,
+                        'value_specific': value_specific
+                    }
+        
+        prepared_data.append(plot_data)
+    return prepared_data
+
+def render_plot_row(plot_data, df_player_agg, last_n_games):
+    """Renders a row of metric boxplots and their breakdowns from pre-calculated data."""
+    st.subheader(plot_data['title'], help=plot_data['help_text'])
+
     # --- Boxplot Rendering ---
+    metrics = list(plot_data['metrics'].keys())
     cols = st.columns(len(metrics))
     for col, metric in zip(cols, metrics):
         with col:
-            data = metric_values[metric]
+            data = plot_data['metrics'][metric]
             config = data['config']
             st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
             render_metric_boxplot(
@@ -186,33 +225,22 @@ def render_plot_row(title, metrics, agg_dict, df_filtered, username_to_highlight
                 last_n_games=last_n_games
             )
 
-    # Add toggle section for additional visuals (only for Throws and Missed Opportunities)
-    if title in ["💥 Throws (small vs. massive)", "👀 Missed Opportunities (small vs. massive)"]:
+    # Add toggle section for additional visuals based on pre-calculated flag
+    if plot_data['has_breakdown']:
         with st.expander(f"Breakdown by game phase"):
-            # This assumes the first two metrics are the main ones for the breakdown
             metric_left, metric_right = metrics[0], metrics[1]
-            additional_metrics_left = [
-                f"{metric_left}_early", f"{metric_left}_mid", f"{metric_left}_late"
-            ]
-            additional_metrics_right = [
-                f"{metric_right}_early", f"{metric_right}_mid", f"{metric_right}_late"
-            ]
-
             col_left, col_right = st.columns(2)
 
             # Render additional metrics for the left column
             with col_left:
-                for metric in additional_metrics_left:
-                    config = agg_dict[metric]
-                    value_all, value_specific = get_player_metric_values(
-                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
-                    )
+                for metric, data in plot_data['breakdown_metrics'][metric_left].items():
+                    config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
                         df_player_agg,
                         metric,
-                        value_all=value_all,
-                        value_specific=value_specific,
+                        value_all=data['value_all'],
+                        value_specific=data['value_specific'],
                         left_annotation=config["left_annotation"],
                         right_annotation=config["right_annotation"],
                         last_n_games=last_n_games
@@ -220,17 +248,14 @@ def render_plot_row(title, metrics, agg_dict, df_filtered, username_to_highlight
 
             # Render additional metrics for the right column
             with col_right:
-                for metric in additional_metrics_right:
-                    config = agg_dict[metric]
-                    value_all, value_specific = get_player_metric_values(
-                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
-                    )
+                for metric, data in plot_data['breakdown_metrics'][metric_right].items():
+                    config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
                         df_player_agg,
                         metric,
-                        value_all=value_all,
-                        value_specific=value_specific,
+                        value_all=data['value_all'],
+                        value_specific=data['value_specific'],
                         left_annotation=config["left_annotation"],
                         right_annotation=config["right_annotation"],
                         last_n_games=last_n_games
@@ -413,16 +438,12 @@ with st.container(border=True):
             # Render the legend
             render_legend(username=username_to_highlight, last_n=last_n_games)
 
-            # Loop through the defined pairs to render graphs
-            for config_item in plot_config:
-                title, metrics = config_item[0], config_item[1]
-                # Default help text comes from the left metric's config in agg_dict
-                help_text = agg_dict.get(metrics[0], {}).get('help')
-                # If a specific help text is provided in the pair tuple, it overrides the default
-                if len(config_item) > 2:
-                    help_text = config_item[2]
+            # 1. Prepare all plot data (business logic)
+            all_plot_data = prepare_plot_data(
+                plot_config, agg_dict, df_filtered, username_to_highlight, last_n_games
+            )
 
+            # 2. Loop through prepared data and render plots (presentation)
+            for plot_data in all_plot_data:
                 with st.container(border=True):
-                    render_plot_row(
-                        title, metrics, agg_dict, df_filtered, username_to_highlight, last_n_games, df_player_agg, help_text=help_text
-                    )
+                    render_plot_row(plot_data, df_player_agg, last_n_games)

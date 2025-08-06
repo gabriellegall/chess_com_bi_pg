@@ -6,7 +6,7 @@ import numpy as np
 import yaml
 from pathlib import Path
 from config import get_metrics_config, get_plot_config
-from data_processing import get_raw_data, get_players_aggregates, get_player_metric_values
+from data_processing import get_raw_data, get_players_aggregates, get_player_metric_values, get_summary_kpis
 
 st.set_page_config(layout="wide")
 
@@ -153,7 +153,7 @@ def render_legend(username, last_n):
     """
     st.markdown(legend_html, unsafe_allow_html=True)
 
-def prepare_plot_data(plot_config, agg_dict, df_filtered, username_to_highlight, last_n_games):
+def prepare_plot_data(plot_config: list, agg_dict: dict, df_filtered: pd.DataFrame, username_to_highlight: str, last_n_games: int) -> list[dict]:
     """
     Prepares a list of data structures for rendering plot rows.
     This function handles all data calculations and decouples it from rendering.
@@ -309,56 +309,34 @@ def calculate_win_loss_draw(df: pd.DataFrame) -> pd.DataFrame:
     df['is_draw'] = (df['playing_result'] == 'Draw').astype(int)
     return df
 
-def render_summary_header(df: pd.DataFrame, last_n: int, username: str):
-    """Renders a summary header with KPIs and gauges for White and Black pieces."""
-    
-    # Calculate win rates using the same function as the bar charts for consistency
-    win_rate_data, win_rate_data_recent = get_player_metric_values(
-        df, 'is_win', username, 'mean', last_n=last_n, aggregation_dimension='playing_as'
-    )
-
-    # Identify the last N games overall for the user with current filters
-    recent_games_overall = df.sort_values('end_time', ascending=False).head(last_n)
-
-    df_white = df[df['playing_as'] == 'White']
-    df_black = df[df['playing_as'] == 'Black']
-
+def render_summary_header(kpis: dict, last_n: int):
+    """Renders a summary header with KPIs and gauges for White and Black pieces from pre-calculated data."""
     col1, col2 = st.columns(2)
 
-    for color, data in [('White', df_white), ('Black', df_black)]:
+    for color, data in kpis.items():
+        if color not in ['White', 'Black']:
+            continue
+
         container = col1 if color == 'White' else col2
         with container:
             emoji = "⚪" if color == "White" else "⚫"
             st.subheader(f"{emoji} Playing as {color}")
             
-            if data.empty:
+            if data is None:
                 st.info(f"No games played as {color} with current filters.")
                 continue
-
-            # Overall stats
-            total_games = len(data)
-            
-            # Recent stats: count how many of the overall recent games were played with this color
-            total_recent_games = len(recent_games_overall[recent_games_overall['playing_as'] == color])
-
-            # Get win rates from pre-calculated dataframes
-            wr_overall_series = win_rate_data[win_rate_data['playing_as'] == color]['is_win']
-            win_rate_overall = wr_overall_series.iloc[0] * 100 if not wr_overall_series.empty else 0
-
-            wr_recent_series = win_rate_data_recent[win_rate_data_recent['playing_as'] == color]['is_win']
-            win_rate_recent = wr_recent_series.iloc[0] * 100 if not wr_recent_series.empty else 0
 
             # --- Display Metrics & Gauges ---
             # Overall stats row
             sub_col1, sub_col2 = st.columns(2)
             with sub_col1:
                 st.markdown(f"<span style='color: yellow; font-size: 20px; font-weight: bold;'>|</span> Overall Games", unsafe_allow_html=True)
-                st.metric("Total Games", f"{total_games}")
+                st.metric("Total Games", f"{data['total_games']}")
             with sub_col2:
                 st.markdown(f"<span style='color: yellow; font-size: 20px; font-weight: bold;'>|</span> Overall Win Rate", unsafe_allow_html=True)
                 st.metric(
                     "Overall Win Rate",
-                    value=f"{win_rate_overall:.0f}%"
+                    value=f"{data['win_rate_overall']:.0f}%"
                 )
 
             st.markdown("---")
@@ -367,19 +345,18 @@ def render_summary_header(df: pd.DataFrame, last_n: int, username: str):
             sub_col3, sub_col4 = st.columns(2)
             with sub_col3:
                 st.markdown(f"<span style='color: yellow;'>★</span> Recent Games (Last {last_n})", unsafe_allow_html=True)
-                st.metric("Recent Games", f"{total_recent_games}")
+                st.metric("Recent Games", f"{data['total_recent_games']}")
             with sub_col4:
-                delta_vs_overall = win_rate_recent - win_rate_overall
                 st.markdown(f"<span style='color: yellow;'>★</span> Recent Win Rate", unsafe_allow_html=True)
                 st.metric(
                     "Recent Win Rate",
-                    value=f"{win_rate_recent:.0f}%",
-                    delta=f"{delta_vs_overall:.1f} pts vs overall",
+                    value=f"{data['win_rate_recent']:.0f}%",
+                    delta=f"{data['delta_vs_overall']:.1f} pts vs overall",
                 )
 
     # Add a checkbox at the bottom to show the raw data for recent games
     if st.checkbox(f"Show data for last {last_n} games"):
-        st.dataframe(recent_games_overall, use_container_width=True)
+        st.dataframe(kpis['recent_games_df'], use_container_width=True)
 
 
 # Apply filters and render the summary header
@@ -394,7 +371,8 @@ else:
     with st.container(border=True):
         st.header(f"How is {selected_username} performing?")
         df_pane_filtered = calculate_win_loss_draw(df_pane_filtered)
-        render_summary_header(df_pane_filtered, last_n_games, selected_username)
+        summary_kpis = get_summary_kpis(df_pane_filtered, selected_username, last_n_games)
+        render_summary_header(summary_kpis, last_n_games)
 
 with st.container(border=True):
     st.header(f"How does {selected_username} compare to other similar players?")

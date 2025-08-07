@@ -1,6 +1,6 @@
 def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> dict:
     """
-    Generates the metrics configuration dictionary.
+    Generates the plot configuration dictionary.
     This dictionary defines how each metric is aggregated, annotated, and displayed.
     """
     return {
@@ -151,8 +151,8 @@ def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> 
 
 def get_section_config(game_phases_config: dict, score_thresholds_config: dict) -> list:
     """
-    Generates the configuration for plot rows.
-    Each item in the list is a dictionary defining a row in the UI.
+    Generates the configuration for each section of plots.
+    Each section is composed of several main plots and optional breakdown subplots.
     """
     return [
         {

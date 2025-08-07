@@ -34,12 +34,12 @@ def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int
     # Perform a single aggregation on the filtered data
     return filtered_data.groupby(group_by_col).agg(agg_funcs).reset_index()
 
-def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg_type: str, last_n: int, aggregation_dimension: str = None) -> tuple | pd.DataFrame:
+def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg_type: str, last_n_games: int, aggregation_dimension: str = None) -> tuple | pd.DataFrame:
     """
     Aggregates the metric for a specific user.
     If `aggregation_dimension` is None, it returns two scalar values as a tuple:
     - value_all: The aggregated value for the entire dataset for that user.
-    - value_specific: The aggregated value for the last `last_n` games for that user.
+    - value_specific: The aggregated value for the last `last_n_games` games for that user.
     If `aggregation_dimension` is provided, it returns two DataFrames, one for all games and one for recent games,
     with the metric aggregated by the specified dimension.
     """
@@ -58,7 +58,7 @@ def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg
 
     # Aggregation for recent data
     user_data_sorted = user_data.sort_values('end_time', ascending=False)
-    recent_data = user_data_sorted.head(last_n)
+    recent_data = user_data_sorted.head(last_n_games)
     
     if recent_data.empty:
         value_specific = None if not aggregation_dimension else pd.DataFrame()
@@ -82,7 +82,7 @@ def calculate_win_loss_draw(data: pd.DataFrame) -> pd.DataFrame:
     data['is_draw'] = (data['playing_result'] == 'Draw').astype(int)
     return data
 
-def get_summary_kpis(data: pd.DataFrame, username: str, last_n: int) -> dict:
+def get_summary_kpis(data: pd.DataFrame, username: str, last_n_games: int) -> dict:
     """
     Calculates all KPIs for the summary header.
     Returns a dictionary with stats for White and Black pieces, both overall and recent.
@@ -91,11 +91,11 @@ def get_summary_kpis(data: pd.DataFrame, username: str, last_n: int) -> dict:
 
     # Calculate win rates for all games and recent games, broken down by color
     win_rate_data, win_rate_data_recent = get_player_metric_values(
-        data, 'is_win', username, 'mean', last_n=last_n, aggregation_dimension='playing_as'
+        data, 'is_win', username, 'mean', last_n_games=last_n_games, aggregation_dimension='playing_as'
     )
 
     # Identify the last N games overall for the user with current filters
-    recent_games_overall = data.sort_values('end_time', ascending=False).head(last_n)
+    recent_games_overall = data.sort_values('end_time', ascending=False).head(last_n_games)
 
     # For each color, calculate the KPIs
     kpis['recent_games_df'] = recent_games_overall

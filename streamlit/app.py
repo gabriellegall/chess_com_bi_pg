@@ -43,6 +43,7 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
 def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
     Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
+    Only shows the values relevant based on the `dependent_data`.
     Returns the user's selections as a dictionary.
     """
     selections = {}
@@ -137,10 +138,10 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
 
     st.plotly_chart(fig, use_container_width=True)
 
-def render_legend(username, last_n):
+def render_legend(username, last_n_games):
     """
     Renders a custom legend once for all box plots.
-    This legend described the two markers in the boxplots (`value_all`, `value_specific`).
+    This legend describes the two markers in the boxplots (`value_all`, `value_specific`).
     """
     legend_html = f"""
     <div style="display: flex; align-items: center; justify-content: flex-start; gap: 25px; font-size: 14px; padding: 1px 0 1px 15px; margin-bottom: 15px;">
@@ -151,7 +152,7 @@ def render_legend(username, last_n):
         </div>
         <div style="display: flex; align-items: center;">
             <span style="color: yellow; font-size: 20px; margin-right: 8px;">★</span>
-            <span>Last {last_n} games by {username}</span>
+            <span>Last {last_n_games} games by {username}</span>
         </div>
     </div>
     """
@@ -161,7 +162,7 @@ def prepare_section_plot_data(section_config: list, plot_config: dict, df_filter
     """
     Creates a list of dictionaries with all the elements needed to render the boxplots and breakdowns boxplots.
     Each row in the list represents one row of `section_config`, which is a section in the page (e.g. 'Throws') composed of several main plots and optional breakdown subplots.
-    The metric config argument is used to describe how the metrics of each plot should be aggregated, the titles, axis labels, etc.
+    The `plot_config` argument is used to describe how the metrics of each plot should be aggregated, the titles, axis labels, etc.
     The values to highlight (`value_all`, `value_specific`) are pre-calculated based on the input `df_filtered`, `username_to_highlight` and `last_n_games`.
     """
     prepared_data = []
@@ -170,7 +171,7 @@ def prepare_section_plot_data(section_config: list, plot_config: dict, df_filter
         metrics = config_item['metrics']
         help_text = config_item.get('help_text') or plot_config.get(metrics[0], {}).get('help')
 
-        plot_config_data = {
+        prepared_section_data = {
             'title': title,
             'help_text': help_text,
             'metrics': {},
@@ -182,46 +183,46 @@ def prepare_section_plot_data(section_config: list, plot_config: dict, df_filter
         for metric in metrics:
             config = plot_config[metric]
             value_all, value_specific = get_player_metric_values(
-                df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+                df_filtered, metric, username_to_highlight, config['agg'], last_n_games=last_n_games
             )
-            plot_config_data['metrics'][metric] = {
+            prepared_section_data['metrics'][metric] = {
                 'config': config,
                 'value_all': value_all,
                 'value_specific': value_specific
             }
 
         # Calculate breakdown metric values if applicable
-        if plot_config_data['has_breakdown']:
+        if prepared_section_data['has_breakdown']:
             breakdown_groups = config_item['breakdown_groups']
             for parent_metric, breakdown_metric_list in breakdown_groups.items():
-                plot_config_data['breakdown_metrics'][parent_metric] = {}
+                prepared_section_data['breakdown_metrics'][parent_metric] = {}
                 for metric in breakdown_metric_list:
                     config = plot_config[metric]
                     value_all, value_specific = get_player_metric_values(
-                        df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
+                        df_filtered, metric, username_to_highlight, config['agg'], last_n_games=last_n_games
                     )
-                    plot_config_data['breakdown_metrics'][parent_metric][metric] = {
+                    prepared_section_data['breakdown_metrics'][parent_metric][metric] = {
                         'config': config,
                         'value_all': value_all,
                         'value_specific': value_specific
                     }
         
-        prepared_data.append(plot_config_data)
+        prepared_data.append(prepared_section_data)
     return prepared_data
 
-def render_plot_section(plot_config_data: dict, df_player_agg: pd.DataFrame, last_n_games: int):
+def render_plot_section(prepared_section_data: dict, df_player_agg: pd.DataFrame, last_n_games: int):
     """
     Renders the boxplots for a section in the page (e.g. 'Throws') composed of several main plots and optional breakdown subplots.
-    All the necessary information are pre-calculated under the dictionary `plot_config_data`.
+    All the necessary information is pre-calculated under the dictionary `prepared_section_data`.
     """
-    st.subheader(plot_config_data['title'], help=plot_config_data['help_text'])
+    st.subheader(prepared_section_data['title'], help=prepared_section_data['help_text'])
 
     # Boxplot rendering
-    metrics = list(plot_config_data['metrics'].keys())
+    metrics = list(prepared_section_data['metrics'].keys())
     cols = st.columns(len(metrics))
     for col, metric in zip(cols, metrics):
         with col:
-            data = plot_config_data['metrics'][metric]
+            data = prepared_section_data['metrics'][metric]
             config = data['config']
             st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
             render_metric_boxplot(
@@ -235,14 +236,14 @@ def render_plot_section(plot_config_data: dict, df_player_agg: pd.DataFrame, las
             )
 
     # Add toggle section for additional visuals based on pre-calculated flag
-    if plot_config_data['has_breakdown']:
+    if prepared_section_data['has_breakdown']:
         with st.expander(f"Breakdown by game phase"):
             metric_left, metric_right = metrics[0], metrics[1]
             col_left, col_right = st.columns(2)
 
             # Render additional metrics for the left column
             with col_left:
-                for metric, data in plot_config_data['breakdown_metrics'][metric_left].items():
+                for metric, data in prepared_section_data['breakdown_metrics'][metric_left].items():
                     config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
@@ -257,7 +258,7 @@ def render_plot_section(plot_config_data: dict, df_player_agg: pd.DataFrame, las
 
             # Render additional metrics for the right column
             with col_right:
-                for metric, data in plot_config_data['breakdown_metrics'][metric_right].items():
+                for metric, data in prepared_section_data['breakdown_metrics'][metric_right].items():
                     config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
@@ -270,10 +271,10 @@ def render_plot_section(plot_config_data: dict, df_player_agg: pd.DataFrame, las
                         last_n_games=last_n_games
                     )
 
-def render_summary_header(kpis: dict, last_n: int):
+def render_summary_header(kpis: dict, last_n_games: int):
     """
     Renders a summary header with KPIs for White and Black from pre-calculated data.
-    Display the `last_n_games` information in the titles.
+    Displays the `last_n_games` information in the titles.
     """
     col1, col2 = st.columns(2)
 
@@ -290,7 +291,6 @@ def render_summary_header(kpis: dict, last_n: int):
                 st.info(f"No games played as {color} with current filters.")
                 continue
 
-            # --- Display Metrics & Gauges ---
             # Overall stats row
             sub_col1, sub_col2 = st.columns(2)
             with sub_col1:
@@ -308,7 +308,7 @@ def render_summary_header(kpis: dict, last_n: int):
             # Recent stats row
             sub_col3, sub_col4 = st.columns(2)
             with sub_col3:
-                st.markdown(f"<span style='color: yellow;'>★</span> Recent Games (Last {last_n})", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: yellow;'>★</span> Recent Games (Last {last_n_games})", unsafe_allow_html=True)
                 st.metric("Recent Games", f"{data['total_recent_games']}")
             with sub_col4:
                 st.markdown(f"<span style='color: yellow;'>★</span> Recent Win Rate", unsafe_allow_html=True)
@@ -319,7 +319,7 @@ def render_summary_header(kpis: dict, last_n: int):
                 )
 
     # Add a checkbox at the bottom to show the raw data for recent games
-    if st.checkbox(f"Show data for last {last_n} games"):
+    if st.checkbox(f"Show data for last {last_n_games} games"):
         st.dataframe(kpis['recent_games_df'], use_container_width=True)
 
 ### --- Main Application ---
@@ -418,7 +418,7 @@ with st.container(border=True):
             st.warning(f"'{username_to_highlight}' has fewer than 30 games for the selected filters and cannot be benchmarked. Please adjust the filters or select another player.")
         else:
             # Render the legend
-            render_legend(username=username_to_highlight, last_n=last_n_games)
+            render_legend(username=username_to_highlight, last_n_games=last_n_games)
 
             # Import the data for each section and each plot
             all_section_plot_data = prepare_section_plot_data(
@@ -426,6 +426,6 @@ with st.container(border=True):
             )
 
             # For each section, render the plots
-            for plot_config_data in all_section_plot_data:
+            for prepared_section_data in all_section_plot_data:
                 with st.container(border=True):
-                    render_plot_section(plot_config_data, df_player_agg, last_n_games)
+                    render_plot_section(prepared_section_data, df_player_agg, last_n_games)

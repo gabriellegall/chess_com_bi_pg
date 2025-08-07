@@ -14,6 +14,9 @@ def get_players_aggregates(data: pd.DataFrame, agg_dict: dict, min_games: int = 
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').
     Only groups with at least `min_games` will be returned.
     """
+    if data.empty:
+        return pd.DataFrame()
+        
     # First, find which groups meet the minimum games threshold
     group_counts = data[group_by_col].value_counts()
     valid_groups = group_counts[group_counts >= min_games].index

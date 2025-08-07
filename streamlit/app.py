@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 import numpy as np
 import yaml
 from pathlib import Path
-from config import get_metrics_config, get_plot_config
-from data_processing import get_raw_data, get_players_aggregates, get_player_metric_values, get_summary_kpis
+from config import get_plot_config, get_section_config
+from data_processing import get_raw_data, get_players_aggregates, get_player_metric_values, get_summary_kpis, calculate_win_loss_draw
 
 st.set_page_config(layout="wide")
 
@@ -21,8 +21,9 @@ def load_dbt_project_config():
 
 def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
-    Creates select boxes in the sidebar for each field in `filter_fields`
-    and returns the user's selections as a dictionary.
+    Creates select boxes in the sidebar for each field in `filter_fields`.
+    Only shows the values relevant based on the `dependent_data`.
+    Returns the user's selections as a dictionary.
     """
     st.sidebar.header("Game Filters")
     selections = {}
@@ -41,8 +42,8 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
 
 def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
-    Creates select boxes in the main content area for each field in `filter_fields`,
-    arranging them in columns, and returns the user's selections as a dictionary.
+    Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
+    Returns the user's selections as a dictionary.
     """
     selections = {}
     
@@ -68,13 +69,13 @@ def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> di
 
 def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value_specific: float, left_annotation: str, right_annotation: str, last_n_games: int):
     """
-    This function renders a boxplot for all players, and highlights two hard-coded values:
-    - value_all 
-    - value_specific
-    It also takes care of the annotations for the min and max values on the x-axis.
+    Renders a boxplot given an input dataframe `df`, and highlights two hard-coded values:
+    - `value_all` 
+    - `value_specific` (with the `last_n_games` information on hover)
+    It also takes care of the annotations for the min and max values on the x-axis (`left_annotation`, `right_annotation`).
     """
     df_plot = df.copy()
-    df_plot['category'] = 'Player Distribution'
+    df_plot['category'] = 'Player Distribution' # Hard coded constant used as a Y-axis
 
     fig = px.box(
         df_plot,
@@ -119,13 +120,13 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
         ))
 
     fig.update_layout(
-        yaxis=dict(title="", showticklabels=False),  # Hide Y-axis title and tick labels
-        xaxis_title="",  # Keep X-axis title empty
+        yaxis=dict(title="", showticklabels=False),
+        xaxis_title="",
         xaxis_tickformat=".0%",
         showlegend=True,
         legend=dict(x=0.01, y=0.99, bgcolor='rgba(255,255,255,0.7)'),
         height=200,
-        title=dict(text="") # Ensure title is empty
+        title=dict(text="")
     )
 
     # Annotate min/max
@@ -137,7 +138,10 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
     st.plotly_chart(fig, use_container_width=True)
 
 def render_legend(username, last_n):
-    """Renders a custom legend for the plot markers."""
+    """
+    Renders a custom legend once for all box plots.
+    This legend described the two markers in the boxplots (`value_all`, `value_specific`).
+    """
     legend_html = f"""
     <div style="display: flex; align-items: center; justify-content: flex-start; gap: 25px; font-size: 14px; padding: 1px 0 1px 15px; margin-bottom: 15px;">
         <span style="font-weight: bold;">Legend:</span>
@@ -153,18 +157,20 @@ def render_legend(username, last_n):
     """
     st.markdown(legend_html, unsafe_allow_html=True)
 
-def prepare_plot_data(plot_config: list, agg_dict: dict, df_filtered: pd.DataFrame, username_to_highlight: str, last_n_games: int) -> list[dict]:
+def prepare_section_plot_data(section_config: list, plot_config: dict, df_filtered: pd.DataFrame, username_to_highlight: str, last_n_games: int) -> list[dict]:
     """
-    Prepares a list of data structures for rendering plot rows.
-    This function handles all data calculations and decouples it from rendering.
+    Creates a list of dictionaries with all the elements needed to render the boxplots and breakdowns boxplots.
+    Each row in the list represents one row of `section_config`, which is a section in the page (e.g. 'Throws') composed of several main plots and optional breakdown subplots.
+    The metric config argument is used to describe how the metrics of each plot should be aggregated, the titles, axis labels, etc.
+    The values to highlight (`value_all`, `value_specific`) are pre-calculated based on the input `df_filtered`, `username_to_highlight` and `last_n_games`.
     """
     prepared_data = []
-    for config_item in plot_config:
+    for config_item in section_config:
         title = config_item['title']
         metrics = config_item['metrics']
-        help_text = config_item.get('help_text') or agg_dict.get(metrics[0], {}).get('help')
+        help_text = config_item.get('help_text') or plot_config.get(metrics[0], {}).get('help')
 
-        plot_data = {
+        plot_config_data = {
             'title': title,
             'help_text': help_text,
             'metrics': {},
@@ -174,45 +180,48 @@ def prepare_plot_data(plot_config: list, agg_dict: dict, df_filtered: pd.DataFra
 
         # Calculate main metric values
         for metric in metrics:
-            config = agg_dict[metric]
+            config = plot_config[metric]
             value_all, value_specific = get_player_metric_values(
                 df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
             )
-            plot_data['metrics'][metric] = {
+            plot_config_data['metrics'][metric] = {
                 'config': config,
                 'value_all': value_all,
                 'value_specific': value_specific
             }
 
         # Calculate breakdown metric values if applicable
-        if plot_data['has_breakdown']:
+        if plot_config_data['has_breakdown']:
             breakdown_groups = config_item['breakdown_groups']
             for parent_metric, breakdown_metric_list in breakdown_groups.items():
-                plot_data['breakdown_metrics'][parent_metric] = {}
+                plot_config_data['breakdown_metrics'][parent_metric] = {}
                 for metric in breakdown_metric_list:
-                    config = agg_dict[metric]
+                    config = plot_config[metric]
                     value_all, value_specific = get_player_metric_values(
                         df_filtered, metric, username_to_highlight, config['agg'], last_n=last_n_games
                     )
-                    plot_data['breakdown_metrics'][parent_metric][metric] = {
+                    plot_config_data['breakdown_metrics'][parent_metric][metric] = {
                         'config': config,
                         'value_all': value_all,
                         'value_specific': value_specific
                     }
         
-        prepared_data.append(plot_data)
+        prepared_data.append(plot_config_data)
     return prepared_data
 
-def render_plot_row(plot_data, df_player_agg, last_n_games):
-    """Renders a row of metric boxplots and their breakdowns from pre-calculated data."""
-    st.subheader(plot_data['title'], help=plot_data['help_text'])
+def render_plot_section(plot_config_data: dict, df_player_agg: pd.DataFrame, last_n_games: int):
+    """
+    Renders the boxplots for a section in the page (e.g. 'Throws') composed of several main plots and optional breakdown subplots.
+    All the necessary information are pre-calculated under the dictionary `plot_config_data`.
+    """
+    st.subheader(plot_config_data['title'], help=plot_config_data['help_text'])
 
-    # --- Boxplot Rendering ---
-    metrics = list(plot_data['metrics'].keys())
+    # Boxplot rendering
+    metrics = list(plot_config_data['metrics'].keys())
     cols = st.columns(len(metrics))
     for col, metric in zip(cols, metrics):
         with col:
-            data = plot_data['metrics'][metric]
+            data = plot_config_data['metrics'][metric]
             config = data['config']
             st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
             render_metric_boxplot(
@@ -226,14 +235,14 @@ def render_plot_row(plot_data, df_player_agg, last_n_games):
             )
 
     # Add toggle section for additional visuals based on pre-calculated flag
-    if plot_data['has_breakdown']:
+    if plot_config_data['has_breakdown']:
         with st.expander(f"Breakdown by game phase"):
             metric_left, metric_right = metrics[0], metrics[1]
             col_left, col_right = st.columns(2)
 
             # Render additional metrics for the left column
             with col_left:
-                for metric, data in plot_data['breakdown_metrics'][metric_left].items():
+                for metric, data in plot_config_data['breakdown_metrics'][metric_left].items():
                     config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
@@ -248,7 +257,7 @@ def render_plot_row(plot_data, df_player_agg, last_n_games):
 
             # Render additional metrics for the right column
             with col_right:
-                for metric, data in plot_data['breakdown_metrics'][metric_right].items():
+                for metric, data in plot_config_data['breakdown_metrics'][metric_right].items():
                     config = data['config']
                     st.markdown(f"**{config['plot_title']}**", help=config.get('help'))
                     render_metric_boxplot(
@@ -261,56 +270,11 @@ def render_plot_row(plot_data, df_player_agg, last_n_games):
                         last_n_games=last_n_games
                     )
 
-# --- Main Application ---
-
-# Load initial data
-raw_data = get_raw_data()
-dbt_config = load_dbt_project_config()
-game_phases_config = dbt_config.get("vars", {}).get("game_phases", {})
-score_thresholds_config = dbt_config.get("vars", {}).get("score_thresholds", {})
-agg_dict = get_metrics_config(game_phases_config, score_thresholds_config)
-
-st.title("Chess.com Player Performance Benchmark")
-
-# --- 1. Primary Player Selection ---
-all_usernames = sorted(raw_data["username"].unique())
-default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
-
-selected_username = st.sidebar.selectbox(
-    "Select a Player to Analyze",
-    options=all_usernames,
-    index=all_usernames.index(st.session_state.get("selected_username", default_user)),
-    key="selected_username"
-)
-
-last_n_games = st.sidebar.slider(
-    "Number of recent games to analyze",
-    min_value=10,
-    max_value=60,
-    value=30,
-    step=1,
-    key="last_n_games"
-)
-
-# --- 2. Dependent Filters ---
-user_specific_data = raw_data[raw_data['username'] == selected_username]
-
-# Define filter fields for sidebar (pane) and main content area
-filter_fields_pane = ["time_control", "playing_rating_range"]
-filter_fields_main = ["playing_as", "playing_result"]
-
-# Render filters and get selections from both locations
-pane_selections = render_sidebar_filters(user_specific_data, filter_fields_pane)
-
-def calculate_win_loss_draw(df: pd.DataFrame) -> pd.DataFrame:
-    """Adds is_win, is_loss, is_draw columns to the DataFrame."""
-    df['is_win'] = (df['playing_result'] == 'Win').astype(int)
-    df['is_loss'] = (df['playing_result'] == 'Loss').astype(int)
-    df['is_draw'] = (df['playing_result'] == 'Draw').astype(int)
-    return df
-
 def render_summary_header(kpis: dict, last_n: int):
-    """Renders a summary header with KPIs and gauges for White and Black pieces from pre-calculated data."""
+    """
+    Renders a summary header with KPIs for White and Black from pre-calculated data.
+    Display the `last_n_games` information in the titles.
+    """
     col1, col2 = st.columns(2)
 
     for color, data in kpis.items():
@@ -358,54 +322,94 @@ def render_summary_header(kpis: dict, last_n: int):
     if st.checkbox(f"Show data for last {last_n} games"):
         st.dataframe(kpis['recent_games_df'], use_container_width=True)
 
+### --- Main Application ---
+
+# Load initial data
+raw_data                    = get_raw_data()
+dbt_config                  = load_dbt_project_config()
+dbt_game_phases_config      = dbt_config.get("vars", {}).get("game_phases", {})
+dbt_score_thresholds_config = dbt_config.get("vars", {}).get("score_thresholds", {})
+plot_config                 = get_plot_config(dbt_game_phases_config, dbt_score_thresholds_config)
+section_config              = get_section_config(dbt_game_phases_config, dbt_score_thresholds_config)
+
+st.title("Chess.com Player Performance Benchmark")
+
+### --- Sidebar selection ---
+all_usernames = sorted(raw_data["username"].unique())
+default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
+
+selected_username = st.sidebar.selectbox(
+    "Select a Player to Analyze",
+    options=all_usernames,
+    index=all_usernames.index(st.session_state.get("selected_username", default_user)),
+    key="selected_username"
+)
+
+last_n_games = st.sidebar.slider(
+    "Number of recent games to analyze",
+    min_value=10,
+    max_value=60,
+    value=30,
+    step=1,
+    key="last_n_games"
+)
+
+### --- Dependent filters ---
+user_specific_data = raw_data[raw_data['username'] == selected_username]
+
+# Define filter fields for each section 
+fields_sidebar_filter = ["time_control", "playing_rating_range"]
+fields_main_filter = ["playing_as", "playing_result"]
+
+# Render and get sidebar filters
+sidebar_selections = render_sidebar_filters(user_specific_data, fields_sidebar_filter)
+
+### --- Summary KPIs header --- 
 
 # Apply filters and render the summary header
-df_pane_filtered = user_specific_data.copy()
-for field, value in pane_selections.items():
+df_sidebar_filtered = user_specific_data.copy()
+for field, value in sidebar_selections.items():
     if value:
-        df_pane_filtered = df_pane_filtered[df_pane_filtered[field] == value]
+        df_sidebar_filtered = df_sidebar_filtered[df_sidebar_filtered[field] == value]
 
-if df_pane_filtered.empty:
+if df_sidebar_filtered.empty:
     st.warning("No data available for the selected filters.")
 else:
     with st.container(border=True):
         st.header(f"How is {selected_username} performing?")
-        df_pane_filtered = calculate_win_loss_draw(df_pane_filtered)
-        summary_kpis = get_summary_kpis(df_pane_filtered, selected_username, last_n_games)
+        df_sidebar_filtered = calculate_win_loss_draw(df_sidebar_filtered)
+        summary_kpis = get_summary_kpis(df_sidebar_filtered, selected_username, last_n_games)
         render_summary_header(summary_kpis, last_n_games)
 
+### --- Benchmark --- 
 with st.container(border=True):
     st.header(f"How does {selected_username} compare to other similar players?")
     
-    main_selections = render_main_filters(user_specific_data, filter_fields_main)
+    # Render and get main page filters
+    main_selections = render_main_filters(user_specific_data, fields_main_filter)
 
     # Combine all selections into a single dictionary
-    all_selections = {**pane_selections, **main_selections}
+    all_selections = {**sidebar_selections, **main_selections}
 
     # Apply the combined filters to the entire dataset
     df_filtered = raw_data.copy()
     for field, value in all_selections.items():
-        if value:  # Ensure a selection was made
+        if value: # Ensure a selection was made
             df_filtered = df_filtered[df_filtered[field] == value]
 
-    # --- 3. Aggregate Data ---
-    # The agg_dict is now generated from config.py
+    # Get the aggregated data for all players
+    df_player_agg = get_players_aggregates(df_filtered, plot_config)
 
-    df_player_agg = get_players_aggregates(df_filtered, agg_dict)
-
-    # Add explanatory text that will be updated as filters change.
+    # Add explanatory context text based on the filter selection 
     st.markdown(f"""
     In this section, we compare the performance of **{selected_username}** with other similar players (n={len(df_player_agg)}), holding constant: 
     - Color played: **{main_selections.get('playing_as', 'N/A')}**
     - Playing result: **{main_selections.get('playing_result', 'N/A')}**
-    - Time control: **{pane_selections.get('time_control', 'N/A')}**
-    - Rating range: **{pane_selections.get('playing_rating_range', 'N/A')}**
+    - Time control: **{sidebar_selections.get('time_control', 'N/A')}**
+    - Rating range: **{sidebar_selections.get('playing_rating_range', 'N/A')}**
     """)
 
-    # Define the pairs for side-by-side plotting from the config file
-    plot_config = get_plot_config(game_phases_config, score_thresholds_config)
-
-    # --- 4. Render Plots ---
+    # Render plots for each section
     if df_player_agg.empty:
         st.warning("No player data available for the selected filters. Please adjust your selections.")
     else:
@@ -416,12 +420,12 @@ with st.container(border=True):
             # Render the legend
             render_legend(username=username_to_highlight, last_n=last_n_games)
 
-            # 1. Prepare all plot data (business logic)
-            all_plot_data = prepare_plot_data(
-                plot_config, agg_dict, df_filtered, username_to_highlight, last_n_games
+            # Import the data for each section and each plot
+            all_section_plot_data = prepare_section_plot_data(
+                section_config, plot_config, df_filtered, username_to_highlight, last_n_games
             )
 
-            # 2. Loop through prepared data and render plots (presentation)
-            for plot_data in all_plot_data:
+            # For each section, render the plots
+            for plot_config_data in all_section_plot_data:
                 with st.container(border=True):
-                    render_plot_row(plot_data, df_player_agg, last_n_games)
+                    render_plot_section(plot_config_data, df_player_agg, last_n_games)

@@ -64,6 +64,13 @@ WITH aggregate_fields AS (
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity')                                                    AS nb_missed_opportunity_{{ prefix }},
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder')         AS nb_missed_opportunity_blunder_{{ prefix }},
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }},
+
+            {% for phase, values in var('game_phases').items() %}
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder') AS nb_missed_opportunity_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Blunder') AS nb_throw_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_throw_massive_blunder_{{ prefix }}_{{ phase }},
+            {% endfor %}
         {% endfor %}
 
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score_playing) AS median_score_playing,

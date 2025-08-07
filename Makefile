@@ -17,6 +17,10 @@ docker_hub_push: docker_build_project
 	docker tag chess-com-bi-pg gabriellegall/chess-com-bi-pg:latest
 	docker push gabriellegall/chess-com-bi-pg:latest
 
+# Streamlit
+streamlit_run:
+	@cd streamlit && streamlit run app.py
+
 # Local postgres for debugging (if needed)
 docker_postgres:
 	docker run --name chess_local_postgres_container \

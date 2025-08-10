@@ -1,12 +1,12 @@
 # Local execution (forward slash for Linux)
 stg_games:
-	@cd scripts/chess_com_api && python chess_games_pipeline.py
+	@cd dbt/scripts/chess_com_api && python chess_games_pipeline.py
 
 stg_games_times:
-	@cd scripts/games_times && python chess_games_times_pipeline.py
+	@cd dbt/scripts/games_times && python chess_games_times_pipeline.py
 
 stg_games_moves:
-	@cd scripts/stockfish && python chess_games_moves_pipeline.py
+	@cd dbt/scripts/stockfish && python chess_games_moves_pipeline.py
 
 # Docker Hub
 docker_build_project:

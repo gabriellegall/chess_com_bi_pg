@@ -1,6 +1,6 @@
 target/
 dbt_packages/
-scripts/__pycache__
+__pycache__/
 logs/
 .user.yml
 venv
@@ -8,3 +8,4 @@ venv
 to_do.txt
 chess_backup.dump
 notes.txt
+.vscode/

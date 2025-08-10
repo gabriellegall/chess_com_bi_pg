@@ -13,6 +13,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
-RUN dbt deps
+RUN dbt deps --project-dir /app/dbt
 
+WORKDIR /app/dbt
 CMD ["python", "run_all.py"]

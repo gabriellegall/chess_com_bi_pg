@@ -43,7 +43,7 @@ def run_pipeline_forever():
             requests.get(URL, timeout=5)
             print(f"✅ Healthcheck ping sent.")
             
-            # DBT test
+            # DBT test - every N executions
             execution_count += 1
             if execution_count % 100 == 0:
                 print(f"Running dbt test (execution {execution_count})")

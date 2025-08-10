@@ -31,7 +31,7 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
             config = yaml.safe_load(f)
 
     schema_games = config["postgres"]["schemas"]["chess_com_api"]
-    table_games  = "players_games" # DLT built-in table name
+    table_games  = "players_games" # DLT built-in table name (cannot be changed)
 
     if table_with_prefix_exists(engine, schema, table):
 

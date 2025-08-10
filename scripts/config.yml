@@ -1,55 +1,58 @@
 api:
-  usernames:
-    # friends:
-    - piwi100
-    - Zundorn
-    - leprechess
-    - bgdu33
-    - quentinusdesbois
-    - romainpct
-    - gokhvttttgxdddhjkig345
-    - yorek99
-    - ashutoshkhurana568
-    # blitz 300+5:
-    - aufhebungja
-    - slscharff
-    - itsdon3
-    - koli8
-    - tnvawls
-    - tandisco
-    - mr_nuke
-    - andrew_shapekin
-    - esasso
-    - arekusu22
-    - rjvrush
-    - constandean
-    - suleiman241081
-    - thewiltshirewarrior
-    - chesstickles09
-    - kekkaki42
-    - christrafer
-    - zupade
-    - rik1409
-    - girleidson
-    - chessman1ray
-    - orlandocrl
-    - hdawg94
-    - kirillolshansky
-    - jonathanhj
-    - eliaskaram84
-    - melnik63
-    - ap0lkmn
-    - pjm00
-    - ojatemate
-    - piwi100
-    - atak_66
-    - torpa1975
-    - bondpbond
-    - rc_dy
-    - justinmahi
-    - ana2
-    - thierry-l85
-  start_month: "2025/04"
+  user_groups:
+    friends:
+      usernames:
+        - piwi100
+        - Zundorn
+        - leprechess
+        - bgdu33
+        - quentinusdesbois
+        - romainpct
+        - gokhvttttgxdddhjkig345
+        - yorek99
+        - ashutoshkhurana568
+      start_month: "2010/01"
+    default_users:
+      usernames:
+        - aufhebungja
+        - slscharff
+        - itsdon3
+        - koli8
+        - tnvawls
+        - tandisco
+        - mr_nuke
+        - andrew_shapekin
+        - esasso
+        - arekusu22
+        - rjvrush
+        - constandean
+        - suleiman241081
+        - thewiltshirewarrior
+        - chesstickles09
+        - kekkaki42
+        - christrafer
+        - zupade
+        - rik1409
+        - girleidson
+        - chessman1ray
+        - orlandocrl
+        - hdawg94
+        - kirillolshansky
+        - jonathanhj
+        - eliaskaram84
+        - melnik63
+        - ap0lkmn
+        - pjm00
+        - ojatemate
+        - piwi100
+        - atak_66
+        - torpa1975
+        - bondpbond
+        - rc_dy
+        - justinmahi
+        - ana2
+        - thierry-l85
+      start_month: "2025/04"
 
 postgres:
   schemas:

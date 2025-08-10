@@ -1,20 +1,8 @@
+-- Make the comma logic consistent
 -- Documentation
 -- YAML files
 -- Readme.md
--- Clean the ',' in the .sql files
-
--- Evolutions
--- Push the window function of dwh_agg_games_with_moves to Metabase.
-    -- Alternatively: rework the visuals to account for W/R etc. <= ELO range. This way previous metrics are inclusive.
-
--- Chess
--- Analyze to which extent it is easy to predict one's win/loss based on massive blunders/blunders
--- Make a ML model to create clusters of players
--- Create a tab dedicated to benchmarking: distribution of prct til first massive blunder, same for nb massive blunder, etc.
-
--- Check the openers in the API data of chess.com (e.g. 4 first moves)
--- Make a graph showing the evolution of Key Metrics and the group benchmark (rolling window 30d)
-    -- Massive Blunder Rate per Game Phase
-    -- Ability to close won games
-    -- Time left on first massive blunder
--- Make the graph "Recent games position advantage" with last 7D, 14D, 30D lines
+-- Check the openers in the API data of chess.com (e.g. 4 first moves)+
+-- Enrich further the Streamlit app
+    -- More metrics
+    -- Make the graph "Recent games position advantage" with last 7D, 14D, 30D lines

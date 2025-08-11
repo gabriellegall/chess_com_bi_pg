@@ -9,3 +9,4 @@ venv
 to_do.txt
 chess_backup.dump
 notes.txt
+package-lock.yml

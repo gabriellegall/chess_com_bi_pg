@@ -15,7 +15,7 @@ def load_dbt_project_config():
     """Loads the dbt_project.yml file."""
     # The CWD is the 'streamlit' folder, so we go up one level to the project root.
     project_root = Path.cwd().parent
-    config_path = project_root / "dbt_project.yml"
+    config_path = project_root / "dbt" / "dbt_project.yml"
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 

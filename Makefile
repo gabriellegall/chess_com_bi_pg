@@ -11,7 +11,7 @@ stg_games_moves:
 # Docker Hub
 docker_build_project:
 	dbt clean
-	docker build -t chess-com-bi-pg .
+	docker build -f Dockerfile.dbt -t chess-com-bi-pg .
 
 docker_hub_push: docker_build_project
 	docker tag chess-com-bi-pg gabriellegall/chess-com-bi-pg:latest

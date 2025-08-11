@@ -2,10 +2,10 @@ target/
 dbt_packages/
 __pycache__/
 logs/
+.vscode/
 .user.yml
 venv
 .env
 to_do.txt
 chess_backup.dump
 notes.txt
-.vscode/

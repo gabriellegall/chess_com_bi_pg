@@ -83,7 +83,7 @@ WITH games_scope AS (
     ON LOWER(username_mapping.username) = LOWER(games.username) 
   INNER JOIN {{ ref ('int_games_moves') }} AS games_moves
     USING (uuid)
-  LEFT OUTER JOIN {{ ref ('int_games_times') }} games_times
+  INNER JOIN {{ ref ('int_games_times') }} games_times
     ON games.uuid = games_times.uuid
     AND games_moves.move_number = games_times.move_number
 )

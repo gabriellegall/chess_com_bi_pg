@@ -21,8 +21,23 @@ services:
     depends_on:
       - analytical_db
 
+  streamlit:
+    image: gabriellegall/chess-com-bi-pg-streamlit:latest
+    container_name: chess_streamlit_container
+    restart: always
+    ports:
+      - "8501:8501"
+    depends_on:
+      - analytical_db
+    environment:
+      DB_NAME: chess
+      DB_USER: glegall
+      DB_PASSWORD: AsidDe5845edDikkDee
+      DB_HOST: analytical_db
+      DB_PORT: 5432
+
   dbt:
-    image: gabriellegall/chess-com-bi-pg:latest
+    image: gabriellegall/chess-com-bi-pg-dbt:latest
     container_name: chess_dbt_container
     depends_on:
       - analytical_db

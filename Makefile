@@ -1,4 +1,4 @@
-# Local execution (forward slash for Linux)
+# Local execution : stg
 stg_games:
 	@cd dbt/scripts/chess_com_api && python chess_games_pipeline.py
 
@@ -8,24 +8,41 @@ stg_games_times:
 stg_games_moves:
 	@cd dbt/scripts/stockfish && python chess_games_moves_pipeline.py
 
-# Docker Hub
-docker_build_project:
-	dbt clean
-	docker build -f Dockerfile.dbt -t chess-com-bi-pg .
+# Local execution : dbt
+run_dbt_full_refresh:
+	@cd dbt && python run_dbt_full_refresh.py
 
-docker_hub_push: docker_build_project
-	docker tag chess-com-bi-pg gabriellegall/chess-com-bi-pg:latest
-	docker push gabriellegall/chess-com-bi-pg:latest
+run_all_with_reset:
+	@cd dbt && python run_all_with_reset.py
 
-# Streamlit
+run_all.py:
+	@cd dbt && python run_all.py
+
+# Local execution : streamlit
 streamlit_run:
 	@cd streamlit && streamlit run app.py
+
+# Docker Hub - DBT
+docker_build_project_dbt:
+	docker build -f Dockerfile.dbt -t chess-com-bi-pg-dbt .
+
+docker_hub_push_dbt: docker_build_project_dbt
+	docker tag chess-com-bi-pg-dbt gabriellegall/chess-com-bi-pg-dbt:latest
+	docker push gabriellegall/chess-com-bi-pg-dbt:latest
+
+# Docker Hub - Streamlit
+docker_build_project_streamlit:
+	docker build -f Dockerfile.streamlit -t chess-com-bi-pg-streamlit .
+
+docker_hub_push_streamlit: docker_build_project_streamlit
+	docker tag chess-com-bi-pg-streamlit gabriellegall/chess-com-bi-pg-streamlit:latest
+	docker push gabriellegall/chess-com-bi-pg-streamlit:latest
 
 # Local postgres for debugging (if needed)
 docker_postgres:
 	docker run --name chess_local_postgres_container \
-	-e POSTGRES_PASSWORD=AsidDe5845edDikkDee \
-	-e POSTGRES_USER=glegall \
+	-e POSTGRES_USER=admin \
+	-e POSTGRES_PASSWORD=local \
 	-e POSTGRES_DB=chess \
 	-p 5432:5432 \
 	-d postgres

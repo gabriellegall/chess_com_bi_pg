@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Create dbt directory at the root for the dependencies
+RUN mkdir -p /dbt
+COPY dbt/dbt_project.yml /dbt/dbt_project.yml
+
+# Install requirements
+COPY streamlit/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY streamlit/ .
+
+WORKDIR /app
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py"]

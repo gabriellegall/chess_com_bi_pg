@@ -1,0 +1,24 @@
+# dbt artifacts
+dbt/dbt_packages/
+dbt/logs/
+dbt/target/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+
+# IDE settings
+.vscode/
+
+# Git files
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+Dockerfile.dbt
+docker-compose.yml

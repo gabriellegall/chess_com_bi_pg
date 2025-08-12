@@ -3,3 +3,6 @@ sqlalchemy
 pandas
 plotly
 pytest
+pyyaml
+python-dotenv
+psycopg2-binary

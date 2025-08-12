@@ -1,0 +1,19 @@
+# Git files
+.git
+.gitignore
+
+# IDE settings
+.vscode/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv/
+
+# Other Docker configurations
+Dockerfile
+Dockerfile.dbt
+docker-compose.yml

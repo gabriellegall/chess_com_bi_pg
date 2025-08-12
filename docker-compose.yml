@@ -4,9 +4,9 @@ services:
     container_name: chess_postgres_container
     restart: always
     environment:
-      POSTGRES_DB: chess
-      POSTGRES_USER: glegall
-      POSTGRES_PASSWORD: AsidDe5845edDikkDee
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - analytical_data:/var/lib/postgresql/data 
     ports:
@@ -30,9 +30,9 @@ services:
     depends_on:
       - analytical_db
     environment:
-      DB_NAME: chess
-      DB_USER: glegall
-      DB_PASSWORD: AsidDe5845edDikkDee
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: analytical_db
       DB_PORT: 5432
 
@@ -43,13 +43,13 @@ services:
       - analytical_db
     working_dir: /app
     environment:
-      DB_NAME: chess
-      DB_USER: glegall
-      DB_PASSWORD: AsidDe5845edDikkDee
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: analytical_db
       DB_PORT: 5432
-      HEALTHCHECK_URL: "https://hc-ping.com/06a2accf-4595-485f-aa59-d508b3b7e110"
-      HEALTHCHECK_URL_DBT_TEST: "https://hc-ping.com/eef29fb9-24d6-4b2b-9e93-994100a89b1c"
+      HEALTHCHECK_URL: ${HEALTHCHECK_URL}
+      HEALTHCHECK_URL_DBT_TEST: ${HEALTHCHECK_URL_DBT_TEST}
 
   watchtower:
     image: containrrr/watchtower

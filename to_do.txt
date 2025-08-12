@@ -1,9 +1,4 @@
 -- Ensure .dockerignore works as expected
--- Adjust the path finding for Streamlit
--- Rename docker-compose
--- Test the Makefile
--- test Dockerfile
--- test Docker compose
 
 -- Make the comma logic consistent
 -- Documentation

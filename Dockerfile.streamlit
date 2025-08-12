@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Create dbt directory at the root for the dependencies
+# Create DBT directory at the root for the DBT dependencies
 RUN mkdir -p /dbt
 COPY dbt/dbt_project.yml /dbt/dbt_project.yml
 

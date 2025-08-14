@@ -18,6 +18,12 @@ run_all_with_reset:
 run_all.py:
 	@cd dbt && python run_all.py
 
+run_dbt_doc:
+	@cd dbt && python run_dbt_doc.py
+
+test_dbt_doc:
+	@cd dbt && python scripts/test_doc.py
+
 # Local execution : streamlit
 streamlit_run:
 	@cd streamlit && streamlit run app.py

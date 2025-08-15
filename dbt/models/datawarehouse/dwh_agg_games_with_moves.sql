@@ -51,7 +51,7 @@ WITH aggregate_fields AS (
                     CASE WHEN move_number = {{ values.end_game_move }}      AND is_playing_turn THEN prct_time_remaining ELSE NULL END,
                     CASE WHEN move_number = {{ values.end_game_move }} - 1  AND is_playing_turn THEN prct_time_remaining ELSE NULL END
                 )
-            ) AS prct_time_remaining_{{ phase }}_playing,
+            ) AS prct_time_remaining_playing_{{ phase }},
             {% endif %}
         {% endfor %}
 

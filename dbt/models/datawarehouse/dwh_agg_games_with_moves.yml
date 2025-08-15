@@ -65,6 +65,10 @@ models:
         description: "{{ doc('massive_blunder_move_number_playing') }}"
       - name: nb_throw_playing
         description: "{{ doc('nb_throw_playing') }}"
+      - name: nb_throw_blunder_playing
+        description: "{{ doc('nb_throw_blunder_playing') }}"
+      - name: nb_throw_massive_blunder_playing
+        description: "{{ doc('nb_throw_massive_blunder_playing') }}"
       - name: nb_missed_opportunity_playing
         description: "{{ doc('nb_missed_opportunity_playing') }}"
       - name: nb_missed_opportunity_blunder_playing
@@ -162,11 +166,6 @@ models:
           {{ doc('max_score_playing_type') }}
           A decisive winning advantage is defined by a score above .
           "
-      - name: has_enough_games
-        description: "
-          {{ doc('has_enough_games') }} 
-          A minimum of {{ var('datamart')['min_games_played'] }} games played for the given partition is necessary for this condition to be true.
-          "
       - name: time_control
         description: "{{ doc('time_control') }}"
       - name: first_blunder_playing_prct_time_remaining
@@ -178,3 +177,9 @@ models:
           {{ doc('nb_moves_above_decisive_advantage') }} 
           The any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
           "
+      - name: prct_time_remaining_playing_early
+        description: "{{ doc('prct_time_remaining_playing_early') }}"
+      - name: prct_time_remaining_playing_mid
+        description: "{{ doc('prct_time_remaining_playing_mid') }}" 
+      - name: prct_time_remaining_playing_late
+        description: "{{ doc('prct_time_remaining_playing_late') }}"

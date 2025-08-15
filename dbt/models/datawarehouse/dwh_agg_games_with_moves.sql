@@ -47,10 +47,11 @@ WITH aggregate_fields AS (
             {% if 'end_game_move' in values %}
             -- % Time Remaining by game_phase for the playing user. Either exactly at the end of the game phase or 1 move before (depending on the color played).
             MIN(
-                COALESCE(
-                    CASE WHEN move_number = {{ values.end_game_move }}      AND is_playing_turn THEN prct_time_remaining ELSE NULL END,
-                    CASE WHEN move_number = {{ values.end_game_move }} - 1  AND is_playing_turn THEN prct_time_remaining ELSE NULL END
-                )
+            CASE 
+                WHEN is_playing_turn AND move_number IN ({{ values.end_game_move }}, {{ values.end_game_move }} - 1)
+                THEN prct_time_remaining
+                ELSE NULL
+            END
             ) AS prct_time_remaining_playing_{{ phase }},
             {% endif %}
         {% endfor %}

@@ -282,6 +282,166 @@ Number of throws detected in the game, technically it is a count of 'Throw' on t
 Number of throws detected in the game, technically it is a count of 'Missed Opportunity' on the field `miss_context_playing`.
 {% enddocs %}
 
+{% docs nb_missed_opportunity_blunder_playing %}
+Number of blunders that are missed opportunities for username.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_playing %}
+Number of massive blunders that are missed opportunities for username.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_playing_early %}
+Number of blunders that are missed opportunities for username in the early-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_playing_early %}
+Number of massive blunders that are missed opportunities for username in the early-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_playing_early %}
+Number of blunders that are throws for username in the early-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_playing_early %}
+Number of massive blunders that are throws for username in the early-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_playing_mid %}
+Number of blunders that are missed opportunities for username in the mid-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_playing_mid %}
+Number of massive blunders that are missed opportunities for username in the mid-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_playing_mid %}
+Number of blunders that are throws for username in the mid-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_playing_mid %}
+Number of massive blunders that are throws for username in the mid-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_playing_late %}
+Number of blunders that are missed opportunities for username in the late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_playing_late %}
+Number of massive blunders that are missed opportunities for username in the late-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_playing_late %}
+Number of blunders that are throws for username in the late-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_playing_late %}
+Number of massive blunders that are throws for username in the late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_playing_very_late %}
+Number of blunders that are missed opportunities for username in the very-late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_playing_very_late %}
+Number of massive blunders that are missed opportunities for username in the very-late-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_playing_very_late %}
+Number of blunders that are throws for username in the very-late-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_playing_very_late %}
+Number of massive blunders that are throws for username in the very-late-game.
+{% enddocs %}
+
+{% docs nb_throw_opponent %}
+Number of throws detected in the game for the opponent.
+{% enddocs %}
+
+{% docs nb_throw_blunder_opponent %}
+Number of blunders that are throws for the opponent.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_opponent %}
+Number of massive blunders that are throws for the opponent.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_opponent %}
+Number of missed opportunities detected in the game for the opponent.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_opponent %}
+Number of blunders that are missed opportunities for the opponent.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_opponent %}
+Number of massive blunders that are missed opportunities for the opponent.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_opponent_early %}
+Number of blunders that are missed opportunities for the opponent in the early-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_opponent_early %}
+Number of massive blunders that are missed opportunities for the opponent in the early-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_opponent_early %}
+Number of blunders that are throws for the opponent in the early-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_opponent_early %}
+Number of massive blunders that are throws for the opponent in the early-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_opponent_mid %}
+Number of blunders that are missed opportunities for the opponent in the mid-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_opponent_mid %}
+Number of massive blunders that are missed opportunities for the opponent in the mid-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_opponent_mid %}
+Number of blunders that are throws for the opponent in the mid-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_opponent_mid %}
+Number of massive blunders that are throws for the opponent in the mid-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_opponent_late %}
+Number of blunders that are missed opportunities for the opponent in the late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_opponent_late %}
+Number of massive blunders that are missed opportunities for the opponent in the late-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_opponent_late %}
+Number of blunders that are throws for the opponent in the late-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_opponent_late %}
+Number of massive blunders that are throws for the opponent in the late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_blunder_opponent_very_late %}
+Number of blunders that are missed opportunities for the opponent in the very-late-game.
+{% enddocs %}
+
+{% docs nb_missed_opportunity_massive_blunder_opponent_very_late %}
+Number of massive blunders that are missed opportunities for the opponent in the very-late-game.
+{% enddocs %}
+
+{% docs nb_throw_blunder_opponent_very_late %}
+Number of blunders that are throws for the opponent in the very-late-game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_opponent_very_late %}
+Number of massive blunders that are throws for the opponent in the very-late-game.
+{% enddocs %}
+
 {% docs median_score_playing %}
 Median evaluation score of the username’s position throughout the game.
 {% enddocs %}

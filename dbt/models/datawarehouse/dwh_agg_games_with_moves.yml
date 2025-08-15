@@ -67,6 +67,86 @@ models:
         description: "{{ doc('nb_throw_playing') }}"
       - name: nb_missed_opportunity_playing
         description: "{{ doc('nb_missed_opportunity_playing') }}"
+      - name: nb_missed_opportunity_blunder_playing
+        description: "{{ doc('nb_missed_opportunity_blunder_playing') }}"
+      - name: nb_missed_opportunity_massive_blunder_playing
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_playing') }}"
+      - name: nb_missed_opportunity_blunder_playing_early
+        description: "{{ doc('nb_missed_opportunity_blunder_playing_early') }}"
+      - name: nb_missed_opportunity_massive_blunder_playing_early
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_playing_early') }}"
+      - name: nb_throw_blunder_playing_early
+        description: "{{ doc('nb_throw_blunder_playing_early') }}"
+      - name: nb_throw_massive_blunder_playing_early
+        description: "{{ doc('nb_throw_massive_blunder_playing_early') }}"
+      - name: nb_missed_opportunity_blunder_playing_mid
+        description: "{{ doc('nb_missed_opportunity_blunder_playing_mid') }}"
+      - name: nb_missed_opportunity_massive_blunder_playing_mid
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_playing_mid') }}"
+      - name: nb_throw_blunder_playing_mid
+        description: "{{ doc('nb_throw_blunder_playing_mid') }}"
+      - name: nb_throw_massive_blunder_playing_mid
+        description: "{{ doc('nb_throw_massive_blunder_playing_mid') }}"
+      - name: nb_missed_opportunity_blunder_playing_late
+        description: "{{ doc('nb_missed_opportunity_blunder_playing_late') }}"
+      - name: nb_missed_opportunity_massive_blunder_playing_late
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_playing_late') }}"
+      - name: nb_throw_blunder_playing_late
+        description: "{{ doc('nb_throw_blunder_playing_late') }}"
+      - name: nb_throw_massive_blunder_playing_late
+        description: "{{ doc('nb_throw_massive_blunder_playing_late') }}"
+      - name: nb_missed_opportunity_blunder_playing_very_late
+        description: "{{ doc('nb_missed_opportunity_blunder_playing_very_late') }}"
+      - name: nb_missed_opportunity_massive_blunder_playing_very_late
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_playing_very_late') }}"
+      - name: nb_throw_blunder_playing_very_late
+        description: "{{ doc('nb_throw_blunder_playing_very_late') }}"
+      - name: nb_throw_massive_blunder_playing_very_late
+        description: "{{ doc('nb_throw_massive_blunder_playing_very_late') }}"
+      - name: nb_throw_opponent
+        description: "{{ doc('nb_throw_opponent') }}"
+      - name: nb_throw_blunder_opponent
+        description: "{{ doc('nb_throw_blunder_opponent') }}"
+      - name: nb_throw_massive_blunder_opponent
+        description: "{{ doc('nb_throw_massive_blunder_opponent') }}"
+      - name: nb_missed_opportunity_opponent
+        description: "{{ doc('nb_missed_opportunity_opponent') }}"
+      - name: nb_missed_opportunity_blunder_opponent
+        description: "{{ doc('nb_missed_opportunity_blunder_opponent') }}"
+      - name: nb_missed_opportunity_massive_blunder_opponent
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_opponent') }}"
+      - name: nb_missed_opportunity_blunder_opponent_early
+        description: "{{ doc('nb_missed_opportunity_blunder_opponent_early') }}"
+      - name: nb_missed_opportunity_massive_blunder_opponent_early
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_opponent_early') }}"
+      - name: nb_throw_blunder_opponent_early
+        description: "{{ doc('nb_throw_blunder_opponent_early') }}"
+      - name: nb_throw_massive_blunder_opponent_early
+        description: "{{ doc('nb_throw_massive_blunder_opponent_early') }}"
+      - name: nb_missed_opportunity_blunder_opponent_mid
+        description: "{{ doc('nb_missed_opportunity_blunder_opponent_mid') }}"
+      - name: nb_missed_opportunity_massive_blunder_opponent_mid
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_opponent_mid') }}"
+      - name: nb_throw_blunder_opponent_mid
+        description: "{{ doc('nb_throw_blunder_opponent_mid') }}"
+      - name: nb_throw_massive_blunder_opponent_mid
+        description: "{{ doc('nb_throw_massive_blunder_opponent_mid') }}"
+      - name: nb_missed_opportunity_blunder_opponent_late
+        description: "{{ doc('nb_missed_opportunity_blunder_opponent_late') }}"
+      - name: nb_missed_opportunity_massive_blunder_opponent_late
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_opponent_late') }}"
+      - name: nb_throw_blunder_opponent_late
+        description: "{{ doc('nb_throw_blunder_opponent_late') }}"
+      - name: nb_throw_massive_blunder_opponent_late
+        description: "{{ doc('nb_throw_massive_blunder_opponent_late') }}"
+      - name: nb_missed_opportunity_blunder_opponent_very_late
+        description: "{{ doc('nb_missed_opportunity_blunder_opponent_very_late') }}"
+      - name: nb_missed_opportunity_massive_blunder_opponent_very_late
+        description: "{{ doc('nb_missed_opportunity_massive_blunder_opponent_very_late') }}"
+      - name: nb_throw_blunder_opponent_very_late
+        description: "{{ doc('nb_throw_blunder_opponent_very_late') }}"
+      - name: nb_throw_massive_blunder_opponent_very_late
+        description: "{{ doc('nb_throw_massive_blunder_opponent_very_late') }}"
       - name: median_score_playing
         description: "{{ doc('median_score_playing') }}"
       - name: max_score_playing

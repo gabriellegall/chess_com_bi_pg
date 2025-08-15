@@ -105,6 +105,14 @@ models:
         description: "{{ doc('prev_position_status_playing') }}"
       - name: miss_context_playing
         description: "{{ doc('miss_context_playing') }}"
+      - name: position_status_opponent
+        description: "{{ doc('position_status_opponent') }}"
+      - name: prev_position_status_opponent
+        description: "{{ doc('prev_position_status_opponent') }}"
+      - name: miss_context_opponent
+        description: "{{ doc('miss_context_opponent') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"
       - name: time_control
         description: "{{ doc('time_control') }}"
       - name: time_remaining_seconds

@@ -96,6 +96,10 @@ URL of the black player's profile.
 UUID for the black player.
 {% enddocs %}
 
+{% docs log_timestamp %}
+Date are which the games data has been ingested in the datawarehouse.
+{% enddocs %}
+
 # Games moves
 
 {% docs move_number %}
@@ -226,6 +230,20 @@ Position status on the previous turn, from the perspective of the username.
 
 {% docs miss_context_playing %}
 Defines if the blunder or massive blunder (from the username's perspective) is made in the context of a 'Throw' or a 'Missed Opportunity'.
+A 'Throw' occurs when the previous situation was even or already disadvantageous (for the player username).
+A 'Missed Opportunity' occurs when the previous situation was advantageous (for the player username).
+{% enddocs %}
+
+{% docs position_status_opponent %}
+Description of the current score advantage/disadvantage, from the perspective of the opponent of username.
+{% enddocs %}
+
+{% docs prev_position_status_opponent %}
+Position status on the previous turn, from the perspective of the opponent of username.
+{% enddocs %}
+
+{% docs miss_context_opponent %}
+Defines if the blunder or massive blunder (from the perspective of username's opponent) is made in the context of a 'Throw' or a 'Missed Opportunity'.
 A 'Throw' occurs when the previous situation was even or already disadvantageous (for the player username).
 A 'Missed Opportunity' occurs when the previous situation was advantageous (for the player username).
 {% enddocs %}

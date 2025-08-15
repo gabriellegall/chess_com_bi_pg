@@ -9,9 +9,9 @@ SELECT
     opponent_rating_range,
     playing_result,
     -- Time management
-    prct_time_remaining_early,
-    prct_time_remaining_mid,
-    prct_time_remaining_late,
+    prct_time_remaining_early_playing,
+    prct_time_remaining_mid_playing,
+    prct_time_remaining_late_playing,
     -- Mistakes
         -- Massive blunders
         nb_massive_blunder_playing,

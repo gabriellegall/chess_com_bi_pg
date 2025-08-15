@@ -5,19 +5,19 @@ def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> 
     """
     return {
         # Time Management Metrics
-        'prct_time_remaining_early': {
+        'prct_time_remaining_early_playing': {
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
             'plot_title': f"Time remaining (Early - Turn {game_phases_config.get('early', {}).get('end_game_move')})"
         },
-        'prct_time_remaining_mid': {
+        'prct_time_remaining_mid_playing': {
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
             'plot_title': f"Time remaining (Mid - Turn {game_phases_config.get('mid', {}).get('end_game_move')})"
         },
-        'prct_time_remaining_late': {
+        'prct_time_remaining_late_playing': {
             'agg': 'median',
             'left_annotation': '⌛Slow',
             'right_annotation': '⚡Fast',
@@ -157,7 +157,7 @@ def get_section_config(game_phases_config: dict, score_thresholds_config: dict) 
     return [
         {
             "title": "⏳ Time Management (early vs. mid vs. late-game)",
-            "metrics": ("prct_time_remaining_early", "prct_time_remaining_mid", "prct_time_remaining_late"),
+            "metrics": ("prct_time_remaining_early_playing", "prct_time_remaining_mid_playing", "prct_time_remaining_late_playing"),
             "help_text": f"Time management is estimated looking at the percentage of time remaining on the clock at specific turns. For the early-game: turn {game_phases_config.get('early', {}).get('end_game_move')}, for the mid-game: turn {game_phases_config.get('mid', {}).get('end_game_move')}, and for the late-game: turn {game_phases_config.get('late', {}).get('end_game_move')}.",
             "has_breakdown": False
         },

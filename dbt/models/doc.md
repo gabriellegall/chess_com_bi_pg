@@ -502,6 +502,26 @@ Number of blunders detected in the very late-game phase, technically it is a cou
 Number of moves played when the position has reached a decisive advantage for username.
 {% enddocs %}
 
+{% docs prct_time_remaining_early %}
+Percentage of time remaining for the username at the end of the early stage.
+{% enddocs %}
+
+{% docs prct_time_remaining_mid %}
+Percentage of time remaining for the username at the end of the mid-game stage.
+{% enddocs %}
+
+{% docs prct_time_remaining_late %}
+Percentage of time remaining for the username at the end of the late-game stage.
+{% enddocs %}
+
+{% docs nb_throw_blunder_playing %}
+Total number of 'Blunder' throws that username has made in the game.
+{% enddocs %}
+
+{% docs nb_throw_massive_blunder_playing %}
+Total number of 'Massive Blunder' throws that username has made in the game.
+{% enddocs %}
+
 # Games benchmark
 
 {% docs bench_nb_games %}

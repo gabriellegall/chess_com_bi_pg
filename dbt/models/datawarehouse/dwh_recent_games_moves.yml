@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: dwh_recent_games_moves
+    description: "
+      Subset of the games with moves, filtered on recent games and specific turns only.
+      Remark: extra records were generated for games with missing move_number (i.e. games that ended 'too early'). 
+      "
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+      - name: username
+        description: "{{ doc('username') }}"
+      - name: time_class
+        description: "{{ doc('time_class') }}"
+      - name: playing_result
+        description: "{{ doc('playing_result') }}"
+      - name: score_playing
+        description: "
+          {{ doc('score_playing') }}
+          If the score is NULL because of missing move_number, then the LAST_VALUE is used instead. This is a proxy to make games comparable over move_number.
+          "
+      - name: opponent_rating_range
+        description: "{{ doc('opponent_rating_range') }}"
+      - name: url
+        description: "{{ doc('url') }}"
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+      - name: end_time
+        description: "
+          {{ doc('end_time') }} 
+          Expressed in the timezone {{ var('data_conversion')['utc_to_target_timezone'] }}
+          "
+      - name: playing_as
+        description: "{{ doc('playing_as') }}"

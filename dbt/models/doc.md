@@ -267,179 +267,179 @@ Total number of moves played in the game.
 {% enddocs %}
 
 {% docs nb_blunder_playing %}
-Number of blunders detected in the game, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+Number of blunders detected for username. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
 {% enddocs %}
 
 {% docs nb_massive_blunder_playing %}
-Number of massive blunders detected in the game, technically it is a count of 'Massive Blunder' on the field `miss_category_playing`.
+Number of massive blunders detected for username. Technically it is a count of 'Massive Blunder' on the field `miss_category_playing`.
 {% enddocs %}
 
 {% docs nb_throw_playing %}
-Number of throws detected in the game, technically it is a count of 'Throw' on the field `miss_context_playing`.
+Number of throws detected for username. Technically it is a count of 'Throw' on the field `miss_context_playing`. A throw can be a 'Blunder' OR a 'Massive Blunder'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_playing %}
-Number of throws detected in the game, technically it is a count of 'Missed Opportunity' on the field `miss_context_playing`.
+Number of missed opportunities detected. Technically it is a count of 'Missed Opportunity' on the field `miss_context_playing`. A missed opportunity can be a 'Blunder' OR a 'Massive Blunder'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing %}
-Number of blunders that are missed opportunities for username.
+Number of blunders that are missed opportunities for username. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_playing %}
-Number of massive blunders that are missed opportunities for username.
+Number of massive blunders that are missed opportunities for username. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Missed Opportunity'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing_early %}
-Number of blunders that are missed opportunities for username in the early-game.
+Number of blunders that are missed opportunities for username in the early-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_playing_early %}
-Number of massive blunders that are missed opportunities for username in the early-game.
+Number of massive blunders that are missed opportunities for username in the early-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_playing_early %}
-Number of blunders that are throws for username in the early-game.
+Number of blunders that are throws for username in the early-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_playing_early %}
-Number of massive blunders that are throws for username in the early-game.
+Number of massive blunders that are throws for username in the early-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing_mid %}
-Number of blunders that are missed opportunities for username in the mid-game.
+Number of blunders that are missed opportunities for username in the mid-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_playing_mid %}
-Number of massive blunders that are missed opportunities for username in the mid-game.
+Number of massive blunders that are missed opportunities for username in the mid-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_playing_mid %}
-Number of blunders that are throws for username in the mid-game.
+Number of blunders that are throws for username in the mid-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_playing_mid %}
-Number of massive blunders that are throws for username in the mid-game.
+Number of massive blunders that are throws for username in the mid-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing_late %}
-Number of blunders that are missed opportunities for username in the late-game.
+Number of blunders that are missed opportunities for username in the late-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_playing_late %}
-Number of massive blunders that are missed opportunities for username in the late-game.
+Number of massive blunders that are missed opportunities for username in the late-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_playing_late %}
-Number of blunders that are throws for username in the late-game.
+Number of blunders that are throws for username in the late-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_playing_late %}
-Number of massive blunders that are throws for username in the late-game.
+Number of massive blunders that are throws for username in the late-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing_very_late %}
-Number of blunders that are missed opportunities for username in the very-late-game.
+Number of blunders that are missed opportunities for username in the very-late-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_playing_very_late %}
-Number of massive blunders that are missed opportunities for username in the very-late-game.
+Number of massive blunders that are missed opportunities for username in the very-late-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_playing_very_late %}
-Number of blunders that are throws for username in the very-late-game.
+Number of blunders that are throws for username in the very-late-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_playing_very_late %}
-Number of massive blunders that are throws for username in the very-late-game.
+Number of massive blunders that are throws for username in the very-late-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_throw_opponent %}
-Number of throws detected in the game for the opponent.
+Number of throws detected in the game for the opponent. Technically it is a count of 'Throw' on the field `miss_context_opponent`.
 {% enddocs %}
 
 {% docs nb_throw_blunder_opponent %}
-Number of blunders that are throws for the opponent.
+Number of blunders that are throws for the opponent. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_opponent %}
-Number of massive blunders that are throws for the opponent.
+Number of massive blunders that are throws for the opponent. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_opponent %}
-Number of missed opportunities detected in the game for the opponent.
+Number of missed opportunities detected in the game for the opponent. Technically it is a count of 'Missed Opportunity' on the field `miss_context_opponent`.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_opponent %}
-Number of blunders that are missed opportunities for the opponent.
+Number of blunders that are missed opportunities for the opponent. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_opponent %}
-Number of massive blunders that are missed opportunities for the opponent.
+Number of massive blunders that are missed opportunities for the opponent. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Missed Opportunity'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_opponent_early %}
-Number of blunders that are missed opportunities for the opponent in the early-game.
+Number of blunders that are missed opportunities for the opponent in the early-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_opponent_early %}
-Number of massive blunders that are missed opportunities for the opponent in the early-game.
+Number of massive blunders that are missed opportunities for the opponent in the early-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_opponent_early %}
-Number of blunders that are throws for the opponent in the early-game.
+Number of blunders that are throws for the opponent in the early-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_opponent_early %}
-Number of massive blunders that are throws for the opponent in the early-game.
+Number of massive blunders that are throws for the opponent in the early-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_opponent_mid %}
-Number of blunders that are missed opportunities for the opponent in the mid-game.
+Number of blunders that are missed opportunities for the opponent in the mid-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_opponent_mid %}
-Number of massive blunders that are missed opportunities for the opponent in the mid-game.
+Number of massive blunders that are missed opportunities for the opponent in the mid-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_opponent_mid %}
-Number of blunders that are throws for the opponent in the mid-game.
+Number of blunders that are throws for the opponent in the mid-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_opponent_mid %}
-Number of massive blunders that are throws for the opponent in the mid-game.
+Number of massive blunders that are throws for the opponent in the mid-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_opponent_late %}
-Number of blunders that are missed opportunities for the opponent in the late-game.
+Number of blunders that are missed opportunities for the opponent in the late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_opponent_late %}
-Number of massive blunders that are missed opportunities for the opponent in the late-game.
+Number of massive blunders that are missed opportunities for the opponent in the late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_opponent_late %}
-Number of blunders that are throws for the opponent in the late-game.
+Number of blunders that are throws for the opponent in the late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_opponent_late %}
-Number of massive blunders that are throws for the opponent in the late-game.
+Number of massive blunders that are throws for the opponent in the late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_opponent_very_late %}
-Number of blunders that are missed opportunities for the opponent in the very-late-game.
+Number of blunders that are missed opportunities for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_massive_blunder_opponent_very_late %}
-Number of massive blunders that are missed opportunities for the opponent in the very-late-game.
+Number of massive blunders that are missed opportunities for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_throw_blunder_opponent_very_late %}
-Number of blunders that are throws for the opponent in the very-late-game.
+Number of blunders that are throws for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_throw_massive_blunder_opponent_very_late %}
-Number of massive blunders that are throws for the opponent in the very-late-game.
+Number of massive blunders that are throws for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs median_score_playing %}
@@ -467,35 +467,35 @@ Boolean indicating whether username has played a sufficient number of games for 
 {% enddocs %}
 
 {% docs nb_massive_blunder_early_playing %}
-Number of massive blunders detected in the early-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+Number of massive blunders detected in the early-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_blunder_early_playing %}
-Number of blunders detected in the early-game phase, technically it is a count of 'Blunder' on the field `miss_category_playing`.
+Number of blunders detected in the early-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_mid_playing %}
-Number of massive blunders detected in the mid-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+Number of massive blunders detected in the mid-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_blunder_mid_playing %}
-Number of blunders detected in the mid-game phase, technically it is a count of 'Blunder' on the field `miss_category_playing`.
+Number of blunders detected in the mid-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_late_playing %}
-Number of massive blunders detected in the late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+Number of massive blunders detected in the late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_blunder_late_playing %}
-Number of blunders detected in the late-game phase, technically it is a count of 'Blunder' on the field `miss_category_playing`.
+Number of blunders detected in the late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_very_late_playing %}
-Number of massive blunders detected in the very late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+Number of massive blunders detected in the very late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_blunder_very_late_playing %}
-Number of blunders detected in the very late-game phase, technically it is a count of 'Blunder' on the field `miss_category_playing`.
+Number of blunders detected in the very late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_moves_above_decisive_advantage %}

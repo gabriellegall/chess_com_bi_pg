@@ -24,9 +24,9 @@ WITH username_info AS (
     AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
   GROUP BY username, time_class, playing_rating_range, game_phase_key, aggregation_level
   HAVING COUNT(*) > {{ var('datamart')['min_games_played'] }}
-),
+)
 
-benchmark_metrics AS (
+, benchmark_metrics AS (
   SELECT 
     u.username,
     u.game_phase_key,
@@ -65,9 +65,9 @@ benchmark_metrics AS (
     u.username, u.game_phase_key, u.time_class, 
     u.playing_rating_range, u.aggregation_level
   HAVING COUNT(*) > {{ var('datamart')['min_games_played'] }}
-),
+)
 
-define_most_frequent_range AS (
+, define_most_frequent_range AS (
   SELECT DISTINCT ON (username, time_class)
     username,
     time_class,

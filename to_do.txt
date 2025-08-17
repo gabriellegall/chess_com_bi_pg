@@ -1,8 +1,5 @@
 -- Ensure .dockerignore works as expected
-
 -- Make the comma logic consistent
--- Documentation
--- YAML files
 -- Readme.md
 -- Check the openers in the API data of chess.com (e.g. 4 first moves)+
 -- Enrich further the Streamlit app

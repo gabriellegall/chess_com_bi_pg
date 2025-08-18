@@ -28,16 +28,16 @@ WITH incremental_partition AS (
 
 , cast_types AS (
     SELECT 
-        *
-        , end_time::DATE                  AS end_time_date
-        , TO_CHAR(end_time, 'YYYY-MM')    AS end_time_month
+        *,
+        end_time::DATE                  AS end_time_date,
+        TO_CHAR(end_time, 'YYYY-MM')    AS end_time_month
     FROM filter_table    
 )
 
 , define_playing AS (
     SELECT 
-        *
-        , CASE 
+        *,
+        CASE 
             WHEN LOWER(username) = LOWER(white__username) THEN 'White'
             WHEN LOWER(username) = LOWER(black__username) THEN 'Black'
             ELSE NULL END AS playing_as
@@ -46,16 +46,16 @@ WITH incremental_partition AS (
 
 , define_result AS (
     SELECT 
-        *
-        , CASE
+        *,
+        CASE
             WHEN playing_as = 'White' THEN white__result
             WHEN playing_as = 'Black' THEN black__result
-            ELSE NULL END AS playing_result_detailed
-        , CASE
+            ELSE NULL END AS playing_result_detailed,
+        CASE
             WHEN playing_as = 'White' THEN white__rating
             WHEN playing_as = 'Black' THEN black__rating
-            ELSE NULL END AS playing_rating
-        , CASE
+            ELSE NULL END AS playing_rating,
+        CASE
             WHEN playing_as = 'White' THEN black__rating
             WHEN playing_as = 'Black' THEN white__rating
             ELSE NULL END AS opponent_rating
@@ -64,8 +64,8 @@ WITH incremental_partition AS (
 
 , simplify_result AS (
     SELECT 
-        *
-        , CASE    
+        *,
+        CASE    
             WHEN playing_result_detailed IN ('checkmated', 'resigned', 'abandoned', 'timeout')                                      THEN 'Lose'
             WHEN playing_result_detailed IN ('win')                                                                                 THEN 'Win'
             WHEN playing_result_detailed IN ('stalemate', 'repetition', 'agreed', 'timevsinsufficient', 'insufficient', '50move')   THEN 'Draw'

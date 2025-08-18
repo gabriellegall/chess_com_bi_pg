@@ -48,7 +48,7 @@ docker_hub_push_streamlit: docker_build_project_streamlit
 docker_postgres:
 	docker run --name chess_local_postgres_container \
 	-e POSTGRES_USER=admin \
-	-e POSTGRES_PASSWORD=local \
+	-e POSTGRES_PASSWORD=admin \
 	-e POSTGRES_DB=chess \
 	-p 5432:5432 \
 	-d postgres

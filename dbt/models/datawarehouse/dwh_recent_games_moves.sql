@@ -25,15 +25,15 @@ WITH define_expected_moves AS (
         AND uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
         {% endif %}
     GROUP BY uuid, username
-),
+)
 
-expected_move_numbers AS (
+, expected_move_numbers AS (
     SELECT 1 AS move_number
     UNION ALL
     SELECT generate_series(5, 60, 5) AS move_number
 ),
 
-expanded_moves AS (
+, expanded_moves AS (
     SELECT 
         d.uuid,
         d.username,
@@ -46,9 +46,9 @@ expanded_moves AS (
         e.move_number
     FROM define_expected_moves d
     CROSS JOIN expected_move_numbers e
-),
+)
 
-joined_moves AS (
+, joined_moves AS (
     SELECT 
         em.*,
         gm.score_playing

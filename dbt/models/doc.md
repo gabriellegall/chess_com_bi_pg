@@ -494,10 +494,6 @@ Standard deviation of the evaluation scores, indicating the volatility of the ga
 Categorical range representation of the maximum evaluation score.
 {% enddocs %}
 
-{% docs has_enough_games %}
-Boolean indicating whether username has played a sufficient number of games for statistical relevance. This field is used as a filter on reports/dashboards.
-{% enddocs %}
-
 {% docs nb_massive_blunder_early_playing %}
 Number of massive blunders detected in the early-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}

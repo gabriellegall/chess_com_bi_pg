@@ -2,7 +2,7 @@ import pandas as pd
 from data.loader import load_query
 import streamlit as st
 
-@st.cache_data
+@st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
     """
     Loads the raw game data from the specified SQL query.

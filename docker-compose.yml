@@ -58,9 +58,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - WATCHTOWER_SCHEDULE=0 0 0 * * * 
+      - WATCHTOWER_SCHEDULE=0 0 * * * * 
       - TZ=Europe/Paris
-    command: chess_dbt_container
+    command: chess_dbt_container chess_streamlit_container
 
 volumes:
   analytical_data:

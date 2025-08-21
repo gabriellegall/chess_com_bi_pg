@@ -11,6 +11,8 @@ models:
         description: "{{ doc('username') }}"
       - name: uuid
         description: "{{ doc('uuid') }}"
+      - name: eco
+        description: "{{ doc('eco') }}"
       - name: game_phase
         description: "{{ doc('game_phase') }}"
       - name: url
@@ -271,8 +273,6 @@ models:
           {{ doc('nb_throw_massive_blunder_opponent_very_late') }}
           The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
           "
-
-      # New opponent blunder columns by phase
       - name: nb_blunder_opponent_early
         description: "
           {{ doc('nb_blunder_opponent_early') }}

@@ -18,6 +18,9 @@ run_all_with_reset:
 run_all:
 	@cd dbt && python run_all.py
 
+run_dbt_test:
+	@cd dbt && python run_dbt_test.py
+
 run_dbt_compile:
 	@cd dbt && python run_dbt_compile.py
 

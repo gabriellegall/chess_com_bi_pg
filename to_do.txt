@@ -1,6 +1,7 @@
+-- Find a way to exclude the games w/o data like '0-1'. Maybe 'there should be at least 1 timestamp'
 -- Ensure .dockerignore works as expected
 -- Readme.md
--- Check the openers in the API data of chess.com (e.g. 4 first moves)+
+
 -- Enrich further the Streamlit app
     -- More metrics
     -- Make the graph "Recent games position advantage" with last 7D, 14D, 30D lines

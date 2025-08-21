@@ -13,7 +13,7 @@ WITH aggregate_fields AS (
         uuid,
         game_phase,
         CASE 
-            WHEN GROUPING(game_phase) = 1 THEN 'Recent Games'
+            WHEN GROUPING(game_phase) = 1 THEN 'Games'
             ELSE game_phase
         END AS game_phase_key,
         CASE 
@@ -31,6 +31,7 @@ WITH aggregate_fields AS (
         MIN(opponent_rating) AS opponent_rating,
         MIN(opponent_rating_range) AS opponent_rating_range,
         MIN(playing_as) AS playing_as,
+        MIN(eco) AS eco,
         MIN(playing_result) AS playing_result,
         MIN(time_class) AS time_class,
         MIN(time_control) AS time_control,

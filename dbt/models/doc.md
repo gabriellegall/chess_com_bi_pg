@@ -458,6 +458,10 @@ Number of blunders that are throws for the opponent in the late-game. I.e. `miss
 Number of massive blunders that are throws for the opponent in the late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'late'.
 {% enddocs %}
 
+{% docs nb_throw_massive_blunder_opponent_very_late %}
+Number of massive blunders that are throws for the opponent in the late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'very_late'.
+{% enddocs %}
+
 {% docs nb_missed_opportunity_blunder_opponent_very_late %}
 Number of blunders that are missed opportunities for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}
@@ -470,8 +474,36 @@ Number of massive blunders that are missed opportunities for the opponent in the
 Number of blunders that are throws for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'very_late'.
 {% enddocs %}
 
-{% docs nb_throw_massive_blunder_opponent_very_late %}
-Number of massive blunders that are throws for the opponent in the very-late-game. I.e. `miss_category_opponent` = 'Massive Blunder' AND `miss_context_opponent` = 'Throw' AND `game_phase` = 'very_late'.
+{% docs nb_massive_blunder_opponent_early %}
+Number of massive blunders detected for the opponent in the early-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'early'.
+{% enddocs %}
+
+{% docs nb_blunder_opponent_early %}
+Number of blunders detected for the opponent in the early-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'early'.
+{% enddocs %}
+
+{% docs nb_massive_blunder_opponent_mid %}
+Number of massive blunders detected for the opponent in the mid-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'mid'.
+{% enddocs %}
+
+{% docs nb_blunder_opponent_mid %}
+Number of blunders detected for the opponent in the mid-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'mid'.
+{% enddocs %}
+
+{% docs nb_massive_blunder_opponent_late %}
+Number of massive blunders detected for the opponent in the late-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'late'.
+{% enddocs %}
+
+{% docs nb_blunder_opponent_late %}
+Number of blunders detected for the opponent in the late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'late'.
+{% enddocs %}
+
+{% docs nb_massive_blunder_opponent_very_late %}
+Number of massive blunders detected for the opponent in the very late-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'very_late'.
+{% enddocs %}
+
+{% docs nb_blunder_opponent_very_late %}
+Number of blunders detected for the opponent in the very late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs median_score_playing %}

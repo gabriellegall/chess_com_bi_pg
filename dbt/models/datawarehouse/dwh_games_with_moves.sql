@@ -28,6 +28,7 @@ WITH games_scope AS (
     games.archive_url,
     COALESCE(username_mapping.target_username, games.username) AS username, -- Use the target username from the mapping table if it exists
     games.url,
+    games.eco,
     games.end_time,
     games.end_time_date,
     games.end_time_month,
@@ -87,13 +88,6 @@ WITH games_scope AS (
     ON games.uuid = games_times.uuid
     AND games_moves.move_number = games_times.move_number
 )
-
---, opener_definition AS (
---  SELECT
---    *,
---    STRING_AGG(CASE WHEN move_number <= 4 THEN move ELSE NULL END, ' ' ORDER BY move_number ASC) OVER (PARTITION BY uuid) AS opener_4_moves
---  FROM score_defintion
---)
 
 , previous_score AS (
   SELECT 

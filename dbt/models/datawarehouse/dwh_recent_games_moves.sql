@@ -31,7 +31,7 @@ WITH define_expected_moves AS (
     SELECT 1 AS move_number
     UNION ALL
     SELECT generate_series(5, 60, 5) AS move_number
-),
+)
 
 , expanded_moves AS (
     SELECT 

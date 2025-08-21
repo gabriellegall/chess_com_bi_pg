@@ -15,8 +15,11 @@ run_dbt_full_refresh:
 run_all_with_reset:
 	@cd dbt && python run_all_with_reset.py
 
-run_all.py:
+run_all:
 	@cd dbt && python run_all.py
+
+run_dbt_compile:
+	@cd dbt && python run_dbt_compile.py
 
 run_dbt_doc:
 	@cd dbt && python run_dbt_doc.py

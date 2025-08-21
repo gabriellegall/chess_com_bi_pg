@@ -494,35 +494,35 @@ Standard deviation of the evaluation scores, indicating the volatility of the ga
 Categorical range representation of the maximum evaluation score.
 {% enddocs %}
 
-{% docs nb_massive_blunder_early_playing %}
+{% docs nb_massive_blunder_playing_early %}
 Number of massive blunders detected in the early-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
-{% docs nb_blunder_early_playing %}
+{% docs nb_blunder_playing_early %}
 Number of blunders detected in the early-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
-{% docs nb_massive_blunder_mid_playing %}
+{% docs nb_massive_blunder_playing_mid %}
 Number of massive blunders detected in the mid-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
-{% docs nb_blunder_mid_playing %}
+{% docs nb_blunder_playing_mid %}
 Number of blunders detected in the mid-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
-{% docs nb_massive_blunder_late_playing %}
+{% docs nb_massive_blunder_playing_late %}
 Number of massive blunders detected in the late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
-{% docs nb_blunder_late_playing %}
+{% docs nb_blunder_playing_late %}
 Number of blunders detected in the late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
-{% docs nb_massive_blunder_very_late_playing %}
+{% docs nb_massive_blunder_playing_very_late %}
 Number of massive blunders detected in the very late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
-{% docs nb_blunder_very_late_playing %}
+{% docs nb_blunder_playing_very_late %}
 Number of blunders detected in the very late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
@@ -548,6 +548,38 @@ Total number of 'Blunder' throws that username has made in the game.
 
 {% docs nb_throw_massive_blunder_playing %}
 Total number of 'Massive Blunder' throws that username has made in the game.
+{% enddocs %}
+
+{% docs opener_2_moves %}
+Concatenation of the first 2 moves in the game.
+{% enddocs %}
+
+{% docs opener_1_moves_playing %}
+Concatenation of the first move played by the username (i.e., moves where `is_playing_turn` is true).
+{% enddocs %}
+
+{% docs opener_4_moves %}
+Concatenation of the first 4 moves in the game.
+{% enddocs %}
+
+{% docs opener_2_moves_playing %}
+Concatenation of the first 2 moves played by the username (i.e., moves where `is_playing_turn` is true).
+{% enddocs %}
+
+{% docs opener_6_moves %}
+Concatenation of the first 6 moves in the game.
+{% enddocs %}
+
+{% docs opener_3_moves_playing %}
+Concatenation of the first 3 moves played by the username (i.e., moves where `is_playing_turn` is true).
+{% enddocs %}
+
+{% docs opener_8_moves %}
+Concatenation of the first 8 moves in the game.
+{% enddocs %}
+
+{% docs opener_4_moves_playing %}
+Concatenation of the first 4 moves played by the username (i.e., moves where `is_playing_turn` is true).
 {% enddocs %}
 
 # Games benchmark

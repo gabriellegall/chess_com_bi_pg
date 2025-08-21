@@ -56,12 +56,6 @@ WITH aggregate_fields AS (
             {% endif %}
         {% endfor %}
 
-        {% for phase, values in var('game_phases').items() %}
-            -- Blunders and Massive Blunders by game_phase
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing = 'Massive Blunder')                 AS nb_massive_blunder_{{ phase }}_playing,
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_playing IN ('Blunder', 'Massive Blunder'))   AS nb_blunder_{{ phase }}_playing,
-        {% endfor %}
-
         STRING_AGG(massive_blunder_move_number_playing::TEXT, ', ') AS massive_blunder_move_number_playing,
 
         {% set player_prefixes = ['playing', 'opponent'] %}
@@ -75,18 +69,16 @@ WITH aggregate_fields AS (
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder')         AS nb_missed_opportunity_blunder_{{ prefix }},
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }},
             
-            -- Blunders and Massive Blunders by game_phase
             {% for phase, values in var('game_phases').items() %}
+            -- Blunders and Massive Blunders by game_phase
             COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} = 'Massive Blunder')                 AS nb_massive_blunder_{{ prefix }}_{{ phase }},
             COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} IN ('Blunder', 'Massive Blunder'))   AS nb_blunder_{{ prefix }}_{{ phase }},
-            {% endfor %}
-
+            
             -- Throws & Missed Opportunities (Blunders and Massive Blunders) by game_phase
-            {% for phase, values in var('game_phases').items() %}
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder')           AS nb_missed_opportunity_blunder_{{ prefix }}_{{ phase }},
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder')   AS nb_missed_opportunity_massive_blunder_{{ prefix }}_{{ phase }},
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Blunder')                        AS nb_throw_blunder_{{ prefix }}_{{ phase }},
-            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Massive Blunder')                AS nb_throw_massive_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity'   AND miss_category_{{ prefix }} = 'Blunder')           AS nb_missed_opportunity_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity'   AND miss_category_{{ prefix }} = 'Massive Blunder')   AS nb_missed_opportunity_massive_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw'                AND miss_category_{{ prefix }} = 'Blunder')           AS nb_throw_blunder_{{ prefix }}_{{ phase }},
+            COUNT(*) FILTER (WHERE game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw'                AND miss_category_{{ prefix }} = 'Massive Blunder')   AS nb_throw_massive_blunder_{{ prefix }}_{{ phase }},
             {% endfor %}
         {% endfor %}
 
@@ -105,7 +97,13 @@ WITH aggregate_fields AS (
         CASE    
             WHEN MAX(score_playing) > {{ var('should_win_range')['mid'] }} THEN 'Decisive advantage'
             ELSE 'No decisive advantage'
-        END AS max_score_playing_type
+        END AS max_score_playing_type,
+
+        {% for n in [2, 4, 6, 8] %}
+            STRING_AGG(CASE WHEN move_number <= {{ n }} THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)                      AS opener_{{ n }}_moves,
+            STRING_AGG(CASE WHEN move_number <= {{ n }} AND is_playing_turn THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)  AS opener_{{ n // 2 }}_moves_playing
+            {% if not loop.last %},{% endif %}
+        {% endfor %}
 
     FROM {{ ref('dwh_games_with_moves') }}
     {% if is_incremental() %}

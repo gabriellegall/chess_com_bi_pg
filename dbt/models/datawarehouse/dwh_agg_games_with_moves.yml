@@ -45,44 +45,44 @@ models:
         description: "{{ doc('nb_blunder_playing') }}"
       - name: nb_massive_blunder_playing
         description: "{{ doc('nb_massive_blunder_playing') }}"
-      - name: nb_blunder_early_playing
+      - name: nb_blunder_playing_early
         description: "
-          {{ doc('nb_blunder_early_playing') }}
+          {{ doc('nb_blunder_playing_early') }}
           The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.
           "
-      - name: nb_massive_blunder_early_playing
+      - name: nb_massive_blunder_playing_early
         description: "
-          {{ doc('nb_massive_blunder_early_playing') }}
+          {{ doc('nb_massive_blunder_playing_early') }}
           The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.
           "
-      - name: nb_blunder_mid_playing
+      - name: nb_blunder_playing_mid
         description: "
-          {{ doc('nb_blunder_mid_playing') }}
+          {{ doc('nb_blunder_playing_mid') }}
           The mid game phase is defined from move {{ var('game_phases')['early']['end_game_move'] + 1 }} to {{ var('game_phases')['mid']['end_game_move'] }}.
           "
-      - name: nb_massive_blunder_mid_playing
+      - name: nb_massive_blunder_playing_mid
         description: "
-          {{ doc('nb_massive_blunder_mid_playing') }}
+          {{ doc('nb_massive_blunder_playing_mid') }}
           The mid game phase is defined from move {{ var('game_phases')['early']['end_game_move'] + 1 }} to {{ var('game_phases')['mid']['end_game_move'] }}.
           "
-      - name: nb_blunder_late_playing
+      - name: nb_blunder_playing_late
         description: "
-          {{ doc('nb_blunder_late_playing') }}
+          {{ doc('nb_blunder_playing_late') }}
           The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
           "
-      - name: nb_massive_blunder_late_playing
+      - name: nb_massive_blunder_playing_late
         description: "
-          {{ doc('nb_massive_blunder_late_playing') }}
+          {{ doc('nb_massive_blunder_playing_late') }}
           The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
           "
-      - name: nb_blunder_very_late_playing
+      - name: nb_blunder_playing_very_late
         description: "
-          {{ doc('nb_blunder_very_late_playing') }}
+          {{ doc('nb_blunder_playing_very_late') }}
           The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
           "
-      - name: nb_massive_blunder_very_late_playing
+      - name: nb_massive_blunder_playing_very_late
         description: "
-          {{ doc('nb_massive_blunder_very_late_playing') }}
+          {{ doc('nb_massive_blunder_playing_very_late') }}
           The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
           "
       - name: massive_blunder_move_number_playing
@@ -271,6 +271,48 @@ models:
           {{ doc('nb_throw_massive_blunder_opponent_very_late') }}
           The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
           "
+
+      # New opponent blunder columns by phase
+      - name: nb_blunder_opponent_early
+        description: "
+          {{ doc('nb_blunder_opponent_early') }}
+          The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.
+          "
+      - name: nb_massive_blunder_opponent_early
+        description: "
+          {{ doc('nb_massive_blunder_opponent_early') }}
+          The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.
+          "
+      - name: nb_blunder_opponent_mid
+        description: "
+          {{ doc('nb_blunder_opponent_mid') }}
+          The mid game phase is defined from move {{ var('game_phases')['early']['end_game_move'] + 1 }} to {{ var('game_phases')['mid']['end_game_move'] }}.
+          "
+      - name: nb_massive_blunder_opponent_mid
+        description: "
+          {{ doc('nb_massive_blunder_opponent_mid') }}
+          The mid game phase is defined from move {{ var('game_phases')['early']['end_game_move'] + 1 }} to {{ var('game_phases')['mid']['end_game_move'] }}.
+          "
+      - name: nb_blunder_opponent_late
+        description: "
+          {{ doc('nb_blunder_opponent_late') }}
+          The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
+          "
+      - name: nb_massive_blunder_opponent_late
+        description: "
+          {{ doc('nb_massive_blunder_opponent_late') }}
+          The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
+          "
+      - name: nb_blunder_opponent_very_late
+        description: "
+          {{ doc('nb_blunder_opponent_very_late') }}
+          The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
+          "
+      - name: nb_massive_blunder_opponent_very_late
+        description: "
+          {{ doc('nb_massive_blunder_opponent_very_late') }}
+          The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
+          "
       - name: median_score_playing
         description: "{{ doc('median_score_playing') }}"
       - name: max_score_playing
@@ -312,3 +354,19 @@ models:
           {{ doc('prct_time_remaining_playing_late') }}
           The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
           "
+      - name: opener_2_moves
+        description: "{{ doc('opener_2_moves') }}"
+      - name: opener_1_moves_playing
+        description: "{{ doc('opener_1_moves_playing') }}"
+      - name: opener_4_moves
+        description: "{{ doc('opener_4_moves') }}"
+      - name: opener_2_moves_playing
+        description: "{{ doc('opener_2_moves_playing') }}"
+      - name: opener_6_moves
+        description: "{{ doc('opener_6_moves') }}"
+      - name: opener_3_moves_playing
+        description: "{{ doc('opener_3_moves_playing') }}"
+      - name: opener_8_moves
+        description: "{{ doc('opener_8_moves') }}"
+      - name: opener_4_moves_playing
+        description: "{{ doc('opener_4_moves_playing') }}"

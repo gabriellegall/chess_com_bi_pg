@@ -50,11 +50,23 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
             target_table.uuid IS NULL
             AND LENGTH(game.pgn) > 0
             AND game.rules = 'chess'
+            AND game.pgn ~ E'\\d+\\. ' -- find at least 1 move, i.e. digit followed by at dot
         GROUP BY game.uuid
         ORDER BY end_time DESC -- Process the fresh games first
         LIMIT {limit}
         """
     else:
-        query = f"SELECT uuid, MAX(pgn) AS pgn FROM {schema_games}.{table_games} GROUP BY 1 LIMIT {limit}"
-    
+        query = f"""
+        SELECT 
+            uuid, 
+            MAX(pgn) AS pgn 
+        FROM {schema_games}.{table_games} 
+        WHERE TRUE
+            AND LENGTH(pgn) > 0
+            AND rules = 'chess'
+            AND pgn ~ E'\\d+\\. ' -- find at least 1 move, i.e. digit followed by at dot
+        GROUP BY 1 
+        LIMIT {limit}
+    """
+
     return query

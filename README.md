@@ -26,12 +26,12 @@ This repository contains all the scripts aiming to:
 
 # 🛠️ Technical overview
 ## Tools
-- Extract & load API data: **Python** (with DLT - Data Load Tool library)
+- Extract & load API data: **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
 - Data pre-processing: **Python**
 - Chess evaluation: **Stockfish engine** (with Python)
 - Data storage & compute: **Postgres**
 - Data transformation: **DBT** (on Docker)
-- Pipeline monitoring: [**Healthcheck.io**] (https://healthchecks.io/)
+- Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 - Data visualization: **Metabase & Streamlit** (on Docker)
 - Documentation: **DBT Docs**
 - Deployment: **Docker Compose**

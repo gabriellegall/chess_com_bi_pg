@@ -88,6 +88,15 @@ It uses the `config.yml` to define the Postgres project information with table n
 ### Incremental strategy 
 Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
 
+## DBT
+IMAGE
+
+#### Layers
+The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:
+- **'staging'**: raw data extracted from chess.com and evaluated using the stockfish engine. This layer contains a .csv DBT seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times.
+- **'intermediate'**: cleansed layer on top of the staging layer, aiming to cast data types and derive calculated fields. Tables in the intermediate layer share a 1:1 relationship with tables in the staging layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed). Basic data consistency checks are performed on this layer to catch errors as early as possible.
+- **'datawarehouse'**: verified reporting-ready tables used in Metabase/Streamlit. Those models merge intermediate tables together to derive business metrics & dimensions, based on rules and parameters. Those tables are exhaustive as they contain all the necessary information in a denormalized structure (One-Big-Table approach). `dwh_games_with_moves.sql` is the main table containing all the information at the most granular level. Other tables like `dwh_agg_games_with_moves.sql` and `dwh_recent_games_moves.sql` build on top of this table to derive different metrics or definitions at different aggregation levels. Technically, I could have created a dimension model with `fact_games`, `dim_games`, `fact_games_moves`, etc. but this would have resulted in more complexity and joins since metrics are dimensions are deeply intertwined in this project. There are just too few entities to split apart (essentially 3: games, games moves and players).
+
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 

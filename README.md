@@ -26,7 +26,7 @@ This repository contains all the scripts aiming to:
 
 # 🛠️ Technical overview
 ## Tools
-- Extract & load API data: **Python** (with [DLT - Data Load Tool library)](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess)
+- Extract & load API data: **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
 - Data pre-processing: **Python**
 - Chess evaluation: **Stockfish engine** (with Python)
 - Data storage & compute: **Postgres**

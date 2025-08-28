@@ -64,6 +64,30 @@ You can also choose to install the `requirements.txt` in virtual environment and
 3. copy the `docker-compose.yml` to the same project repository on your server.
 4. run the command `docker-compose up -d`
 
+# 📂 Project
+
+## Data extraction
+The script `chess_games_pipeline.py` gets the data from the chess.com API using the DLT library with the `chess` package and loads it in Postgres.
+It uses the `config.yml` to define usernames and history depth to be queried, as well as Postgres project information with table names to be used.
+
+### Incremental strategy
+The chess.com games information are partitioned by username and month on the API requests. 
+Therefore, the `__init__.py` script in the `chess`package has been modified to query only the partitions that are greater than or equal to the latest partitions integrated in Postgres for each username. Before this custom development, the `chess` package only supported full loads or simply did not update the partitions for the current month. 
+
+## Stockfish evaluation
+The script `chess_games_moves_pipeline.py` reads the integrated chess.com data and parses the `[pgn]` field to extract the individual game moves and evaluate a score using the Stockfish engine.
+It uses the `config.yml` to define the Postgres project information with table names to be used.
+
+### Incremental strategy 
+Only games not yet processed are processed by the Stockfish engine. To identify those games, a query is executed in Postgres, comparing the games loaded with the games loaded for which game moves have been already evaluated. This query is templated under the `helper.py` file.
+
+## Python pre-processing
+The script `chess_games_times_pipeline.py` reads the integrated chess.com data and parses the `[pgn]` field to extract the individual game clock times using regex.
+It uses the `config.yml` to define the Postgres project information with table names to be used. 
+
+### Incremental strategy 
+Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
+
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 
@@ -81,8 +105,8 @@ Here are the main changes:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall architecture is considerably simpler.
 - **Use of Python for data pre-processing**:
-    - **Problem:** Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
-    - **Solution:** Due to Postgres’ complexity, Python was employed for preprocessing tasks such as extracting timestamps from text.
+    - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
+    - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL DBT model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
 
 

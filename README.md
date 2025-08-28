@@ -40,6 +40,8 @@ This repository contains all the scripts aiming to:
 This project is a refactoring of an original project called `chess_com_bi` developed on BigQuery and orchestrated using GitHub. 
 
 Here are the main changes:
+- **Improved the frequency at which the database can be queried**. **Problem:** querying BigQuery often inevitably leads to increased costs since BigQuery charges on the bytes scanned. This required to pre-aggregate most of the final tables before displaying them on Metabase in real-time (As of August 2025, Metabase does not support persistent models for BigQuery). **Solution:**
+
 - Switch from BigQuery to Postgres: mostly for financial reasons. Postgres is free while BigQuery charges on the bytes scanned. This required to pre-aggregate most of the final tables before displaying them on Metabase in real-time. Postgres on Docker is also more reactive (lower latency) and users can be indexed for fast querying.
 - Switch from refresh every 24H to refresh every 15min: 
 

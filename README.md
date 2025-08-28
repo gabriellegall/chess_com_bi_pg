@@ -31,7 +31,7 @@ This repository contains all the scripts aiming to:
 - Chess evaluation: **Stockfish engine** (with Python)
 - Data storage & compute: **Postgres**
 - Data transformation: **DBT** (on Docker)
-- Pipeline monitoring: [**Healthcheck.io**] (https://healthchecks.io/)
+- Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 - Data visualization: **Metabase & Streamlit** (on Docker)
 - Documentation: **DBT Docs**
 - Deployment: **Docker Compose**

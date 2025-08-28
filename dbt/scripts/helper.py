@@ -50,7 +50,7 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
             target_table.uuid IS NULL
             AND LENGTH(game.pgn) > 0
             AND game.rules = 'chess'
-            AND game.pgn ~ E'\\d+\\. ' -- find at least 1 move, i.e. digit followed by at dot
+            AND game.pgn ~ E'\\\\d+\\\\. ' -- find at least 1 move, i.e. digit followed by at dot (PGSQL: game.pgn ~ E'\\d+\\. ')
         GROUP BY game.uuid
         ORDER BY end_time DESC -- Process the fresh games first
         LIMIT {limit}

@@ -30,7 +30,8 @@ target_schema   = config["postgres"]["schemas"]["games_times"]
 target_table    = config["postgres"]["tables"]["games_times"]
 
 engine  = get_engine()
-query   = games_to_process(engine, schema=target_schema, table=target_table, limit = 10000) # More games moves can be processed at once (it is quick)
+query   = games_to_process(engine, schema=target_schema, table=target_table, limit=10000)
+# print(f"🔎 Query to execute:\n{query}")
 games   = pd.read_sql(query, engine)
 print(f"✅ Query executed successfully — {len(games)} rows fetched.")
 

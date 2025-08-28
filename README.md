@@ -19,10 +19,11 @@ Here are some previews of the Streamlit dashboard:
 
 ## Repository
 This repository contains all the scripts aiming to: 
-1. Extract the games played data from the chess.com API and load it in Postgres.
-2. Extract the individual moves for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
-3. Construct a data model using DBT to define metrics and dimensions (blunders, game phases, ELO ranges, etc.).
-4. Deploy dashboards via Streamlit and Metabase
+1. Set-up a Postgres database
+2. Extract the games played data from the chess.com API and load it in Postgres.
+3. Extract the individual moves for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
+4. Construct a data model using DBT to define metrics and dimensions (blunders, game phases, ELO ranges, etc.).
+5. Deploy dashboards via Streamlit and Metabase
 
 # 🛠️ Technical overview
 ## Tools
@@ -36,7 +37,8 @@ This repository contains all the scripts aiming to:
 - Deployment: **from Docker Hub**, with **Docker Compose** including [**Towerwatch**](https://github.com/containrrr/watchtower)
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
-## Project refactoring
+
+# ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 
 Here are the main changes:

@@ -37,6 +37,32 @@ This repository contains all the scripts aiming to:
 - Deployment: **from Docker Hub**, with **Docker Compose** including [**Towerwatch**](https://github.com/containrrr/watchtower)
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
+## Requirements
+- Python
+- Docker
+- Makefile
+
+## Commands
+This project is fully dockerized can be executed locally or deployed on a server.
+
+### Local execution
+1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
+2. Using Docker Desktop, run `docker-compose up -d`
+
+You can also choose to install the `requirements.txt` in virtual environment and run the commands to the dockerized Postgres DB:
+- `make run_all`: run the continous pipeline with DBT 
+- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continous pipeline with DBT (full refresh)
+- `make run_dbt_full_refresh`: run DBT full-refresh once
+- `make run_dbt_test`: run DBT tests
+- `make run_dbt_compile`: run DBT compile
+- `make run_dbt_doc`: run DBT docs generate & docs serve
+- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions
+
+### Server deployment (VPS)
+1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
+2. copy the `.env` file to a project repository on your server.
+3. copy the `docker-compose.yml` to the same project repository on your server.
+4. run the command `docker-compose up -d`
 
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 

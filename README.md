@@ -112,6 +112,7 @@ Those tests are automatically executed via the script `run_all.py` (more informa
 
 ### Documentation
 All models are documented in DBT via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
+
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
 ## Orchestration

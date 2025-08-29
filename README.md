@@ -11,11 +11,12 @@ The key questions answered are:
 - "Do I make big mistakes when I am under time pressure ?"
 
 Here are some previews of the Metabase dashboard:
-![Illustration 1](https://github.com/gabriellegall/chess_com_bi/blob/main/images/metabase_page_1.png)
-![Illustration 3](https://github.com/gabriellegall/chess_com_bi/blob/main/images/metabase_page_3.png)
+![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_1.png)
+![Illustration 3](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_3.png)
 
 Here are some previews of the Streamlit dashboard:
-
+![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_1.PNG)
+![Illustration 2](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_2.PNG)
 
 ## Repository
 This repository contains all the scripts aiming to: 
@@ -89,7 +90,7 @@ It uses the `config.yml` to define the Postgres project information with table n
 Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
 
 ## DBT
-IMAGE
+![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/dbt_page_1.PNG)
 
 #### Layers
 The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:

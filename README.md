@@ -131,6 +131,8 @@ The folder `metabase.db` is a backup of all the Metabase developments, and it ca
 ### Streamlit
 As explained, Streamlit was also deployed to complement Metabase's limits and solve more advanced analytical use cases. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
 
+Pytests (under `test_data_processing.py`) were added to the project, mostly to verify that the data transformation functions were working as expected.
+
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 

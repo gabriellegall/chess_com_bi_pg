@@ -18,12 +18,22 @@ models:
     intermediate:
       +schema: int
       +materialized: table
+      +docs:
+        node_color: '#696969' # Silver
     datawarehouse:
       +schema: dwh
       +materialized: table
+      +docs:
+        node_color: '#C5A939' # Gold
 seeds:
   chess_com_bi_pg:
     +schema: stg_seeds
+    +docs:
+      node_color: '#5fb825' # Light Green (like DBT seeds)
+tests:
+  chess_com_bi_pg:
+    +docs:
+      node_color: "#FF0000" # Red
 
 vars:
   data_conversion:

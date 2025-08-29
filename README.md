@@ -50,8 +50,8 @@ This project is fully dockerized can be executed locally or deployed on a server
 2. Using Docker Desktop, run `docker-compose up -d`
 
 You can also choose to install the `requirements.txt` in virtual environment and run the commands to the dockerized Postgres DB:
-- `make run_all`: run the continous pipeline updating all tables. This is the most important command.
-- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continous pipeline `run_all` (full refresh)
+- `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
+- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh)
 - `make run_dbt_full_refresh`: run DBT full-refresh once
 - `make run_dbt_test`: run DBT tests once
 - `make run_dbt_compile`: run DBT compile once
@@ -144,10 +144,10 @@ Here are the main changes:
     - **Solution:** Migrating to a Postgres database hosted on a VPS eliminates query costs and reduces latency by centralizing application components on a single server, thereby improving query performance.
 - **Improved data freshness**:
     - **Problem:** Users expect live data in their dashboard (playing a game and then directly checking the results). BigQuery and GitHub Actions are fit for daily batch processing; however, for near real-time data integration (every 10-15 minutes), the free tiers quickly become a bottleneck.
-    - **Solution:** Using Postgres and a continously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and DBT jobs now execute incrementally every 10 min.
+    - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and DBT jobs now execute incrementally every 10 min.
 - **Extended analytics**:
     - **Problem:** Metabase is efficient for quick visualization, but unfit for advanced analytics. For instance, it does not support basic box plots, which are essential to benchmark players' performance.
-    - **Solution:** A Streamlit application was developped to complement Metabase and produce insightful benchmarks. 
+    - **Solution:** A Streamlit application was developed to complement Metabase and produce insightful benchmarks. 
 - **Simplified data ingestion with DLT**:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall architecture is considerably simpler.

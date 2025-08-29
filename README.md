@@ -50,12 +50,12 @@ This project is fully dockerized can be executed locally or deployed on a server
 2. Using Docker Desktop, run `docker-compose up -d`
 
 You can also choose to install the `requirements.txt` in virtual environment and run the commands to the dockerized Postgres DB:
-- `make run_all`: run the continous pipeline with DBT 
-- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continous pipeline with DBT (full refresh)
+- `make run_all`: run the continous pipeline updating all tables. This is the most important command.
+- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continous pipeline `run_all` (full refresh)
 - `make run_dbt_full_refresh`: run DBT full-refresh once
-- `make run_dbt_test`: run DBT tests
-- `make run_dbt_compile`: run DBT compile
-- `make run_dbt_doc`: run DBT docs generate & docs serve
+- `make run_dbt_test`: run DBT tests once
+- `make run_dbt_compile`: run DBT compile once
+- `make run_dbt_doc`: run DBT docs generate & docs serve once
 - `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions
 
 ### Server deployment (VPS)
@@ -97,14 +97,30 @@ The datawarehouse is structured through several layers in order to ensure (1) pe
 - **'intermediate'**: cleansed layer on top of the staging layer, aiming to cast data types and derive calculated fields. Tables in the intermediate layer share a 1:1 relationship with tables in the staging layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed). Basic data consistency checks are performed on this layer to catch errors as early as possible.
 - **'datawarehouse'**: verified reporting-ready tables used in Metabase/Streamlit. Those models merge intermediate tables together to derive business metrics & dimensions, based on rules and parameters. Those tables are exhaustive as they contain all the necessary information in a denormalized structure (One-Big-Table approach). `dwh_games_with_moves.sql` is the main table containing all the information at the most granular level. Other tables like `dwh_agg_games_with_moves.sql` and `dwh_recent_games_moves.sql` build on top of this table to derive different metrics or definitions at different aggregation levels. Technically, I could have created a dimension model with `fact_games`, `dim_games`, `fact_games_moves`, etc. but this would have resulted in more complexity and joins since metrics are dimensions are deeply intertwined in this project. There are just too few entities to split apart (essentially 3: games, games moves and players).
 
+#### Materialization strategy
+As much as possible, models use the incremental DBT materialization strategy. The incremental key is the indexed [uuid] column which represents the game ID. Two alternative candidate keys were considered but ultimately not selected:
+- Game end date ([end_time]): using this key would make it impossible to integrate new players with their history without having to perform a full refresh.
+- Load date in staging ([log_timestamp]): DLT overwrites the monthly partitions for each player, so this [log_timestamp] would update on every API call, making the pipeline process and overwrite already ingested games data every run. A custom solution could have been developed to modify DLT's default behavior; however, my objective was to leverage the standard, out-of-the-box functionality for data ingestion.
+
+The only table not materialized as incremental is `dwh_agg_games_benchmark.sql` which aggregates the entire history at the player level. Therefore, the DBT materialized_view materialization was used for performance reasons on both the DWH and BI sides.
+
 ### Data quality and testing 
 DBT tests have been developed to monitor data quality:
-- generic DBT tests 'not_null' or 'unique_combination_of_columns' on key fields.
-- custom DBT tests on the Stockfish games evaluation and clock-time extractions, to ensure that all games are processed as expected and all moves are evaluated.
+- Generic DBT tests 'not_null' or 'unique_combination_of_columns' on key fields.
+- Custom DBT tests on the Stockfish games evaluation and clock-time extractions, to ensure that all games are processed as expected and all moves are evaluated.
+Those tests are automatically executed via the script `run_all.py` (more information below).
 
 ### Documentation
 All models are documented in DBT via yaml files. 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each yaml. To ensure that there is a perfect match between the `doc.md` and the various yaml files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
+
+## Orchestration
+The `run_all.py` script is the primary orchestrator for the data pipeline, operating in a continuous loop with a 10-minute delay between each run.
+Each cycle performs the following steps:
+1. Executes the staging table scripts (API, Stockfish, etc.).
+2. Initiates a dbt run command to execute the models.
+3. Sends a health check signal (success or failure) to a dedicated endpoint on Healthcheck.io.
+4. Additionally, every 100th cycle, the script runs dbt test to perform data quality checks. The result of this test is reported to a separate Healthcheck.io endpoint. A failure in this stage is treated as a "soft fail," meaning it is logged and monitored but does not halt the main pipeline's execution.
 
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 

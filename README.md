@@ -111,7 +111,7 @@ DBT tests have been developed to monitor data quality:
 Those tests are automatically executed via the script `run_all.py` (more information below).
 
 ### Documentation
-All models are documented in DBT via yaml files. 
+All models are documented in DBT via yaml files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each yaml. To ensure that there is a perfect match between the `doc.md` and the various yaml files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
 ## Orchestration
@@ -132,6 +132,8 @@ The folder `metabase.db` is a backup of all the Metabase developments, and it ca
 As explained, Streamlit was also deployed to complement Metabase's limits and solve more advanced analytical use cases. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
 
 Pytests (under `test_data_processing.py`) were added to the project, mostly to verify that the data transformation functions were working as expected.
+
+It is also important to note that the Streamlit application has a dependency with DBT as it uses the `dbt_project.yml` file to show the metrics definitions and business rules dynamically. We can actually see those definitions under the `config.py`.
 
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 

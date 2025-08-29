@@ -34,7 +34,7 @@ This repository contains all the scripts aiming to:
 - Data transformation: **DBT** (on Docker)
 - Data visualization: **Metabase & Streamlit** (on Docker)
 - Documentation: **DBT Docs**
-- Deployment: **from Docker Hub**, with **Docker Compose** including [**Towerwatch**](https://github.com/containrrr/watchtower)
+- Deployment: **from Docker Hub**, with **Docker Compose** including [**Watchtower**](https://github.com/containrrr/watchtower)
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
 ## Requirements
@@ -140,7 +140,7 @@ This project is a refactoring of an original GitHub project called [chess_com_bi
 
 Here are the main changes:
 - **Improved the frequency at which the database can be queried**:
-    - **Problem:** Frequent queries on BigQuery lead to higher costs, as billing is based on bytes scanned. This required to pre-aggregate most of the final tables before displaying them on Metabase in real-time (as of August 2025, Metabase does not support persistent models for BigQuery).
+    - **Problem:** Frequent queries on BigQuery lead to higher costs, as billing is based on bytes scanned. This required to pre-aggregate most of the final tables before displaying them on Metabase in real-time (as of August 2025, [Metabase does not support persistent models for BigQuery](https://www.metabase.com/docs/latest/data-modeling/model-persistence)).
     - **Solution:** Migrating to a Postgres database hosted on a VPS eliminates query costs and reduces latency by centralizing application components on a single server, thereby improving query performance.
 - **Improved data freshness**:
     - **Problem:** Users expect live data in their dashboard (playing a game and then directly checking the results). BigQuery and GitHub Actions are fit for daily batch processing; however, for near real-time data integration (every 10-15 minutes), the free tiers quickly become a bottleneck.

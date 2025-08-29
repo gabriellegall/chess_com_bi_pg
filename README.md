@@ -122,6 +122,15 @@ Each cycle performs the following steps:
 3. Sends a health check signal (success or failure) to a dedicated endpoint on Healthcheck.io.
 4. Additionally, every 100th cycle, the script runs dbt test to perform data quality checks. The result of this test is reported to a separate Healthcheck.io endpoint. A failure in this stage is treated as a "soft fail," meaning it is logged and monitored but does not halt the main pipeline's execution.
 
+## Data visualization
+### Metabase
+Metabase is used to construct the dashboards and analysis. I hosted Metabase in a VPS, on Hetzner, using the public Metabase docker image.
+
+The folder `metabase.db` is a backup of all the Metabase developments, and it can be used if any re-deployment is needed. Under such scenario, we should simply replace the existing folder `metabase.db` inside the Docker container with the backup.
+
+### Streamlit
+As explained, Streamlit was also deployed to complement Metabase's limits and solve more advanced analytical use cases. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
+
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 
@@ -134,7 +143,7 @@ Here are the main changes:
     - **Solution:** Using Postgres and a continously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and DBT jobs now execute incrementally every 10 min.
 - **Extended analytics**:
     - **Problem:** Metabase is efficient for quick visualization, but unfit for advanced analytics. For instance, it does not support basic box plots, which are essential to benchmark players' performance.
-    - **Solution:** A Streamlit application was developped to complement Metabase and produce insightful benchmarks. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
+    - **Solution:** A Streamlit application was developped to complement Metabase and produce insightful benchmarks. 
 - **Simplified data ingestion with DLT**:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall architecture is considerably simpler.
@@ -142,13 +151,17 @@ Here are the main changes:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
     - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL DBT model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
+# 🚀 Outlooks
 
+## Possible improvements
 
+### Data analytics
+- Migration of the Metabase questions to Streamlit (to centralize everything under a single solution).
+- Integration of more metrics in the benchmark (like % of time remaining on the 1st massive blunder, etc.)
+- Analysis on the performance by opener (win rate by opener, breakdown by opponent vs playing user openers, etc.)
 
+### Code
+- the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
 
-
--- Enrich further the Streamlit app
-    -- More metrics
-    -- Make the graph "Recent games position advantage" with last 7D, 14D, 30D lines
-    -- Express time in CET
-    -- Openers
+### Packages
+- Although the project is very small, it could have been beneficial to use [dbt_project_evaluator](https://hub.getdbt.com/dbt-labs/dbt_project_evaluator/latest/) to monitor the usage of DBT's best practices.

@@ -1,0 +1,110 @@
+version: 2
+
+sources:
+  - name: chess_com
+    description: "Raw data ingested from the chess.com API"
+    schema: stg_chess_com
+    tables:
+      - name: players_games
+        description: "chess.com games played"
+        columns:
+          - name: end_time
+            description: "{{ doc('end_time') }}"
+          - name: url
+            description: "{{ doc('url') }}"
+          - name: pgn
+            description: "{{ doc('pgn') }}"
+          - name: time_control
+            description: "{{ doc('time_control') }}"
+          - name: rated
+            description: "{{ doc('rated') }}"
+          - name: accuracies__white
+            description: "{{ doc('accuracies__white') }}"
+          - name: accuracies__black
+            description: "{{ doc('accuracies__black') }}"
+          - name: tcn
+            description: "{{ doc('tcn') }}"
+          - name: uuid
+            description: "{{ doc('uuid') }}"
+          - name: initial_setup
+            description: "{{ doc('initial_setup') }}"
+          - name: fen
+            description: "{{ doc('fen') }}"
+          - name: time_class
+            description: "{{ doc('time_class') }}"
+          - name: rules
+            description: "{{ doc('rules') }}"
+          - name: white__rating
+            description: "{{ doc('white__rating') }}"
+          - name: white__result
+            description: "{{ doc('white__result') }}"
+          - name: white__aid
+            description: "{{ doc('white__aid') }}"
+          - name: white__username
+            description: "{{ doc('white__username') }}"
+          - name: white__uuid
+            description: "{{ doc('white__uuid') }}"
+          - name: black__rating
+            description: "{{ doc('black__rating') }}"
+          - name: black__result
+            description: "{{ doc('black__result') }}"
+          - name: black__aid
+            description: "{{ doc('black__aid') }}"
+          - name: black__username
+            description: "{{ doc('black__username') }}"
+          - name: black__uuid
+            description: "{{ doc('black__uuid') }}"
+          - name: eco
+            description: "{{ doc('eco') }}"
+          - name: username
+            description: "{{ doc('username') }}"
+          - name: archive_url
+            description: "{{ doc('archive_url') }}"
+          - name: log_timestamp
+            description: "{{ doc('log_timestamp') }}"
+          - name: _dlt_load_id
+            description: "{{ doc('_dlt_load_id') }}"
+          - name: _dlt_id
+            description: "{{ doc('_dlt_id') }}"
+          - name: start_time
+            description: "{{ doc('start_time') }}"
+          - name: tournament
+            description: "{{ doc('tournament') }}"
+          - name: match
+            description: "{{ doc('match') }}"
+        
+  - name: stockfish
+    description: "Raw data calculated by Stockfish for each game and move"
+    schema: stg_stockfish
+    tables: 
+      - name: players_games_moves
+        description: "Stockfish calculated moves"
+        columns:
+          - name: uuid
+            description: "{{ doc('uuid') }}"
+          - name: move_number
+            description: "{{ doc('move_number') }}"
+          - name: move
+            description: "{{ doc('move') }}"
+          - name: score_white
+            description: "{{ doc('score_white') }}"
+          - name: log_timestamp
+            description: "{{ doc('log_timestamp') }}"
+
+  - name: times
+    description: "Raw data calculated with Python to extract durations for each game and move"
+    schema: stg_times
+    tables: 
+      - name: players_games_times
+        description: "Python calculated move durations"
+        columns:
+          - name: uuid
+            description: "{{ doc('uuid') }}"
+          - name: move_number
+            description: "{{ doc('move_number') }}"
+          - name: time_remaining_seconds
+            description: "{{ doc('time_remaining_seconds') }}"
+          - name: time_remaining
+            description: "{{ doc('time_remaining') }}"
+          - name: log_timestamp
+            description: "{{ doc('log_timestamp') }}"

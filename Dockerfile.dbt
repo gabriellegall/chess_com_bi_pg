@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        stockfish \
+        make && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install requirements
+COPY dbt/requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy the rest of the application code
+COPY dbt/ .
+
+# Install dbt dependencies
+RUN dbt deps
+
+WORKDIR /app
+CMD ["python", "run_all.py"]

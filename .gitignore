@@ -1,10 +1,12 @@
 target/
 dbt_packages/
-scripts/__pycache__
+__pycache__/
 logs/
+.vscode/
 .user.yml
 venv
 .env
 to_do.txt
 chess_backup.dump
 notes.txt
+package-lock.yml

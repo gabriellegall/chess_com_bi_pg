@@ -1,0 +1,23 @@
+models:
+  - name: int_games_times
+    description: "Games times data with few calculated fields that can be directly derived w/o any join."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - move_number
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+        tests:
+          - not_null
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+        tests:
+          - not_null
+      - name: time_remaining
+        description: "{{ doc('time_remaining') }}"
+      - name: time_remaining_seconds
+        description: "{{ doc('time_remaining_seconds') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"

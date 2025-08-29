@@ -20,11 +20,11 @@ Here are some previews of the Streamlit dashboard:
 
 ## Repository
 This repository contains all the scripts aiming to: 
-1. Set up a Postgres database
+1. Set up a Postgres database.
 2. Extract the games played data from the chess.com API and load it in Postgres.
 3. Extract the individual moves for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
 4. Construct a data model using DBT to define metrics and dimensions (blunders, game phases, ELO ranges, etc.).
-5. Deploy dashboards via Streamlit and Metabase
+5. Deploy dashboards via Streamlit and Metabase.
 
 # 🛠️ Technical overview
 ## Tools
@@ -52,18 +52,18 @@ This project is fully dockerized and can be executed locally or deployed on a se
 
 You can also choose to install the `requirements.txt` in virtual environment and run the commands against the dockerized Postgres DB:
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
-- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh)
-- `make run_dbt_full_refresh`: run DBT full-refresh once
-- `make run_dbt_test`: run DBT tests once
-- `make run_dbt_compile`: run DBT compile once
-- `make run_dbt_doc`: run DBT docs generate & docs serve once
-- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions
+- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
+- `make run_dbt_full_refresh`: run DBT full-refresh once.
+- `make run_dbt_test`: run DBT tests once.
+- `make run_dbt_compile`: run DBT compile once.
+- `make run_dbt_doc`: run DBT docs generate & docs serve once.
+- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions.
 
 ### Server deployment (VPS)
 1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
 2. copy the `.env` file to a project repository on your server.
 3. copy the `docker-compose.yml` to the same project repository on your server.
-4. run the command `docker-compose up -d`
+4. run the command `docker-compose up -d`.
 
 # 📂 Project
 

@@ -29,7 +29,7 @@ seeds:
   chess_com_bi_pg:
     +schema: stg_seeds
     +docs:
-      node_color: '#5fb825' # Light Green (like DBT seeds)
+      node_color: '#5fb825' # Light Green (like DBT sources)
 tests:
   chess_com_bi_pg:
     +docs:

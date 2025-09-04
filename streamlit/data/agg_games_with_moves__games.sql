@@ -41,6 +41,6 @@ FROM dwh.dwh_agg_games_with_moves
 WHERE TRUE
     AND aggregation_level       = 'Games'
     AND time_class              = 'blitz'
-    AND time_control            = '300+5'
+    AND time_control            IN ('300+5', '180', '600')
     AND playing_rating_range    = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')

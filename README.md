@@ -37,9 +37,9 @@ graph TD;
         A[Chess.com API]
     end
 
-    subgraph Server["Server Host - Docker Compose"]
+    subgraph Server["Server host"]
 		subgraph s4["Data storage"]
-	        subgraph StorageDB["Postgres Docker Container"]
+	        subgraph StorageDB["Postgres Docker container"]
 	            C[Postgres Database]
 	        end
 		end
@@ -75,8 +75,6 @@ graph TD;
     C
     C
 
-    style C fill:#AED6F1,stroke:#3498DB,stroke-width:2px
-    style F fill:#F5B7B1,stroke:#E74C3C,stroke-width:2px,color:#000
 
     %% Subgraph Styling
     style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
@@ -87,7 +85,6 @@ graph TD;
 	C	
 	n2 <--->|"Loads"| C
 	n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
-	style E fill:#004AAD,stroke:#2ECC71,stroke-width:0px,color:#FFFFFF
 	style A fill:#90ee90,stroke:#333,stroke-width:0px
 	style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
 	style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
@@ -106,6 +103,9 @@ graph TD;
 	style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
 	D
 	F
+	style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
+	style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
+	style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
 ```
 
 ## Tools

@@ -28,7 +28,7 @@ This repository contains all the scripts aiming to:
 
 # 🛠️ Technical overview
 
-## Data Pipeline and Deployment Architecture
+## Data pipeline and deployment architecture
 ```mermaid
 graph TD;
 

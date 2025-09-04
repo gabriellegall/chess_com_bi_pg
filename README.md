@@ -27,6 +27,87 @@ This repository contains all the scripts aiming to:
 5. Deploy dashboards via Streamlit and Metabase.
 
 # 🛠️ Technical overview
+
+## Data Pipeline and Deployment Architecture
+```mermaid
+graph TD;
+
+    %% Subgraph Definitions
+    subgraph DS ["Data Source"]
+        A[Chess.com API]
+    end
+
+    subgraph Server["Server Host - Docker Compose"]
+		subgraph s4["Data storage"]
+	        subgraph StorageDB["Postgres Docker Container"]
+	            C[Postgres Database]
+	        end
+		end
+		subgraph s1["'DBT' Docker container"]
+	        subgraph Transformation["Data transformation"]
+	            D["DBT"]
+	        end
+	        subgraph Ingestion["Data pre-processing scripts"]
+				n1["Python pre-processing"]
+				n2["Stockfish processing<br>(Python)"]
+	            B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
+	        end
+		end
+        direction LR
+
+
+        subgraph Visualization["Data visualization"]
+			subgraph s3["'Streamlit' Docker container"]
+				F["Streamlit"]
+			end
+			subgraph s2["Metabase Docker container"]
+				E["Metabase"]
+			end
+            direction TB
+        end
+    end
+
+
+    %% Data Flow & Interactions
+    A -->|"Fetches game data"| B
+    B["API fetch<br>(Python/DLT)"] -->|"Loads"| C
+    D -->|"Executes models"| C
+    C
+    C
+
+    style C fill:#AED6F1,stroke:#3498DB,stroke-width:2px
+    style F fill:#F5B7B1,stroke:#E74C3C,stroke-width:2px,color:#000
+
+    %% Subgraph Styling
+    style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
+    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
+	B
+	C
+	Transformation
+	C	
+	n2 <--->|"Loads"| C
+	n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
+	style E fill:#004AAD,stroke:#2ECC71,stroke-width:0px,color:#FFFFFF
+	style A fill:#90ee90,stroke:#333,stroke-width:0px
+	style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
+	style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+	style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px
+	style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
+
+	C -->|"Queries"| E
+	C -->|"Queries"| F
+	style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+	style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px
+	style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000
+	style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
+    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
+    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
+	style s4 fill:#FFFFFF,stroke-width:0px
+	style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
+	D
+	F
+```
+
 ## Tools
 - Data extraction (API): **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
 - Data pre-processing (regex parsing): **Python**

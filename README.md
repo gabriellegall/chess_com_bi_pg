@@ -10,11 +10,11 @@ The key questions answered are:
 - "What are the games I should review to address the most important issues I have ?"
 - "Do I make big mistakes when I am under time pressure ?"
 
-Here are some previews of the Metabase dashboard:
+Here are some previews of the **Metabase** dashboard:
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_1.png)
 ![Illustration 3](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_3.png)
 
-Here are some previews of the Streamlit dashboard:
+Here are some previews of the **Streamlit** dashboard (designed specifically for players' benchmarking):
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_1.PNG)
 ![Illustration 2](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_2.PNG)
 

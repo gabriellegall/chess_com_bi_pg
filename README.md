@@ -10,23 +10,92 @@ The key questions answered are:
 - "What are the games I should review to address the most important issues I have ?"
 - "Do I make big mistakes when I am under time pressure ?"
 
-Here are some previews of the Metabase dashboard:
+Here are some previews of the **Metabase** dashboard:
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_1.png)
 ![Illustration 3](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_3.png)
 
-Here are some previews of the Streamlit dashboard:
+Here are some previews of the **Streamlit** dashboard (designed specifically for players' benchmarking):
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_1.PNG)
 ![Illustration 2](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_2.PNG)
 
 ## Repository
 This repository contains all the scripts aiming to: 
-1. Set up a Postgres database
+1. Set up a Postgres database.
 2. Extract the games played data from the chess.com API and load it in Postgres.
 3. Extract the individual moves for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
 4. Construct a data model using DBT to define metrics and dimensions (blunders, game phases, ELO ranges, etc.).
-5. Deploy dashboards via Streamlit and Metabase
+5. Deploy dashboards via Streamlit and Metabase.
 
 # 🛠️ Technical overview
+
+## Data pipeline and deployment architecture
+```mermaid
+graph BT;
+
+    %% Subgraph Definitions
+    subgraph Visualization["Data visualization"]
+        subgraph s3["'Streamlit' Docker container"]
+            F["Streamlit"]
+        end
+        subgraph s2["Metabase Docker container"]
+            E["Metabase"]
+        end
+        direction TB
+    end
+
+    subgraph Server["Server host"]
+        subgraph s4["Data storage"]
+            subgraph StorageDB["Postgres Docker container"]
+                C[Postgres Database]
+            end
+        end
+        subgraph s1["'DBT' Docker container"]
+            subgraph Transformation["Data transformation"]
+                D["DBT"]
+            end
+            subgraph Ingestion["Data pre-processing scripts"]
+                n1["Python pre-processing"]
+                n2["Stockfish processing<br>(Python)"]
+                B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
+            end
+        end
+        direction LR
+    end
+
+    subgraph DS ["Data Source"]
+        A[Chess.com API]
+    end
+
+    %% Data Flow & Interactions
+    A -->|"Fetches game data"| B
+    B["API fetch<br>(Python/DLT)"] -->|"Loads"| C
+    D -->|"Executes models"| C
+    n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
+    n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
+    C -->|"Queries"| E
+    C -->|"Queries"| F
+
+    %% Subgraph Styling
+    style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
+    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style A fill:#90ee90,stroke:#333,stroke-width:0px
+    style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+    style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
+    style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+    style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
+    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style s4 fill:#FFFFFF,stroke-width:0px
+    style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
+    style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
+    style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
+    style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
+    style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
+    style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
+    style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
+```
+
 ## Tools
 - Data extraction (API): **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
 - Data pre-processing (regex parsing): **Python**
@@ -52,18 +121,18 @@ This project is fully dockerized and can be executed locally or deployed on a se
 
 You can also choose to install the `requirements.txt` in virtual environment and run the commands against the dockerized Postgres DB:
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
-- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh)
-- `make run_dbt_full_refresh`: run DBT full-refresh once
-- `make run_dbt_test`: run DBT tests once
-- `make run_dbt_compile`: run DBT compile once
-- `make run_dbt_doc`: run DBT docs generate & docs serve once
-- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions
+- `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
+- `make run_dbt_full_refresh`: run DBT full-refresh once.
+- `make run_dbt_test`: run DBT tests once.
+- `make run_dbt_compile`: run DBT compile once.
+- `make run_dbt_doc`: run DBT docs generate & docs serve once.
+- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions.
 
 ### Server deployment (VPS)
 1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
 2. copy the `.env` file to a project repository on your server.
 3. copy the `docker-compose.yml` to the same project repository on your server.
-4. run the command `docker-compose up -d`
+4. run the command `docker-compose up -d`.
 
 # 📂 Project
 

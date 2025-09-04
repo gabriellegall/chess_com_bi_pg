@@ -88,14 +88,11 @@ graph TD;
 	style A fill:#90ee90,stroke:#333,stroke-width:0px
 	style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
 	style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-	style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px
 	style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
 
 	C -->|"Queries"| E
 	C -->|"Queries"| F
 	style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-	style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px
-	style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000
 	style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
     style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
     style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
@@ -106,6 +103,9 @@ graph TD;
 	style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
 	style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
 	style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
+	style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
+	style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
+	style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
 ```
 
 ## Tools

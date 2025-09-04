@@ -11,6 +11,7 @@ api:
         - gokhvttttgxdddhjkig345
         - yorek99
         - ashutoshkhurana568
+        - fluffy128li
       start_month: "2010/01"
     default_users:
       usernames:
@@ -44,7 +45,6 @@ api:
         - ap0lkmn
         - pjm00
         - ojatemate
-        - piwi100
         - atak_66
         - torpa1975
         - bondpbond
@@ -52,6 +52,22 @@ api:
         - justinmahi
         - ana2
         - thierry-l85
+        - barevner
+        - 1Kalinka
+        - AKASH6386
+        - flickjazz
+        - Bacon_and_Jaegs
+        - AsisIsisA
+        - aadam178
+        - Brewmaoster
+        - carlosfds
+        - ALMacugay
+        - CrazyProfAJ
+        - MOHIT_0620
+        - Karim30120
+        - kishoban
+        - AAgkoss
+        - alirezanorollahi
       start_month: "2025/04"
 
 postgres:

@@ -83,7 +83,7 @@ graph TD;
 	C
 	Transformation
 	C	
-	n2 <--->|"Loads"| C
+	n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
 	n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
 	style A fill:#90ee90,stroke:#333,stroke-width:0px
 	style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  

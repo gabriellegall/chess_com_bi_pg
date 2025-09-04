@@ -30,82 +30,70 @@ This repository contains all the scripts aiming to:
 
 ## Data pipeline and deployment architecture
 ```mermaid
-graph TD;
+graph BT;
 
     %% Subgraph Definitions
-    subgraph DS ["Data Source"]
-        A[Chess.com API]
+    subgraph Visualization["Data visualization"]
+        subgraph s3["'Streamlit' Docker container"]
+            F["Streamlit"]
+        end
+        subgraph s2["Metabase Docker container"]
+            E["Metabase"]
+        end
+        direction TB
     end
 
     subgraph Server["Server host"]
-		subgraph s4["Data storage"]
-	        subgraph StorageDB["Postgres Docker container"]
-	            C[Postgres Database]
-	        end
-		end
-		subgraph s1["'DBT' Docker container"]
-	        subgraph Transformation["Data transformation"]
-	            D["DBT"]
-	        end
-	        subgraph Ingestion["Data pre-processing scripts"]
-				n1["Python pre-processing"]
-				n2["Stockfish processing<br>(Python)"]
-	            B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
-	        end
-		end
-        direction LR
-
-
-        subgraph Visualization["Data visualization"]
-			subgraph s3["'Streamlit' Docker container"]
-				F["Streamlit"]
-			end
-			subgraph s2["Metabase Docker container"]
-				E["Metabase"]
-			end
-            direction TB
+        subgraph s4["Data storage"]
+            subgraph StorageDB["Postgres Docker container"]
+                C[Postgres Database]
+            end
         end
+        subgraph s1["'DBT' Docker container"]
+            subgraph Transformation["Data transformation"]
+                D["DBT"]
+            end
+            subgraph Ingestion["Data pre-processing scripts"]
+                n1["Python pre-processing"]
+                n2["Stockfish processing<br>(Python)"]
+                B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
+            end
+        end
+        direction LR
     end
 
+    subgraph DS ["Data Source"]
+        A[Chess.com API]
+    end
 
     %% Data Flow & Interactions
     A -->|"Fetches game data"| B
     B["API fetch<br>(Python/DLT)"] -->|"Loads"| C
     D -->|"Executes models"| C
-    C
-    C
-
+    n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
+    n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
+    C -->|"Queries"| E
+    C -->|"Queries"| F
 
     %% Subgraph Styling
     style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
-    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
-	B
-	C
-	Transformation
-	C	
-	n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
-	n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
-	style A fill:#90ee90,stroke:#333,stroke-width:0px
-	style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
-	style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-	style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
-
-	C -->|"Queries"| E
-	C -->|"Queries"| F
-	style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-	style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
-    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
-    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5  
-	style s4 fill:#FFFFFF,stroke-width:0px
-	style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
-	D
-	F
-	style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
-	style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
-	style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
-	style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
-	style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
-	style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
+    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style A fill:#90ee90,stroke:#333,stroke-width:0px
+    style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+    style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
+    style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
+    style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
+    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
+    style s4 fill:#FFFFFF,stroke-width:0px
+    style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
+    style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
+    style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
+    style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
+    style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
+    style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
+    style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
 ```
 
 ## Tools

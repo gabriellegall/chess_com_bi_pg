@@ -31,10 +31,11 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
         if not options:
             st.sidebar.warning(f"No '{field.replace('_', ' ')}' options.")
             continue
-        
+
         selected_option = st.sidebar.selectbox(
             f"Select {field.replace('_', ' ').title()}",
-            options=options
+            options=options,
+            key=f"sidebar_{field}" # ensure Streamlit updates the widget when options change
         )
         selections[field] = selected_option
     return selections

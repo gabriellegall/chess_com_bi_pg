@@ -230,6 +230,12 @@ Here are the main changes:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
     - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL DBT model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
+# ⚙️ CI/CD
+The GitHub workflow `dbt_dockerhub_update` runs everytime there is a merge on the main branch. It uploads the Docker images to DockerHub so that Watchtower can then update the running containers directly in the VPS. 
+
+## CI/CD
+- **dbt_prod_docker_upload**: update of the Docker image in Docker Hub. This workflow is automatically executed once a push command is executed to the Master branch.
+
 # 🚀 Outlook
 
 ## Possible improvements

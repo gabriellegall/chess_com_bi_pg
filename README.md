@@ -32,18 +32,18 @@ This repository contains all the scripts aiming to:
 ```mermaid
 graph BT;
 
-    %% Subgraph Definitions
-    subgraph Visualization["Data visualization"]
-        subgraph s3["'Streamlit' Docker container"]
-            F["Streamlit"]
-        end
-        subgraph s2["Metabase Docker container"]
-            E["Metabase"]
-        end
-        direction TB
-    end
 
     subgraph Server["Server host"]
+	    %% Subgraph Definitions
+	    subgraph Visualization["Data visualization"]
+	        subgraph s3["'Streamlit' Docker container"]
+	            F["Streamlit"]
+	        end
+	        subgraph s2["Metabase Docker container"]
+	            E["Metabase"]
+	        end
+	        direction TB
+	    end
         subgraph s4["Data storage"]
             subgraph StorageDB["Postgres Docker container"]
                 C[Postgres Database]

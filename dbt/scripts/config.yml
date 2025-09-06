@@ -69,6 +69,7 @@ api:
         - kishoban
         - AAgkoss
         - alirezanorollahi
+        - xamxamsoun
       start_month: "2025/04"
 
 postgres:

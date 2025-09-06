@@ -3,7 +3,7 @@ name: dbt_dockerhub_update
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   dbt_dockerhub_update_job:

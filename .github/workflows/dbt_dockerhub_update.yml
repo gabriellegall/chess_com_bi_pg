@@ -20,7 +20,7 @@ jobs:
 
       # Build the Docker image
       - name: build_docker_image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/chess-com-bi-pg-dbt .
+        run: docker build -f Dockerfile.dbt -t ${{ secrets.DOCKER_USERNAME }}/chess-com-bi-pg-dbt .
 
       # Push the Docker image to Docker Hub
       - name: push_docker_image

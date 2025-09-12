@@ -16,6 +16,7 @@ WITH incremental_partition AS (
         SELECT 1
         FROM {{ this }} i
         WHERE i.uuid = pg.uuid
+            AND i.username = pg.username
     )
     {% endif %}
 )

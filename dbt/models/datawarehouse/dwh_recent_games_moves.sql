@@ -18,11 +18,16 @@ WITH define_expected_moves AS (
         MAX(url) AS url,
         MAX(end_time) AS end_time,
         MAX(playing_as) AS playing_as
-    FROM {{ ref('dwh_games_with_moves') }}
+    FROM {{ ref('dwh_games_with_moves') }} games
     WHERE 
         end_time_date >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL '7 days')
         {% if is_incremental() %}
-        AND uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+        AND NOT EXISTS (
+            SELECT 1
+            FROM {{ this }} i
+            WHERE i.uuid = games.uuid
+              AND i.username = games.username
+        )
         {% endif %}
     GROUP BY uuid, username
 )

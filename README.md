@@ -30,70 +30,56 @@ This repository contains all the scripts aiming to:
 
 ## Data pipeline and deployment architecture
 ```mermaid
-graph BT;
+graph LR;
 
-
-    subgraph Server["Server host"]
-	    %% Subgraph Definitions
-	    subgraph Visualization["Data visualization"]
-	        subgraph s3["'Streamlit' Docker container"]
-	            F["Streamlit"]
-	        end
-	        subgraph s2["Metabase Docker container"]
-	            E["Metabase"]
-	        end
-	        direction TB
-	    end
-        subgraph s4["Data storage"]
-            subgraph StorageDB["Postgres Docker container"]
-                C[Postgres Database]
-            end
-        end
-        subgraph s1["'DBT' Docker container"]
-            subgraph Transformation["Data transformation"]
-                D["DBT"]
-            end
-            subgraph Ingestion["Data pre-processing scripts"]
-                n1["Python pre-processing"]
-                n2["Stockfish processing<br>(Python)"]
-                B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
-            end
-        end
-        direction LR
-    end
-
+    %% Data Source
     subgraph DS ["Data Source"]
         A[Chess.com API]
     end
 
-    %% Data Flow & Interactions
+    %% Processing
+    subgraph Processing ["Data Pipeline"]
+        B["API fetch<br>(Python/DLT)"]
+        n1["Data pre-processing<br>(Python)"]
+        n2["Stockfish processing<br>(Python)"]
+        D["DBT Models"]
+    end
+
+    %% Storage
+    subgraph Storage ["Data Storage"]
+        C[Postgres Database]
+    end
+
+    %% Visualization
+    subgraph Viz ["Data Visualization"]
+        E["Metabase"]
+        F["Streamlit"]
+    end
+
+    %% Data flow
     A -->|"Fetches game data"| B
-    B["API fetch<br>(Python/DLT)"] -->|"Loads"| C
+    B -->|"Loads"| C
+    n1 -->|"Reads & loads"| C
+    n2 -->|"Reads & loads"| C
     D -->|"Executes models"| C
-    n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
-    n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
     C -->|"Queries"| E
     C -->|"Queries"| F
 
-    %% Subgraph Styling
-    style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
-    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style A fill:#90ee90,stroke:#333,stroke-width:0px
-    style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-    style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
-    style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-    style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
-    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style s4 fill:#FFFFFF,stroke-width:0px
-    style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
-    style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
-    style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
-    style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
-    style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
-    style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
-    style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
+    %% Subgraph styling (light, semi-transparent)
+    style DS fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Processing fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Storage fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Viz fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+
+    %% Node styling (from Twitch palette)
+    style A fill:#9146FF,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style n1 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style n2 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style D fill:#f39c12,stroke:#e08e0b,stroke-width:2px,color:white
+    style C fill:#777,stroke:#666,stroke-width:2px,color:white
+    style E fill:#00a65a,stroke:#008d4c,stroke-width:2px,color:white
+    style F fill:#00a65a,stroke:#008d4c,stroke-width:2px,color:white
 ```
 
 ## Tools

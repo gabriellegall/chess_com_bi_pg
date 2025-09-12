@@ -42,7 +42,7 @@ graph LR;
         B["API fetch<br>(Python/DLT)"]
         n1["Data pre-processing<br>(Python)"]
         n2["Stockfish processing<br>(Python)"]
-        D["DBT Models"]
+        D["DBT models"]
     end
 
     %% Storage

@@ -71,15 +71,15 @@ graph LR;
     style Storage fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
     style Viz fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
 
-    %% Node styling (from Twitch palette)
-    style A fill:#9146FF,stroke:#333,stroke-width:2px,color:#fff
+    %% Node styling
+    style A fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
     style B fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style n1 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style n2 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style D fill:#f39c12,stroke:#e08e0b,stroke-width:2px,color:white
-    style C fill:#777,stroke:#666,stroke-width:2px,color:white
-    style E fill:#00a65a,stroke:#008d4c,stroke-width:2px,color:white
-    style F fill:#00a65a,stroke:#008d4c,stroke-width:2px,color:white
+    style C fill:#1B4F72,stroke:#154360,stroke-width:2px,color:white
+    style E fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
+    style F fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
 ```
 
 ## Tools

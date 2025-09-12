@@ -78,7 +78,7 @@ def calculate_win_loss_draw(data: pd.DataFrame) -> pd.DataFrame:
     Adds is_win, is_loss, is_draw columns to the DataFrame.
     """
     data['is_win']  = (data['playing_result'] == 'Win').astype(int)
-    data['is_loss'] = (data['playing_result'] == 'Loss').astype(int)
+    data['is_loss'] = (data['playing_result'] == 'Lose').astype(int)
     data['is_draw'] = (data['playing_result'] == 'Draw').astype(int)
     return data
 

@@ -1,7 +1,7 @@
 models:
   - name: int_games_moves
     description: "Games moves data with few calculated fields that can be directly derived w/o any join."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid
@@ -9,17 +9,17 @@ models:
     columns:
       - name: uuid
         description: "{{ doc('uuid') }}"
-        tests:
+        data_tests:
           - not_null
       - name: move_number
         description: "{{ doc('move_number') }}"
-        tests:
+        data_tests:
           - not_null
       - name: move
         description: "{{ doc('move') }}"
       - name: score_white
         description: "{{ doc('score_white') }}"
-        tests:
+        data_tests:
           - not_null
       - name: player_color_turn
         description: "{{ doc('player_color_turn') }}"

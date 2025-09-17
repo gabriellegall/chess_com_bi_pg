@@ -1,7 +1,7 @@
 models:
   - name: int_games
     description: "Games data with few calculated fields that can be directly derived w/o any join."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid
@@ -11,7 +11,7 @@ models:
         description: "{{ doc('archive_url') }}"
       - name: username
         description: "{{ doc('username') }}"
-        tests:
+        data_tests:
           - not_null
       - name: url
         description: "{{ doc('url') }}"
@@ -32,7 +32,7 @@ models:
         description: "{{ doc('tcn') }}"
       - name: uuid
         description: "{{ doc('uuid') }}"
-        tests:
+        data_tests:
           - not_null
       - name: initial_setup
         description: "{{ doc('initial_setup') }}"
@@ -68,19 +68,19 @@ models:
         description: "{{ doc('end_time_month') }}"
       - name: playing_as
         description: "{{ doc('playing_as') }}"
-        tests:
+        data_tests:
           - not_null
       - name: playing_result_detailed
         description: "{{ doc('playing_result_detailed') }}"
-        tests:
+        data_tests:
           - not_null
       - name: playing_rating
         description: "{{ doc('playing_rating') }}"
-        tests:
+        data_tests:
           - not_null
       - name: opponent_rating
         description: "{{ doc('opponent_rating') }}"
-        tests:
+        data_tests:
           - not_null
       - name: playing_result
         description: "{{ doc('playing_result') }}"

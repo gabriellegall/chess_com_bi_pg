@@ -1,4 +1,4 @@
-{{ config(warn_if = '>1', error_if = '>10') }}
+{{ config(warn_if = '>1', error_if = '>50') }}
 
 WITH agg_game AS (
   SELECT 

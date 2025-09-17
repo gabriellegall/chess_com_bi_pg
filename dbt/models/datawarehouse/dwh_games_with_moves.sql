@@ -11,14 +11,19 @@
 
 WITH games_scope AS (
   SELECT
-    *
-  FROM {{ ref ('int_games') }}
+    games.*
+  FROM {{ ref ('int_games') }} games
   WHERE TRUE
     AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
     AND time_class = ANY(ARRAY{{ var('data_scope')['time_class'] }}::text[])    
     AND rated
     {% if is_incremental() %}
-    AND uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+    AND NOT EXISTS (
+        SELECT 1
+        FROM {{ this }} i
+        WHERE i.uuid = games.uuid
+          AND i.username = games.username
+    )
     {% endif %}
 )
 

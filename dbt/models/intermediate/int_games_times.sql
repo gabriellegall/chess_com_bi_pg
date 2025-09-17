@@ -7,9 +7,13 @@
 ) }}
 
 SELECT 
-    *
-FROM {{ source('times', 'players_games_times') }}
+    pgt.*
+FROM {{ source('times', 'players_games_times') }} pgt
 
 {% if is_incremental() %}
-WHERE uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM {{ this }} i
+    WHERE i.uuid = pgt.uuid
+)
 {% endif %}

@@ -30,70 +30,56 @@ This repository contains all the scripts aiming to:
 
 ## Data pipeline and deployment architecture
 ```mermaid
-graph BT;
+graph LR;
 
-
-    subgraph Server["Server host"]
-	    %% Subgraph Definitions
-	    subgraph Visualization["Data visualization"]
-	        subgraph s3["'Streamlit' Docker container"]
-	            F["Streamlit"]
-	        end
-	        subgraph s2["Metabase Docker container"]
-	            E["Metabase"]
-	        end
-	        direction TB
-	    end
-        subgraph s4["Data storage"]
-            subgraph StorageDB["Postgres Docker container"]
-                C[Postgres Database]
-            end
-        end
-        subgraph s1["'DBT' Docker container"]
-            subgraph Transformation["Data transformation"]
-                D["DBT"]
-            end
-            subgraph Ingestion["Data pre-processing scripts"]
-                n1["Python pre-processing"]
-                n2["Stockfish processing<br>(Python)"]
-                B["API Fetch & Stockfish Analysis<br>(Python/DLT)"]
-            end
-        end
-        direction LR
-    end
-
+    %% Data Source
     subgraph DS ["Data Source"]
         A[Chess.com API]
     end
 
-    %% Data Flow & Interactions
+    %% Processing
+    subgraph Processing ["Data Pipeline"]
+        B["API fetch<br>(Python/DLT)"]
+        n1["Data pre-processing<br>(Python)"]
+        n2["Stockfish processing<br>(Python)"]
+        D["DBT models"]
+    end
+
+    %% Storage
+    subgraph Storage ["Data Storage"]
+        C[Postgres Database]
+    end
+
+    %% Visualization
+    subgraph Viz ["Data Visualization"]
+        E["Metabase"]
+        F["Streamlit"]
+    end
+
+    %% Data flow
     A -->|"Fetches game data"| B
-    B["API fetch<br>(Python/DLT)"] -->|"Loads"| C
+    B -->|"Loads"| C
+    n1 -->|"Reads & loads"| C
+    n2 -->|"Reads & loads"| C
     D -->|"Executes models"| C
-    n2["Stockfish processing<br>(Python/Stockfish)"] <--->|"Loads"| C
-    n1["Data pre-processing <br>(Python)"] <--->|"Loads"| C["Postgres"]
     C -->|"Queries"| E
     C -->|"Queries"| F
 
-    %% Subgraph Styling
-    style DS fill:#D5E8D4,stroke:#82B366,stroke-width:0.5px
-    style StorageDB fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style A fill:#90ee90,stroke:#333,stroke-width:0px
-    style s1 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style Ingestion fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-    style Transformation fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px
-    style Visualization fill:#FFFFFF,stroke:#ccc,stroke-width:0.5px,color:#000000
-    style n1 fill:#FFFFFF,stroke-width:0.5px,color:#000000,stroke:#000000
-    style s2 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style s3 fill:#cce5ff,stroke:#66a3ff,stroke-width:1px,stroke-dasharray:5 5
-    style s4 fill:#FFFFFF,stroke-width:0px
-    style Server fill:#f0f0f0,stroke:#aaa,stroke-width:0px
-    style F fill:#FFFFFF,stroke:#FF3131,stroke-width:2px,color:#000
-    style C fill:#FFFFFF,stroke:#004AAD,stroke-width:2px
-    style E fill:#FFFFFF,stroke:#8C52FF,stroke-width:2px,color:#000000
-    style n2 fill:#FFFFFF,stroke-width:0.5px,stroke:#000000,color:#000000
-    style B fill:#FFFFFF,stroke:#000000,stroke-width:0.5px,color:#000000
-    style D fill:#FFFFFF,stroke:#FF914D,stroke-width:2px,color:#000000
+    %% Subgraph styling (light, semi-transparent)
+    style DS fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Processing fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Storage fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style Viz fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+
+    %% Node styling
+    style A fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
+    style B fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style n1 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style n2 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style D fill:#f39c12,stroke:#e08e0b,stroke-width:2px,color:white
+    style C fill:#1B4F72,stroke:#154360,stroke-width:2px,color:white
+    style E fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
+    style F fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
 ```
 
 ## Tools
@@ -206,6 +192,9 @@ Pytests (under `test_data_processing.py`) were added to the project, mostly to v
 
 It is also important to note that the Streamlit application has a dependency with DBT as it uses the `dbt_project.yml` file to show the metrics definitions and business rules dynamically. We can actually see those definitions under the `config.py`.
 
+# ⚙️ CI/CD
+The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 
+
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
 
@@ -229,9 +218,6 @@ Here are the main changes:
 - **Use of Python for data pre-processing**:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
     - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL DBT model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
-
-# ⚙️ CI/CD
-The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 
 
 # 🚀 Outlook
 

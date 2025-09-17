@@ -106,9 +106,14 @@ WITH aggregate_fields AS (
             {% if not loop.last %},{% endif %}
         {% endfor %}
 
-    FROM {{ ref('dwh_games_with_moves') }}
+    FROM {{ ref('dwh_games_with_moves') }} games
     {% if is_incremental() %}
-    WHERE uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM {{ this }} i
+        WHERE i.uuid = games.uuid
+          AND i.username = games.username
+    )    
     {% endif %}
     GROUP BY GROUPING SETS (
         (username, uuid, game_phase),

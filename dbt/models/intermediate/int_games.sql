@@ -8,11 +8,16 @@
 
 WITH incremental_partition AS (
     SELECT 
-        *
-    FROM {{ source('chess_com', 'players_games') }} 
+        pg.*
+    FROM {{ source('chess_com', 'players_games') }} pg
 
     {% if is_incremental() %}
-    WHERE uuid NOT IN (SELECT DISTINCT uuid FROM {{ this }})
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM {{ this }} i
+        WHERE i.uuid = pg.uuid
+            AND i.username = pg.username
+    )
     {% endif %}
 )
 

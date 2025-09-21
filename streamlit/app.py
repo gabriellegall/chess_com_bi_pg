@@ -6,9 +6,10 @@ import numpy as np
 import yaml
 from pathlib import Path
 from config import get_plot_config, get_section_config
-from data_processing import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw
-from plot_benchmark import render_legend, prepare_section_plot_data, render_plot_section
-from plot_header import render_summary_header
+from data_processing    import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw
+from plot_benchmark     import render_legend, prepare_section_plot_data, render_plot_section
+from plot_header        import render_summary_header
+from plot_openers       import render_opening_sunburst
 
 st.set_page_config(layout="wide")
 
@@ -42,7 +43,7 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
         selections[field] = selected_option
     return selections
 
-def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
+def render_page_filters(dependent_data: pd.DataFrame, filter_fields: list,  context: str) -> dict:
     """
     Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
     Only shows the values relevant based on the `dependent_data`.
@@ -65,7 +66,8 @@ def render_main_filters(dependent_data: pd.DataFrame, filter_fields: list) -> di
                 f"Select {field.replace('_', ' ').title()}",
                 options=options,
                 horizontal=True,
-                label_visibility="collapsed" # Hides the label above the radio buttons
+                label_visibility="collapsed", # Hides the label above the radio buttons
+                key=f"{context}_{field}" # Unique key for each context
             )
             selections[field] = selected_option
     return selections
@@ -106,15 +108,15 @@ last_n_games = st.sidebar.slider(
 user_specific_data = raw_data[raw_data['username'] == selected_username]
 
 # Define filter fields for each section 
-fields_sidebar_filter = ["time_control", "playing_rating_range"]
-fields_main_filter = ["playing_as", "playing_result"]
+fields_sidebar_filter   = ["time_control", "playing_rating_range"]
+fields_benchmark_filter = ["playing_as", "playing_result"]
+fields_opener_filter    = ["playing_as"]
 
 # Render and get sidebar filters
 sidebar_selections = render_sidebar_filters(user_specific_data, fields_sidebar_filter)
 
 ### --- Summary KPIs header --- 
-
-# Apply filters and render the summary header
+# Apply filters
 df_sidebar_filtered = user_specific_data.copy()
 for field, value in sidebar_selections.items():
     if value:
@@ -122,6 +124,7 @@ for field, value in sidebar_selections.items():
 
 if df_sidebar_filtered.empty:
     st.warning("No data available for the selected filters.")
+# Render the summary KPIs
 else:
     with st.container(border=True):
         st.header(f"How is {selected_username} performing?")
@@ -132,27 +135,27 @@ else:
 ### --- Benchmark --- 
 with st.container(border=True):
     st.header(f"How does {selected_username} compare to other similar players?")
-    
-    # Render and get main page filters
-    main_selections = render_main_filters(user_specific_data, fields_main_filter)
+
+    # Render and get benchmark filters
+    branchmark_selections = render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark")
 
     # Combine all selections into a single dictionary
-    all_selections = {**sidebar_selections, **main_selections}
+    all_selections = {**sidebar_selections, **branchmark_selections}
 
     # Apply the combined filters to the entire dataset
-    df_filtered = raw_data.copy()
+    df_filtered_benchmark = raw_data.copy()
     for field, value in all_selections.items():
-        if value: # Ensure a selection was made
-            df_filtered = df_filtered[df_filtered[field] == value]
+        if value:
+            df_filtered_benchmark = df_filtered_benchmark[df_filtered_benchmark[field] == value]
 
     # Get the aggregated data for all players
-    df_player_agg = get_players_aggregates(df_filtered, plot_config)
+    df_player_agg = get_players_aggregates(df_filtered_benchmark, plot_config)
 
     # Add explanatory context text based on the filter selection 
     st.markdown(f"""
     In this section, we compare the performance of **{selected_username}** with other similar players (n={len(df_player_agg)}), holding constant: 
-    - Color played: **{main_selections.get('playing_as', 'N/A')}**
-    - Playing result: **{main_selections.get('playing_result', 'N/A')}**
+    - Color played: **{branchmark_selections.get('playing_as', 'N/A')}**
+    - Playing result: **{branchmark_selections.get('playing_result', 'N/A')}**
     - Time control: **{sidebar_selections.get('time_control', 'N/A')}**
     - Rating range: **{sidebar_selections.get('playing_rating_range', 'N/A')}**
     """)
@@ -170,10 +173,30 @@ with st.container(border=True):
 
             # Import the data for each section and each plot
             all_section_plot_data = prepare_section_plot_data(
-                section_config, plot_config, df_filtered, username_to_highlight, last_n_games
+                section_config, plot_config, df_filtered_benchmark, username_to_highlight, last_n_games
             )
 
             # For each section, render the plots
             for prepared_section_data in all_section_plot_data:
                 with st.container(border=True):
                     render_plot_section(prepared_section_data, df_player_agg, last_n_games)
+
+### --- Opening Move Analysis ---
+with st.container(border=True):
+    st.header(f"How does {selected_username} perform on the various openers?")
+    st.markdown(
+        "In this section, we explore the win rate on the various openings played:")
+
+    # Render and get opener filters
+    opener_selections = render_page_filters(user_specific_data, fields_opener_filter, context="opener")
+
+    # Combine all selections into a single dictionary
+    all_selections = {**sidebar_selections, **opener_selections}
+
+    # Apply the combined filters to the user-specific dataset
+    df_filtered_opener = user_specific_data.copy()
+    for field, value in all_selections.items():
+        if value:
+            df_filtered_opener = df_filtered_opener[df_filtered_opener[field] == value]
+
+    render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games)

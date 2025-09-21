@@ -31,6 +31,9 @@ test_dbt_doc:
 	@cd dbt && python scripts/test_doc.py
 
 # Local execution : streamlit
+streamlit_test:
+	@cd streamlit/tests && pytest
+
 streamlit_run:
 	@cd streamlit && streamlit run app.py
 

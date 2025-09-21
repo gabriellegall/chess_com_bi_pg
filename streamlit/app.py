@@ -200,3 +200,6 @@ with st.container(border=True):
             df_filtered_opener = df_filtered_opener[df_filtered_opener[field] == value]
 
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games)
+
+## TO DO NEXT
+# - Add the filter and the detail of the games played

@@ -45,6 +45,6 @@ WHERE TRUE
     AND aggregation_level       = 'Games'
     AND playing_rating_range    = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')
-    AND username = 'Zundorn'
-    AND time_control = '300+5'
-    AND playing_rating_range = '0800-1000'
+    -- AND username = 'Zundorn'
+    -- AND time_control = '300+5'
+    -- AND playing_rating_range = '0800-1000'

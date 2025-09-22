@@ -43,33 +43,94 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
         selections[field] = selected_option
     return selections
 
-def render_page_filters(dependent_data: pd.DataFrame, filter_fields: list,  context: str) -> dict:
+def render_page_filters(
+    dependent_data: pd.DataFrame,
+    filter_fields: list,
+    context: str,
+    *,
+    style: str = "radio",   # 🔑 "radio" (default) or "dropdown"
+    horizontal: bool = True # Only applies if style="radio"
+) -> dict:
     """
     Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
     Only shows the values relevant based on the `dependent_data`.
     Returns the user's selections as a dictionary.
+
+    style = "radio"   → horizontal radio buttons
+    style = "dropdown"→ searchable drop-down (selectbox)
     """
     selections = {}
-    
-    # Create a number of columns equal to the number of filters
     cols = st.columns(len(filter_fields))
-    
-    # Iterate over the columns and fields simultaneously
+
     for col, field in zip(cols, filter_fields):
         with col:
-            options = sorted(list(dependent_data[field].unique()))
+            options = sorted(list(dependent_data[field].dropna().unique()))
             if not options:
                 st.warning(f"No '{field.replace('_', ' ')}' options.")
                 continue
-            
-            selected_option = st.radio(
-                f"Select {field.replace('_', ' ').title()}",
-                options=options,
-                horizontal=True,
-                label_visibility="collapsed", # Hides the label above the radio buttons
-                key=f"{context}_{field}" # Unique key for each context
-            )
-            selections[field] = selected_option
+
+            label = field.replace("_", " ").title()
+            key   = f"{context}_{field}"
+
+            if style == "dropdown":
+                selections[field] = st.selectbox(label, options, key=key)
+            else:  # default to radio
+                selections[field] = st.radio(
+                    label,
+                    options,
+                    horizontal=horizontal,
+                    label_visibility="collapsed" if horizontal else "visible",
+                    key=key
+                )
+    return selections
+
+def render_page_filters(
+    dependent_data: pd.DataFrame,
+    filter_fields: list,
+    context: str,
+    *,
+    style: str = "radio",
+    horizontal: bool = True,
+    add_all: bool = False   # 🔑 NEW
+) -> dict:
+    """
+    Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
+    Only shows the values relevant based on the `dependent_data`.
+    Returns the user's selections as a dictionary.
+
+    style   = "radio"   → horizontal radio buttons
+    style   = "dropdown"→ searchable drop-down (selectbox)
+    add_all = True      → adds an 'All' option that applies no filter
+    """
+    selections = {}
+    cols = st.columns(len(filter_fields))
+
+    for col, field in zip(cols, filter_fields):
+        with col:
+            raw_options = sorted(list(dependent_data[field].dropna().unique()))
+            if not raw_options:
+                st.warning(f"No '{field.replace('_', ' ')}' options.")
+                continue
+
+            # ✅ Add "All" only if requested
+            options = ["All"] + raw_options if add_all else raw_options
+
+            label = field.replace("_", " ").title()
+            key   = f"{context}_{field}"
+
+            if style == "dropdown":
+                # Default to "All" when present
+                index = 0 if add_all else 0
+                selections[field] = st.selectbox(label, options, key=key, index=index)
+            else:
+                selections[field] = st.radio(
+                    label,
+                    options,
+                    horizontal=horizontal,
+                    label_visibility="collapsed" if horizontal else "visible",
+                    key=key,
+                    index=0 if add_all else 0
+                )
     return selections
 
 ### --- Main Application ---
@@ -184,22 +245,38 @@ with st.container(border=True):
 ### --- Opening Move Analysis ---
 with st.container(border=True):
     st.header(f"How does {selected_username} perform on the various openers?")
-    st.markdown(
-        "In this section, we explore the win rate on the various openings played:")
+    st.markdown("In this section, we explore the win rate on the various openings played:")
 
-    # Render and get opener filters
+    # Standard opener filters (affect sunburst only)
     opener_selections = render_page_filters(user_specific_data, fields_opener_filter, context="opener")
 
-    # Combine all selections into a single dictionary
+    # Apply standard opener filters for the sunburst
     all_selections = {**sidebar_selections, **opener_selections}
 
-    # Apply the combined filters to the user-specific dataset
     df_filtered_opener = user_specific_data.copy()
     for field, value in all_selections.items():
         if value:
             df_filtered_opener = df_filtered_opener[df_filtered_opener[field] == value]
 
+    # Sunburst charts
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games)
 
-## TO DO NEXT
-# - Add the filter and the detail of the games played
+    # ✅ Apply additional filters only to the raw table
+    st.subheader("Raw data")
+
+    opener_raw_selections = render_page_filters(
+        user_specific_data, ["opener_2_moves", "opener_4_moves", "opener_6_moves"], context="opener_raw", style="dropdown", add_all=True
+    )
+
+    all_selections = {**sidebar_selections, **opener_selections, **opener_raw_selections}
+
+    df_filtered_opener_raw = user_specific_data.copy()
+    for field, value in all_selections.items():
+        if value and value != "All":  # "All" means no filter
+            df_filtered_opener_raw = df_filtered_opener_raw[df_filtered_opener_raw[field] == value]
+
+    st.dataframe(df_filtered_opener_raw)
+
+# To do :
+# 1. Clean the code to centralize ["opener_2_moves", "opener_4_moves", "opener_6_moves"]
+# 2. Clean the table and sort by date

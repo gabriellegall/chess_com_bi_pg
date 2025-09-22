@@ -57,8 +57,7 @@ def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg
             raise ValueError(f"Unsupported aggregation type: {agg_type}")
 
     # Aggregation for recent data
-    user_data_sorted = user_data.sort_values('end_time', ascending=False)
-    recent_data = user_data_sorted.head(last_n_games)
+    recent_data = user_data.sort_values('end_time', ascending=False).head(last_n_games)
     
     if recent_data.empty:
         value_specific = None if not aggregation_dimension else pd.DataFrame()
@@ -127,3 +126,28 @@ def get_summary_kpis(data: pd.DataFrame, username: str, last_n_games: int) -> di
         }
         
     return kpis
+
+def get_player_opening_statistics(data: pd.DataFrame, last_n_games: int | None = None) -> pd.DataFrame:
+    """
+    Aggregates opening moves into a Sunburst-compatible DataFrame.
+    If `last_n_games` is provided, only the most recent N games are considered.
+    """
+    # Filter for last N games if requested
+    if last_n_games is not None:
+        data = data.sort_values("end_time", ascending=False).head(last_n_games)
+
+    # Group and aggregate
+    agg = (
+        data.groupby(["opener_2_moves", "opener_4_moves", "opener_6_moves"])
+        .agg(
+            total_games=("playing_result", "count"),
+            wins=("playing_result", lambda x: (x == "Win").sum()),
+        )
+        .reset_index()
+    )
+    
+    # Compute winrate
+    agg = agg[agg["total_games"] > 0].copy()
+    agg["winrate"] = agg["wins"] / agg["total_games"]
+    
+    return agg

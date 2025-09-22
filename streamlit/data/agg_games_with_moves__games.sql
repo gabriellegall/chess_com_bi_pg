@@ -8,6 +8,9 @@ SELECT
     playing_rating_range,
     opponent_rating_range,
     playing_result,
+    opener_2_moves,
+    opener_4_moves,
+    opener_6_moves,
     -- Time management
     prct_time_remaining_playing_early,
     prct_time_remaining_playing_mid,
@@ -42,3 +45,6 @@ WHERE TRUE
     AND aggregation_level       = 'Games'
     AND playing_rating_range    = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')
+    -- AND username = 'Zundorn'
+    -- AND time_control = '300+5'
+    -- AND playing_rating_range = '0800-1000'

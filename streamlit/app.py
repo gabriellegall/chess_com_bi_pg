@@ -48,47 +48,6 @@ def render_page_filters(
     filter_fields: list,
     context: str,
     *,
-    style: str = "radio",   # 🔑 "radio" (default) or "dropdown"
-    horizontal: bool = True # Only applies if style="radio"
-) -> dict:
-    """
-    Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
-    Only shows the values relevant based on the `dependent_data`.
-    Returns the user's selections as a dictionary.
-
-    style = "radio"   → horizontal radio buttons
-    style = "dropdown"→ searchable drop-down (selectbox)
-    """
-    selections = {}
-    cols = st.columns(len(filter_fields))
-
-    for col, field in zip(cols, filter_fields):
-        with col:
-            options = sorted(list(dependent_data[field].dropna().unique()))
-            if not options:
-                st.warning(f"No '{field.replace('_', ' ')}' options.")
-                continue
-
-            label = field.replace("_", " ").title()
-            key   = f"{context}_{field}"
-
-            if style == "dropdown":
-                selections[field] = st.selectbox(label, options, key=key)
-            else:  # default to radio
-                selections[field] = st.radio(
-                    label,
-                    options,
-                    horizontal=horizontal,
-                    label_visibility="collapsed" if horizontal else "visible",
-                    key=key
-                )
-    return selections
-
-def render_page_filters(
-    dependent_data: pd.DataFrame,
-    filter_fields: list,
-    context: str,
-    *,
     style: str = "radio",
     horizontal: bool = True,
     add_all: bool = False   # 🔑 NEW

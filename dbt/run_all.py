@@ -59,7 +59,7 @@ def run_pipeline_forever():
                     requests.get(URL_DBT_TEST + "/fail", timeout=5)
 
             # Sleep
-            time.sleep(600)
+            time.sleep(1200)
 
         except Exception as e:
             requests.get(URL + "/fail", timeout=5)

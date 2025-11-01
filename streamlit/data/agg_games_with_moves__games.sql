@@ -38,8 +38,9 @@ SELECT
         CASE WHEN nb_missed_opportunity_blunder_playing_late > 0 THEN 1 ELSE 0 END          AS nb_missed_opportunity_blunder_playing_late,
         -- Time pressure
         first_blunder_playing_prct_time_remaining,
-        first_massive_blunder_playing_prct_time_remaining  
-        
+        first_massive_blunder_playing_prct_time_remaining,
+        first_missed_opp_massive_blunder_playing_prct_time_remaining,
+        first_throw_massive_blunder_playing_prct_time_remaining,        
 FROM dwh.dwh_agg_games_with_moves
 WHERE TRUE
     AND aggregation_level       = 'Games'

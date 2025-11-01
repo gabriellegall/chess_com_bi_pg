@@ -50,7 +50,7 @@ def render_page_filters(
     *,
     style: str = "radio",
     horizontal: bool = True,
-    add_all: bool = False   # 🔑 NEW
+    add_all: bool = False
 ) -> dict:
     """
     Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
@@ -71,7 +71,7 @@ def render_page_filters(
                 st.warning(f"No '{field.replace('_', ' ')}' options.")
                 continue
 
-            # ✅ Add "All" only if requested
+            # Add "All" only if requested
             options = ["All"] + raw_options if add_all else raw_options
 
             label = field.replace("_", " ").title()
@@ -220,7 +220,7 @@ with st.container(border=True):
     # Sunburst charts
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games)
 
-    # ✅ Apply additional filters only to the raw table
+    # Apply additional filters only to the raw table
     st.subheader("Raw data")
 
     opener_raw_selections = render_page_filters(
@@ -235,7 +235,3 @@ with st.container(border=True):
             df_filtered_opener_raw = df_filtered_opener_raw[df_filtered_opener_raw[field] == value]
 
     st.dataframe(df_filtered_opener_raw)
-
-# To do :
-# 1. Clean the code to centralize ["opener_2_moves", "opener_4_moves", "opener_6_moves"]
-# 2. Clean the table and sort by date

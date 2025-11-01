@@ -678,6 +678,14 @@ Percent of the clock time remaining when username made the first blunder.
 Percent of the clock time remaining when username made the first massive blunder.
 {% enddocs %}
 
+{% docs first_missed_opp_massive_blunder_playing_prct_time_remaining %}
+Percent of the clock time remaining when username made the first massive blunder on a missed opportunity.
+{% enddocs %}
+
+{% docs first_throw_massive_blunder_playing_prct_time_remaining %}
+Percent of the clock time remaining when username made the first massive blunder on a throw.
+{% enddocs %}
+
 {% docs rate_nb_massive_blunder_playing_prct_time_50 %}
 For username: number of games containing a massive blunder with a percent of the clock time remaining above 50%, divided by the total number of games played.
 {% enddocs %}

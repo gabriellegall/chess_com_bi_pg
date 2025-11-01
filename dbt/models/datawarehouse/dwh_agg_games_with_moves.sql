@@ -38,12 +38,15 @@ WITH aggregate_fields AS (
         
         -- Measures                
         COUNT(move_number) AS nb_moves,
-        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder'))                               AS nb_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder')                                             AS nb_massive_blunder_playing,
-        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }})                                  AS nb_moves_above_decisive_advantage,
-        MIN(CASE WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') THEN prct_time_remaining ELSE NULL END) AS first_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END)               AS first_massive_blunder_playing_prct_time_remaining,
+        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder'))                                                                 AS nb_blunder_playing,
+        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder')                                                                               AS nb_massive_blunder_playing,
+        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }})                                                                    AS nb_moves_above_decisive_advantage,
 
+            -- % time reamining
+        MIN(CASE WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') THEN prct_time_remaining ELSE NULL END)                                   AS first_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END)                                                 AS first_massive_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' AND miss_context_playing = 'Missed Opportunity' THEN prct_time_remaining ELSE NULL END) AS first_missed_opp_massive_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' AND miss_context_playing = 'Throw' THEN prct_time_remaining ELSE NULL END)              AS first_throw_massive_blunder_playing_prct_time_remaining,        
         {% for phase, values in var('game_phases').items() %}
             {% if 'end_game_move' in values %}
             -- % Time Remaining by game_phase for the playing user. Either exactly at the end of the game phase or 1 move before (depending on the color played).

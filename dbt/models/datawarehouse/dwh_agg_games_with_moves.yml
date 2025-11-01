@@ -326,7 +326,7 @@ models:
       - name: max_score_playing_type
         description: "
           {{ doc('max_score_playing_type') }}
-          A decisive winning advantage is defined by a score above .
+          Any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
           "
       - name: time_control
         description: "{{ doc('time_control') }}"
@@ -334,10 +334,14 @@ models:
         description: "{{ doc('first_blunder_playing_prct_time_remaining') }}"
       - name: first_massive_blunder_playing_prct_time_remaining
         description: "{{ doc('first_massive_blunder_playing_prct_time_remaining') }}"
+      - name: first_missed_opp_massive_blunder_playing_prct_time_remaining
+        description: "{{ doc('first_missed_opp_massive_blunder_playing_prct_time_remaining') }}"
+      - name: first_throw_massive_blunder_playing_prct_time_remaining
+        description: "{{ doc('first_throw_massive_blunder_playing_prct_time_remaining') }}"
       - name: nb_moves_above_decisive_advantage
         description: "
           {{ doc('nb_moves_above_decisive_advantage') }} 
-          The any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
+          Any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
           "
       - name: prct_time_remaining_playing_early
         description: "

@@ -59,6 +59,8 @@ parent_hierarchy AS (
         epd,
         log_timestamp,
         uci,
+        uci_moves_array,
+        uci_moves_depth,
         {% for i in range(1, max_depth) %}
             {% if i == 1 %}
                 uci_hierarchy_level_1_name_matching AS uci_hierarchy_level_1_name

@@ -103,7 +103,7 @@ WITH aggregate_fields AS (
             ELSE 'No decisive advantage'
         END AS max_score_playing_type,
 
-        {% for n in [2, 4, 6, 8] %}
+        {% for n in [2, 4, 6, 8, 10, 12, 14] %}
             STRING_AGG(CASE WHEN move_number <= {{ n }} THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)                      AS opener_{{ n }}_moves,
             STRING_AGG(CASE WHEN move_number <= {{ n }} AND is_playing_turn THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)  AS opener_{{ n // 2 }}_moves_playing
             {% if not loop.last %},{% endif %}

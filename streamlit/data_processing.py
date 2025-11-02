@@ -1,6 +1,7 @@
 import pandas as pd
 from data.loader import load_query
 import streamlit as st
+from typing import List 
 
 @st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
@@ -127,7 +128,7 @@ def get_summary_kpis(data: pd.DataFrame, username: str, last_n_games: int) -> di
         
     return kpis
 
-def get_player_opening_statistics(data: pd.DataFrame, last_n_games: int | None = None) -> pd.DataFrame:
+def get_player_opening_statistics(data: pd.DataFrame, list_dim: List[str], last_n_games: int | None = None) -> pd.DataFrame:
     """
     Aggregates opening moves into a Sunburst-compatible DataFrame.
     If `last_n_games` is provided, only the most recent N games are considered.
@@ -138,7 +139,7 @@ def get_player_opening_statistics(data: pd.DataFrame, last_n_games: int | None =
 
     # Group and aggregate
     agg = (
-        data.groupby(["opener_2_moves", "opener_4_moves", "opener_6_moves"])
+        data.groupby(list_dim)
         .agg(
             total_games=("playing_result", "count"),
             wins=("playing_result", lambda x: (x == "Win").sum()),

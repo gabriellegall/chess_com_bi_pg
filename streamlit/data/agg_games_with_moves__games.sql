@@ -4,6 +4,8 @@ SELECT
     time_class,
     time_control,
     end_time,
+    url,
+    eco,
     playing_as,
     playing_rating_range,
     opponent_rating_range,
@@ -11,6 +13,10 @@ SELECT
     opener_2_moves,
     opener_4_moves,
     opener_6_moves,
+    opener_8_moves,
+    opener_10_moves,
+    opener_12_moves,
+    opener_14_moves,
     -- Time management
     prct_time_remaining_playing_early,
     prct_time_remaining_playing_mid,
@@ -40,12 +46,15 @@ SELECT
         first_blunder_playing_prct_time_remaining,
         first_massive_blunder_playing_prct_time_remaining,
         first_missed_opp_massive_blunder_playing_prct_time_remaining,
-        first_throw_massive_blunder_playing_prct_time_remaining    
+        first_throw_massive_blunder_playing_prct_time_remaining
 FROM dwh.dwh_agg_games_with_moves
 WHERE TRUE
     AND aggregation_level       = 'Games'
     AND playing_rating_range    = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')
+
     -- AND username = 'Zundorn'
     -- AND time_control = '300+5'
     -- AND playing_rating_range = '0800-1000'
+
+ORDER BY end_time DESC

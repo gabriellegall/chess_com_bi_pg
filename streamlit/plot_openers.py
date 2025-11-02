@@ -2,8 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from data_processing import get_player_opening_statistics
+from typing import List 
 
-def render_opening_sunburst(df: pd.DataFrame, last_n_games: int = 30) -> None:
+def render_opening_sunburst(
+    df: pd.DataFrame, 
+    last_n_games: int,
+    list_dim: List[str]
+) -> None:
     """
     Renders two Sunburst charts showing chess opening sequences and winrate:
     - Left: all games in the filtered dataset
@@ -14,8 +19,8 @@ def render_opening_sunburst(df: pd.DataFrame, last_n_games: int = 30) -> None:
         return
 
     # Aggregate both datasets
-    agg_all     = get_player_opening_statistics(df)
-    agg_recent  = get_player_opening_statistics(df, last_n_games)
+    agg_all     = get_player_opening_statistics(df, list_dim)
+    agg_recent  = get_player_opening_statistics(df, list_dim, last_n_games)
 
     # Layout: two columns
     col_all, col_recent = st.columns(2)
@@ -25,7 +30,7 @@ def render_opening_sunburst(df: pd.DataFrame, last_n_games: int = 30) -> None:
         st.subheader(f"Winrate per opener - All games")
         fig_all = px.sunburst(
             agg_all,
-            path=["opener_2_moves", "opener_4_moves", "opener_6_moves"],
+            path=list_dim,
             values="total_games",
             color="winrate",
             color_continuous_scale="RdYlGn",
@@ -41,7 +46,7 @@ def render_opening_sunburst(df: pd.DataFrame, last_n_games: int = 30) -> None:
         st.subheader(f"Winrate per opener – Last {last_n_games} games")
         fig_recent = px.sunburst(
             agg_recent,
-            path=["opener_2_moves", "opener_4_moves", "opener_6_moves"],
+            path=list_dim,
             values="total_games",
             color="winrate",
             color_continuous_scale="RdYlGn",

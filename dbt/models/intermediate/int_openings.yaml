@@ -1,0 +1,18 @@
+models:
+  - name: int_openings
+    description: "Openings data with few calculated fields that can be directly derived w/o any join."
+    columns:
+      - name: eco-volume
+        description: "{{ doc('openings_eco_1char') }}"
+      - name: eco
+        description: "{{ doc('openings_eco_3char') }}"
+      - name: name
+        description: "{{ doc('openings_name') }}"
+      - name: pgn
+        description: "{{ doc('openings_pgn') }}"
+      - name: uci
+        description: "{{ doc('openings_uci') }}"
+      - name: epd
+        description: "{{ doc('openings_epd') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"

@@ -132,6 +132,41 @@ API URL of the tournament on chess.com, if the game was part of a tournament.
 API URL of the team match on chess.com, if the game was part of a team match.
 {% enddocs %}
 
+# Openings
+
+{% docs openings_eco_1char %}
+The **ECO (Encyclopedia of Chess Openings)** parent category. 
+This one-character code classifies openings into five major groups based on the initial moves:
+
+| Code | Opening Group | Description |
+| :---: | :--- | :--- |
+| **A** | Flank & Uncommon Responses | Covers openings not starting with 1. e4 or 1. d4, and Black's unusual replies to White's first moves (e.g., Bird's Opening, Benoni Defense). |
+| **B** | Semi-Open Games (1. e4 non-1...e5) | Focuses primarily on the **Sicilian Defense** (1. e4 c5), along with the Caro-Kann and French Defense. |
+| **C** | Open Games (1. e4 e5) | The classic open games, centered on the **Ruy Lopez** (Spanish Game) and the Giuoco Piano. |
+| **D** | Closed Games (1. d4 d5) | Covers the traditional closed openings, including the **Queen's Gambit** (accepted and declined) and the Slav Defense. |
+| **E** | Indian Defenses (1. d4 Nf6) | The flank defenses against 1. d4, including the **King's Indian**, Nimzo-Indian, and Queen's Indian Defenses. |
+{% enddocs %}
+
+{% docs openings_eco_3char %}
+3-characters ECO code.
+{% enddocs %}
+
+{% docs openings_name %}
+The name of the opening in English.
+{% enddocs %}
+
+{% docs openings_pgn %}
+The sequence of moves leading to the opening position. If not unique, the moves are the most common ones leading to that opening.
+{% enddocs %}
+
+{% docs openings_uci %}
+The same moves described by the pgn field in UCI notation.
+{% enddocs %}
+
+{% docs openings_epd %}
+The EPD (FEN without move numbers) of the opening position, en passant field only if legal.
+{% enddocs %}
+
 # Games moves
 
 {% docs move_number %}

@@ -13,7 +13,7 @@ import yaml
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process
 
-print("🚀 Starting games moves processing")
+print("Starting games moves processing")
 
 def analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
     # Load the PGN
@@ -90,7 +90,7 @@ target_table    = config["postgres"]["tables"]["stockfish"]
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table)
 games   = pd.read_sql(query, engine)
-print(f"✅ Query executed successfully — {len(games)} rows fetched.")
+print(f"Query executed successfully — {len(games)} rows fetched.")
 
 if not games.empty:
     games = games[['uuid', 'pgn']]
@@ -111,7 +111,7 @@ if not games.empty:
         index       = False # Ignore the df index   
     )
 
-    print(f"✅ Inserted {len(games_moves)} rows into `{target_schema}.{target_table}`.")
+    print(f"Inserted {len(games_moves)} rows into `{target_schema}.{target_table}`.")
 else:
-    print("ℹ️ No rows to be inserted.")
+    print("No rows to be inserted.")
 

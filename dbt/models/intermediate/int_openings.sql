@@ -13,7 +13,7 @@
 {% if execute %}
     {% set max_depth = max_depth_results.columns[0].values()[0] %}
 {% else %}
-    {% set max_depth = 10 %} {# default value for the DBT project parse phase (https://docs.getdbt.com/reference/dbt-jinja-functions/execute) #}
+    {% set max_depth = 10 %} {# dummy default value for the DBT project parse phase (https://docs.getdbt.com/reference/dbt-jinja-functions/execute) #}
 {% endif %}
 
 WITH extract_moves AS (
@@ -66,7 +66,7 @@ parent_hierarchy AS (
                 uci_hierarchy_level_1_name_matching AS uci_hierarchy_level_1_name
             {% else %}
                 COALESCE(
-                    -- Search for the first non-null name_matching from the current level up to level 1
+                    -- To fill the blank [name], search for the first non-null name_matching from the current level up to level 1
                     uci_hierarchy_level_{{ i }}_name_matching,
                     {% for j in range(i-1, 0, -1) %}
                         uci_hierarchy_level_{{ j }}_name_matching{% if not loop.last %}, {% endif %}

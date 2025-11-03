@@ -66,3 +66,5 @@ vars:
     time_class: ['blitz', 'rapid', 'bullet']
   datamart:
     min_games_played: 20
+  openings:
+    hierarchy_depth: 10

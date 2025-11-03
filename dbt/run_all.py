@@ -12,6 +12,12 @@ def run_pipeline_forever():
     URL_DBT_TEST = os.getenv("HEALTHCHECK_URL_DBT_TEST") 
     execution_count = 0
 
+    subprocess.run(
+        [sys.executable, "chess_openings_pipeline.py"],
+        check=True,
+        cwd="scripts/openings"
+    )
+
     while True:
         try:
             # chess.com API

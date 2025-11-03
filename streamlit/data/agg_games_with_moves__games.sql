@@ -10,13 +10,11 @@ SELECT
     playing_rating_range,
     opponent_rating_range,
     playing_result,
-    opener_2_moves,
-    opener_4_moves,
-    opener_6_moves,
-    opener_8_moves,
-    opener_10_moves,
-    opener_12_moves,
-    opener_14_moves,
+    -- Openings
+    uci_hierarchy_level_1_name,
+    uci_hierarchy_level_2_name,
+    uci_hierarchy_level_7_name,
+    opener_7_moves,
     -- Time management
     prct_time_remaining_playing_early,
     prct_time_remaining_playing_mid,

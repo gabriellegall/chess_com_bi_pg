@@ -218,7 +218,7 @@ with st.container(border=True):
             df_filtered_opener = df_filtered_opener[df_filtered_opener[field] == value]
 
     # Sunburst charts
-    list_dim = ["opener_2_moves", "opener_4_moves", "opener_6_moves", "opener_8_moves", "opener_10_moves"]
+    list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
     print(df_filtered_opener)
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games, list_dim=list_dim)
 

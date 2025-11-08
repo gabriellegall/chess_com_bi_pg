@@ -358,19 +358,43 @@ models:
           {{ doc('prct_time_remaining_playing_late') }}
           The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
           "
+      - name: opener_1_moves
+        description: "{{ doc('opener_1_moves') }}"
       - name: opener_2_moves
         description: "{{ doc('opener_2_moves') }}"
-      - name: opener_1_moves_playing
-        description: "{{ doc('opener_1_moves_playing') }}"
+      - name: opener_3_moves
+        description: "{{ doc('opener_3_moves') }}"
       - name: opener_4_moves
         description: "{{ doc('opener_4_moves') }}"
-      - name: opener_2_moves_playing
-        description: "{{ doc('opener_2_moves_playing') }}"
+      - name: opener_5_moves
+        description: "{{ doc('opener_5_moves') }}"
       - name: opener_6_moves
         description: "{{ doc('opener_6_moves') }}"
-      - name: opener_3_moves_playing
-        description: "{{ doc('opener_3_moves_playing') }}"
+      - name: opener_7_moves
+        description: "{{ doc('opener_7_moves') }}"
       - name: opener_8_moves
         description: "{{ doc('opener_8_moves') }}"
-      - name: opener_4_moves_playing
-        description: "{{ doc('opener_4_moves_playing') }}"
+      - name: opener_9_moves
+        description: "{{ doc('opener_9_moves') }}"
+      - name: opener_10_moves
+        description: "{{ doc('opener_10_moves') }}"
+      - name: uci_hierarchy_level_1_name
+        description: "{{ doc('uci_hierarchy_level_1_name') }}"
+      - name: uci_hierarchy_level_2_name
+        description: "{{ doc('uci_hierarchy_level_2_name') }}"
+      - name: uci_hierarchy_level_3_name
+        description: "{{ doc('uci_hierarchy_level_3_name') }}"
+      - name: uci_hierarchy_level_4_name
+        description: "{{ doc('uci_hierarchy_level_4_name') }}"
+      - name: uci_hierarchy_level_5_name
+        description: "{{ doc('uci_hierarchy_level_5_name') }}"
+      - name: uci_hierarchy_level_6_name
+        description: "{{ doc('uci_hierarchy_level_6_name') }}"
+      - name: uci_hierarchy_level_7_name
+        description: "{{ doc('uci_hierarchy_level_7_name') }}"
+      - name: uci_hierarchy_level_8_name
+        description: "{{ doc('uci_hierarchy_level_8_name') }}"
+      - name: uci_hierarchy_level_9_name
+        description: "{{ doc('uci_hierarchy_level_9_name') }}"
+      - name: uci_hierarchy_level_10_name
+        description: "{{ doc('uci_hierarchy_level_10_name') }}"

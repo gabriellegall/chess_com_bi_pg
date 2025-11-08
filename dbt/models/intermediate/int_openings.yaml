@@ -16,3 +16,77 @@ models:
         description: "{{ doc('openings_epd') }}"
       - name: log_timestamp
         description: "{{ doc('log_timestamp') }}"
+      - name: uci_moves_array
+        description: "{{ doc('uci_moves_array') }}"
+      - name: uci_moves_depth
+        description: "{{ doc('uci_moves_depth') }}"
+      - name: uci_hierarchy_level_1_name
+        description: "{{ doc('uci_hierarchy_level_1_name') }}"
+      - name: uci_hierarchy_level_2_name
+        description: "{{ doc('uci_hierarchy_level_2_name') }}"
+      - name: uci_hierarchy_level_3_name
+        description: "{{ doc('uci_hierarchy_level_3_name') }}"
+      - name: uci_hierarchy_level_4_name
+        description: "{{ doc('uci_hierarchy_level_4_name') }}"
+      - name: uci_hierarchy_level_5_name
+        description: "{{ doc('uci_hierarchy_level_5_name') }}"
+      - name: uci_hierarchy_level_6_name
+        description: "{{ doc('uci_hierarchy_level_6_name') }}"
+      - name: uci_hierarchy_level_7_name
+        description: "{{ doc('uci_hierarchy_level_7_name') }}"
+      - name: uci_hierarchy_level_8_name
+        description: "{{ doc('uci_hierarchy_level_8_name') }}"
+      - name: uci_hierarchy_level_9_name
+        description: "{{ doc('uci_hierarchy_level_9_name') }}"
+      - name: uci_hierarchy_level_10_name
+        description: "{{ doc('uci_hierarchy_level_10_name') }}"
+      - name: uci_hierarchy_level_11_name
+        description: "{{ doc('uci_hierarchy_level_11_name') }}"
+      - name: uci_hierarchy_level_12_name
+        description: "{{ doc('uci_hierarchy_level_12_name') }}"
+      - name: uci_hierarchy_level_13_name
+        description: "{{ doc('uci_hierarchy_level_13_name') }}"
+      - name: uci_hierarchy_level_14_name
+        description: "{{ doc('uci_hierarchy_level_14_name') }}"
+      - name: uci_hierarchy_level_15_name
+        description: "{{ doc('uci_hierarchy_level_15_name') }}"
+      - name: uci_hierarchy_level_16_name
+        description: "{{ doc('uci_hierarchy_level_16_name') }}"
+      - name: uci_hierarchy_level_17_name
+        description: "{{ doc('uci_hierarchy_level_17_name') }}"
+      - name: uci_hierarchy_level_18_name
+        description: "{{ doc('uci_hierarchy_level_18_name') }}"
+      - name: uci_hierarchy_level_19_name
+        description: "{{ doc('uci_hierarchy_level_19_name') }}"
+      - name: uci_hierarchy_level_20_name
+        description: "{{ doc('uci_hierarchy_level_20_name') }}"
+      - name: uci_hierarchy_level_21_name
+        description: "{{ doc('uci_hierarchy_level_21_name') }}"
+      - name: uci_hierarchy_level_22_name
+        description: "{{ doc('uci_hierarchy_level_22_name') }}"
+      - name: uci_hierarchy_level_23_name
+        description: "{{ doc('uci_hierarchy_level_23_name') }}"
+      - name: uci_hierarchy_level_24_name
+        description: "{{ doc('uci_hierarchy_level_24_name') }}"
+      - name: uci_hierarchy_level_25_name
+        description: "{{ doc('uci_hierarchy_level_25_name') }}"
+      - name: uci_hierarchy_level_26_name
+        description: "{{ doc('uci_hierarchy_level_26_name') }}"
+      - name: uci_hierarchy_level_27_name
+        description: "{{ doc('uci_hierarchy_level_27_name') }}"
+      - name: uci_hierarchy_level_28_name
+        description: "{{ doc('uci_hierarchy_level_28_name') }}"
+      - name: uci_hierarchy_level_29_name
+        description: "{{ doc('uci_hierarchy_level_29_name') }}"
+      - name: uci_hierarchy_level_30_name
+        description: "{{ doc('uci_hierarchy_level_30_name') }}"
+      - name: uci_hierarchy_level_31_name
+        description: "{{ doc('uci_hierarchy_level_31_name') }}"
+      - name: uci_hierarchy_level_32_name
+        description: "{{ doc('uci_hierarchy_level_32_name') }}"
+      - name: uci_hierarchy_level_33_name
+        description: "{{ doc('uci_hierarchy_level_33_name') }}"
+      - name: uci_hierarchy_level_34_name
+        description: "{{ doc('uci_hierarchy_level_34_name') }}"
+      - name: uci_hierarchy_level_35_name
+        description: "{{ doc('uci_hierarchy_level_35_name') }}"

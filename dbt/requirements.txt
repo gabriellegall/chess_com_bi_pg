@@ -6,3 +6,4 @@ python-chess
 stockfish
 python-dotenv
 huggingface-hub
+pyarrow

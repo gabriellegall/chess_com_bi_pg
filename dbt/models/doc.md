@@ -20,10 +20,6 @@ PGN (Portable Game Notation) of the game. Contains all the moves in a raw format
 PGN-compliant time control of the game (e.g. 300+5, 180+2, etc.).
 {% enddocs %}
 
-{% docs end_time_integer %}
-End time of the game in integer (raw) format. The time is expressed in Unix timestamp, which represents the number of seconds since January 1, 1970 (the Unix epoch).
-{% enddocs %}
-
 {% docs end_time %}
 End time of the game.
 {% enddocs %}
@@ -130,6 +126,189 @@ API URL of the tournament on chess.com, if the game was part of a tournament.
 
 {% docs match %}
 API URL of the team match on chess.com, if the game was part of a team match.
+{% enddocs %}
+
+# Openings
+
+{% docs openings_eco_1char %}
+The **ECO (Encyclopedia of Chess Openings)** parent category. 
+This one-character code classifies openings into five major groups based on the initial moves:
+
+| Code | Opening Group | Description |
+| :---: | :--- | :--- |
+| **A** | Flank & Uncommon Responses | Covers openings not starting with 1. e4 or 1. d4, and Black's unusual replies to White's first moves (e.g., Bird's Opening, Benoni Defense). |
+| **B** | Semi-Open Games (1. e4 non-1...e5) | Focuses primarily on the **Sicilian Defense** (1. e4 c5), along with the Caro-Kann and French Defense. |
+| **C** | Open Games (1. e4 e5) | The classic open games, centered on the **Ruy Lopez** (Spanish Game) and the Giuoco Piano. |
+| **D** | Closed Games (1. d4 d5) | Covers the traditional closed openings, including the **Queen's Gambit** (accepted and declined) and the Slav Defense. |
+| **E** | Indian Defenses (1. d4 Nf6) | The flank defenses against 1. d4, including the **King's Indian**, Nimzo-Indian, and Queen's Indian Defenses. |
+{% enddocs %}
+
+{% docs openings_eco_3char %}
+3-characters ECO code.
+{% enddocs %}
+
+{% docs openings_name %}
+The name of the opening in English.
+{% enddocs %}
+
+{% docs openings_pgn %}
+The sequence of moves leading to the opening position. If not unique, the moves are the most common ones leading to that opening.
+{% enddocs %}
+
+{% docs openings_uci %}
+The same moves described by the pgn field in UCI notation.
+{% enddocs %}
+
+{% docs openings_epd %}
+The EPD (FEN without move numbers) of the opening position, en passant field only if legal.
+{% enddocs %}
+
+{% docs uci_moves_array %}
+Translation of the UCI opener from a string to an array of individual moves.
+{% enddocs %}
+
+{% docs uci_moves_depth %}
+Number of moves defining the opener (i.e. number of moves in the UCI string).
+{% enddocs %}
+
+{% docs uci_hierarchy_level_1_name %}
+Opening name as defined at the move 1 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_2_name %}
+Opening name as defined at the move 2 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_3_name %}
+Opening name as defined at the move 3 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_4_name %}
+Opening name as defined at the move 4 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_5_name %}
+Opening name as defined at the move 5 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_6_name %}
+Opening name as defined at the move 6 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_7_name %}
+Opening name as defined at the move 7 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_8_name %}
+Opening name as defined at the move 8 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_9_name %}
+Opening name as defined at the move 9 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_10_name %}
+Opening name as defined at the move 10 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_11_name %}
+Opening name as defined at the move 11 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_12_name %}
+Opening name as defined at the move 12 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_13_name %}
+Opening name as defined at the move 13 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_14_name %}
+Opening name as defined at the move 14 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_15_name %}
+Opening name as defined at the move 15 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_16_name %}
+Opening name as defined at the move 16 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_17_name %}
+Opening name as defined at the move 17 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_18_name %}
+Opening name as defined at the move 18 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_19_name %}
+Opening name as defined at the move 19 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_20_name %}
+Opening name as defined at the move 20 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_21_name %}
+Opening name as defined at the move 21 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_22_name %}
+Opening name as defined at the move 22 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_23_name %}
+Opening name as defined at the move 23 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_24_name %}
+Opening name as defined at the move 24 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_25_name %}
+Opening name as defined at the move 25 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_26_name %}
+Opening name as defined at the move 26 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_27_name %}
+Opening name as defined at the move 27 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_28_name %}
+Opening name as defined at the move 28 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_29_name %}
+Opening name as defined at the move 29 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_30_name %}
+Opening name as defined at the move 30 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_31_name %}
+Opening name as defined at the move 31 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_32_name %}
+Opening name as defined at the move 32 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_33_name %}
+Opening name as defined at the move 33 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_34_name %}
+Opening name as defined at the move 34 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
+{% enddocs %}
+
+{% docs uci_hierarchy_level_35_name %}
+Opening name as defined at the move 35 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
 {% enddocs %}
 
 # Games moves
@@ -582,36 +761,44 @@ Total number of 'Blunder' throws that username has made in the game.
 Total number of 'Massive Blunder' throws that username has made in the game.
 {% enddocs %}
 
+{% docs opener_1_moves %}
+Concatenation of the first move in the game.
+{% enddocs %}
+
 {% docs opener_2_moves %}
 Concatenation of the first 2 moves in the game.
 {% enddocs %}
 
-{% docs opener_1_moves_playing %}
-Concatenation of the first move played by the username (i.e., moves where `is_playing_turn` is true).
+{% docs opener_3_moves %}
+Concatenation of the first 3 moves in the game.
 {% enddocs %}
 
 {% docs opener_4_moves %}
 Concatenation of the first 4 moves in the game.
 {% enddocs %}
 
-{% docs opener_2_moves_playing %}
-Concatenation of the first 2 moves played by the username (i.e., moves where `is_playing_turn` is true).
+{% docs opener_5_moves %}
+Concatenation of the first 5 moves in the game.
 {% enddocs %}
 
 {% docs opener_6_moves %}
 Concatenation of the first 6 moves in the game.
 {% enddocs %}
 
-{% docs opener_3_moves_playing %}
-Concatenation of the first 3 moves played by the username (i.e., moves where `is_playing_turn` is true).
+{% docs opener_7_moves %}
+Concatenation of the first 7 moves in the game.
 {% enddocs %}
 
 {% docs opener_8_moves %}
 Concatenation of the first 8 moves in the game.
 {% enddocs %}
 
-{% docs opener_4_moves_playing %}
-Concatenation of the first 4 moves played by the username (i.e., moves where `is_playing_turn` is true).
+{% docs opener_9_moves %}
+Concatenation of the first 9 moves in the game.
+{% enddocs %}
+
+{% docs opener_10_moves %}
+Concatenation of the first 10 moves in the game.
 {% enddocs %}
 
 # Games benchmark
@@ -676,6 +863,14 @@ Percent of the clock time remaining when username made the first blunder.
 
 {% docs first_massive_blunder_playing_prct_time_remaining %}
 Percent of the clock time remaining when username made the first massive blunder.
+{% enddocs %}
+
+{% docs first_missed_opp_massive_blunder_playing_prct_time_remaining %}
+Percent of the clock time remaining when username made the first massive blunder on a missed opportunity.
+{% enddocs %}
+
+{% docs first_throw_massive_blunder_playing_prct_time_remaining %}
+Percent of the clock time remaining when username made the first massive blunder on a throw.
 {% enddocs %}
 
 {% docs rate_nb_massive_blunder_playing_prct_time_50 %}

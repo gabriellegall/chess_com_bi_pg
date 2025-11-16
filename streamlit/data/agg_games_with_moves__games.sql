@@ -4,13 +4,17 @@ SELECT
     time_class,
     time_control,
     end_time,
+    url,
+    eco,
     playing_as,
     playing_rating_range,
     opponent_rating_range,
     playing_result,
-    opener_2_moves,
-    opener_4_moves,
-    opener_6_moves,
+    -- Openings
+    uci_hierarchy_level_1_name,
+    uci_hierarchy_level_2_name,
+    uci_hierarchy_level_7_name,
+    opener_7_moves,
     -- Time management
     prct_time_remaining_playing_early,
     prct_time_remaining_playing_mid,
@@ -38,13 +42,17 @@ SELECT
         CASE WHEN nb_missed_opportunity_blunder_playing_late > 0 THEN 1 ELSE 0 END          AS nb_missed_opportunity_blunder_playing_late,
         -- Time pressure
         first_blunder_playing_prct_time_remaining,
-        first_massive_blunder_playing_prct_time_remaining  
-        
+        first_massive_blunder_playing_prct_time_remaining,
+        first_missed_opp_massive_blunder_playing_prct_time_remaining,
+        first_throw_massive_blunder_playing_prct_time_remaining
 FROM dwh.dwh_agg_games_with_moves
 WHERE TRUE
     AND aggregation_level       = 'Games'
     AND playing_rating_range    = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')
+
     -- AND username = 'Zundorn'
     -- AND time_control = '300+5'
     -- AND playing_rating_range = '0800-1000'
+
+ORDER BY end_time DESC

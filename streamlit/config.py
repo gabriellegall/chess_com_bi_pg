@@ -147,6 +147,29 @@ def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> 
             'plot_title': '🟠 Small Throws - Late',
             'help': f"This boxplot represents, for each player, the percentage of games with at least 1 small throw during the late game phase (moves {game_phases_config.get('mid', {}).get('end_game_move') + 1} to {game_phases_config.get('late', {}).get('end_game_move')})."
         },
+
+        # Percentage of Time remaining at 1st Massive Blunder
+        'first_massive_blunder_playing_prct_time_remaining': {
+            'agg': 'median',
+            'left_annotation': '⏳ You had no time',
+            'right_annotation': '🚨 You had time',
+            'plot_title': '⌛🔴 Time remaining on the 1st Massive Blunder',
+            'help': f"This boxplot represents, for each player, the percentage of time remaining on the clock when the 1st massive blunder occurs. A massive blunder is a blunder with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_massive_blunder')}."
+        },
+        'first_throw_massive_blunder_playing_prct_time_remaining': {
+            'agg': 'median',
+            'left_annotation': '⏳ You had no time',
+            'right_annotation': '🚨 You had time',
+            'plot_title': '⌛🔴💥 Time remaining on the 1st Massive Throw',
+            'help': f"This boxplot represents, for each player, the percentage of time remaining on the clock when the 1st massive throw occurs. A massive throw is a throw with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_massive_blunder')}."
+        },
+        'first_missed_opp_massive_blunder_playing_prct_time_remaining': {
+            'agg': 'median',
+            'left_annotation': '⏳ You had no time',
+            'right_annotation': '🚨 You had time',
+            'plot_title': '⌛🔴👀 Time remaining on the 1st Massive Missed Opportunity',
+            'help': f"This boxplot represents, for each player, the percentage of time remaining on the clock when the 1st massive missed opportunity occurs. A massive missed opportunity is a missed opportunity with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_massive_blunder')}."
+        },
     }
 
 def get_section_config(game_phases_config: dict, score_thresholds_config: dict) -> list:
@@ -180,5 +203,15 @@ def get_section_config(game_phases_config: dict, score_thresholds_config: dict) 
                 "nb_missed_opportunity_blunder_playing": ["nb_missed_opportunity_blunder_playing_early", "nb_missed_opportunity_blunder_playing_mid", "nb_missed_opportunity_blunder_playing_late"],
                 "nb_missed_opportunity_massive_blunder_playing": ["nb_missed_opportunity_massive_blunder_playing_early", "nb_missed_opportunity_massive_blunder_playing_mid", "nb_missed_opportunity_massive_blunder_playing_late"]
             }
+        },
+        {
+            "title": "⏳🔴 Time Remaining on the 1st Massive Blunder",
+            "metrics": (
+                "first_massive_blunder_playing_prct_time_remaining",
+                "first_throw_massive_blunder_playing_prct_time_remaining",
+                "first_missed_opp_massive_blunder_playing_prct_time_remaining",
+            ),
+            "help_text": "These plots show, for each player, the percentage of time remaining on the clock when the 1st massive mistake (throw or missed opportunity) occurs in a game.",
+            "has_breakdown": False
         },
     ]

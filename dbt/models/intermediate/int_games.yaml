@@ -19,8 +19,6 @@ models:
         description: "{{ doc('pgn') }}"
       - name: time_control
         description: "{{ doc('time_control') }}"
-      - name: end_time_integer
-        description: "{{ doc('end_time_integer') }}"
       - name: end_time
         description: "
           {{ doc('end_time') }} 

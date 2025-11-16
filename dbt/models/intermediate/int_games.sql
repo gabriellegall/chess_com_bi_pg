@@ -29,7 +29,7 @@ WITH incremental_partition AS (
         AND rules = 'chess'     -- Only games respecting this condition are processed by Stockfish
         AND (LENGTH(initial_setup) = 0 OR initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1') -- Classic set-up
         AND LENGTH(pgn) > 0     -- Only games respecting this condition are processed by Stockfish
-        AND pgn ~ E'\\d+\\. '   -- find at least 1 match on move number, i.e. digit followed by at dot
+        AND pgn ~ E'\\d+\\. '   -- find at least 1 matching move number, i.e. digit followed by at dot
 )
 
 , cast_types AS (

@@ -7,6 +7,9 @@
     ]
 ) }}
 
+{# This variable controls the maximum number of moves that are used to match and integrate the openings hierarchy #}
+{% set openings_depth = var('openings')['hierarchy_depth'] + 1 %}  {# use '+1' includes the outer bond for use in the Jinja loop #}
+
 WITH aggregate_fields AS (
     SELECT 
         username,
@@ -38,12 +41,15 @@ WITH aggregate_fields AS (
         
         -- Measures                
         COUNT(move_number) AS nb_moves,
-        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder'))                               AS nb_blunder_playing,
-        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder')                                             AS nb_massive_blunder_playing,
-        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }})                                  AS nb_moves_above_decisive_advantage,
-        MIN(CASE WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') THEN prct_time_remaining ELSE NULL END) AS first_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END)               AS first_massive_blunder_playing_prct_time_remaining,
+        COUNT(*) FILTER (WHERE miss_category_playing IN ('Blunder', 'Massive Blunder'))                                                                 AS nb_blunder_playing,
+        COUNT(*) FILTER (WHERE miss_category_playing = 'Massive Blunder')                                                                               AS nb_massive_blunder_playing,
+        COUNT(*) FILTER (WHERE score_playing > {{ var('should_win_range')['mid'] }})                                                                    AS nb_moves_above_decisive_advantage,
 
+            -- % time reamining
+        MIN(CASE WHEN miss_category_playing IN ('Blunder', 'Massive Blunder') THEN prct_time_remaining ELSE NULL END)                                   AS first_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' THEN prct_time_remaining ELSE NULL END)                                                 AS first_massive_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' AND miss_context_playing = 'Missed Opportunity' THEN prct_time_remaining ELSE NULL END) AS first_missed_opp_massive_blunder_playing_prct_time_remaining,
+        MIN(CASE WHEN miss_category_playing = 'Massive Blunder' AND miss_context_playing = 'Throw' THEN prct_time_remaining ELSE NULL END)              AS first_throw_massive_blunder_playing_prct_time_remaining,        
         {% for phase, values in var('game_phases').items() %}
             {% if 'end_game_move' in values %}
             -- % Time Remaining by game_phase for the playing user. Either exactly at the end of the game phase or 1 move before (depending on the color played).
@@ -100,9 +106,9 @@ WITH aggregate_fields AS (
             ELSE 'No decisive advantage'
         END AS max_score_playing_type,
 
-        {% for n in [2, 4, 6, 8] %}
-            STRING_AGG(CASE WHEN move_number <= {{ n }} THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)                      AS opener_{{ n }}_moves,
-            STRING_AGG(CASE WHEN move_number <= {{ n }} AND is_playing_turn THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)  AS opener_{{ n // 2 }}_moves_playing
+        -- Opening Moves
+        {% for n in range(1, openings_depth) %}
+            STRING_AGG(CASE WHEN move_number <= {{ n }} THEN move ELSE NULL END, ' ' ORDER BY move_number ASC)                          AS opener_{{ n }}_moves
             {% if not loop.last %},{% endif %}
         {% endfor %}
 
@@ -121,6 +127,26 @@ WITH aggregate_fields AS (
     )
 )
 
+, integrate_openings_hierarchy AS (
+    SELECT 
+        agg.*,
+        {% for i in range(1, openings_depth, 1) %}
+        -- Among all matched openings, select the most specific opening hierarchy available
+            COALESCE(
+                {% for j in range(openings_depth - 1, 0, -1) %} -- Deepest to shallowest - i.e. prioritize the most specific opening hierarchy
+                    op{{ j }}.uci_hierarchy_level_{{ i }}_name{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ) AS uci_hierarchy_level_{{ i }}_name
+                {% if not loop.last %},{% endif %}
+        {% endfor %}
+    FROM aggregate_fields agg
+    {% for i in range(1, openings_depth, 1) %}
+    -- Attempt to match on each and every opening moves
+    LEFT OUTER JOIN {{ ref('int_openings') }} op{{ i }}
+        ON agg.opener_{{ i }}_moves = op{{ i }}.uci
+    {% endfor %}
+)
+
 SELECT 
     *
-FROM aggregate_fields
+FROM integrate_openings_hierarchy

@@ -2,7 +2,7 @@ import sys
 import os
 import pandas as pd
 from datetime import datetime
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 import yaml
 
 sys.path.append(os.path.abspath('..'))
@@ -35,26 +35,29 @@ if not df.empty:
     df = df.drop(columns=['img'], errors='ignore') # Drop 'img' column which contains incompatible data type
     engine = get_engine()
 
-    try:
-        # Create the schema if it doesn't exist
-        with engine.begin() as conn:
-            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {target_schema}"))
-            print(f"Schema '{target_schema}' ensured to exist.")
+    inspector = inspect(engine)
+    if not inspector.has_table(target_table, schema=target_schema):
+        try:
+            # Create the schema if it doesn't exist
+            with engine.begin() as conn:
+                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {target_schema}"))
+                print(f"Schema '{target_schema}' ensured to exist.")
 
-        df.to_sql(
-            name        = target_table,
-            con         = engine,
-            schema      = target_schema,    
-            if_exists   = 'replace', # Overwrite the table if it exists
-            index       = False # Ignore the df index
-        )
+            df.to_sql(
+                name        = target_table,
+                con         = engine,
+                schema      = target_schema,    
+                if_exists   = 'replace', # Overwrite the table if it exists
+                index       = False # Ignore the df index
+            )
 
-        print(f"Inserted {len(df)} rows into `{target_schema}.{target_table}`.")
+            print(f"Inserted {len(df)} rows into `{target_schema}.{target_table}`.")
 
-    except Exception as e:
-        print(f"Database operation failed: {e}")
-        sys.exit(1)
-
+        except Exception as e:
+            print(f"Database operation failed: {e}")
+            sys.exit(1)
+    else:
+        print(f"Table {target_table} already exists. Moving on...")
 else:
     print("No rows were loaded from the Parquet file.")
 

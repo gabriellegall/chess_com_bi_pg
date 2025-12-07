@@ -23,24 +23,52 @@ def load_dbt_project_config():
 
 def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
-    Creates select boxes in the sidebar for each field in `filter_fields`.
-    Only shows the values relevant based on the `dependent_data`.
-    Returns the user's selections as a dictionary.
+    Sidebar filters:
+    - Categorical filters (selectbox)
+    - Range slider for numeric rating range
     """
     st.sidebar.header("Game Filters")
     selections = {}
+
     for field in filter_fields:
-        options = sorted(list(dependent_data[field].unique()))
-        if not options:
-            st.sidebar.warning(f"No '{field.replace('_', ' ')}' options.")
+
+        # --- special case: rating range slider ---
+        if field == "playing_rating_range":
+
+            # Build default values based on data
+            ratings = pd.concat([
+                dependent_data["playing_rating"].dropna(),
+                dependent_data["opponent_rating"].dropna()
+            ])
+
+            default_min = int(ratings.min()) if not ratings.empty else 0
+            default_max = int(ratings.max()) if not ratings.empty else 3000
+
+            rating_min, rating_max = st.sidebar.slider(
+                "Rating Range (applies to both players)",
+                min_value=100,
+                max_value=2000,
+                value=(default_min, default_max),
+                step=10
+            )
+
+            selections[field] = (rating_min, rating_max)
             continue
 
-        selected_option = st.sidebar.selectbox(
-            f"Select {field.replace('_', ' ').title()}",
+        # --- normal categorical fields ---
+        options = sorted(dependent_data[field].dropna().unique())
+
+        if not options:
+            st.sidebar.warning(f"No '{field.replace('_', ' ')}' options available.")
+            selections[field] = None
+            continue
+
+        selections[field] = st.sidebar.selectbox(
+            field.replace("_", " ").title(),
             options=options,
-            key=f"sidebar_{field}" # ensure Streamlit updates the widget when options change
+            key=f"sidebar_{field}"
         )
-        selections[field] = selected_option
+
     return selections
 
 def render_page_filters(
@@ -92,6 +120,23 @@ def render_page_filters(
                 )
     return selections
 
+def apply_filters(df: pd.DataFrame, selections: dict) -> pd.DataFrame:
+    """
+    Apply sidebar/all selections to the given dataframe.
+    Handles both rating range tuples and categorical filters.
+    """
+    df_filtered = df.copy()
+    for field, value in selections.items():
+        if isinstance(value, tuple):  # rating range
+            min_val, max_val = value
+            df_filtered = df_filtered[
+                df_filtered["playing_rating"].between(min_val, max_val) &
+                df_filtered["opponent_rating"].between(min_val, max_val)
+            ]
+        elif value and value != "All":  # categorical filter
+            df_filtered = df_filtered[df_filtered[field] == value]
+    return df_filtered
+
 ### --- Main Application ---
 
 # Load initial data
@@ -136,14 +181,14 @@ fields_opener_filter    = ["playing_as"]
 sidebar_selections = render_sidebar_filters(user_specific_data, fields_sidebar_filter)
 
 ### --- Summary KPIs header --- 
+
 # Apply filters
 df_sidebar_filtered = user_specific_data.copy()
-for field, value in sidebar_selections.items():
-    if value:
-        df_sidebar_filtered = df_sidebar_filtered[df_sidebar_filtered[field] == value]
+df_sidebar_filtered = apply_filters(df_sidebar_filtered, sidebar_selections)
 
 if df_sidebar_filtered.empty:
     st.warning("No data available for the selected filters.")
+
 # Render the summary KPIs
 else:
     with st.container(border=True):
@@ -164,9 +209,7 @@ with st.container(border=True):
 
     # Apply the combined filters to the entire dataset
     df_filtered_benchmark = raw_data.copy()
-    for field, value in all_selections.items():
-        if value and value != "All": # "All" means no filter
-            df_filtered_benchmark = df_filtered_benchmark[df_filtered_benchmark[field] == value]
+    df_filtered_benchmark = apply_filters(df_filtered_benchmark, all_selections)
 
     # Get the aggregated data for all players
     df_player_agg = get_players_aggregates(df_filtered_benchmark, plot_config)
@@ -213,9 +256,7 @@ with st.container(border=True):
     all_selections = {**sidebar_selections, **opener_selections}
 
     df_filtered_opener = user_specific_data.copy()
-    for field, value in all_selections.items():
-        if value:
-            df_filtered_opener = df_filtered_opener[df_filtered_opener[field] == value]
+    df_filtered_opener = apply_filters(df_filtered_opener, all_selections)
 
     # Sunburst charts
     list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
@@ -232,8 +273,6 @@ with st.container(border=True):
     all_selections = {**sidebar_selections, **opener_selections, **opener_raw_selections}
 
     df_filtered_opener_raw = user_specific_data.copy()
-    for field, value in all_selections.items():
-        if value and value != "All": # "All" means no filter
-            df_filtered_opener_raw = df_filtered_opener_raw[df_filtered_opener_raw[field] == value]
+    df_filtered_opener_raw = apply_filters(df_filtered_opener_raw, all_selections)
 
     st.dataframe(df_filtered_opener_raw)

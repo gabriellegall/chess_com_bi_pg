@@ -7,7 +7,9 @@ SELECT
     url,
     eco,
     playing_as,
+    playing_rating,
     playing_rating_range,
+    opponent_rating,
     opponent_rating_range,
     playing_result,
     -- Openings

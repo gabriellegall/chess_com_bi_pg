@@ -157,7 +157,7 @@ with st.container(border=True):
     st.header(f"How does {selected_username} compare to other similar players?")
 
     # Render and get benchmark filters
-    branchmark_selections = render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark")
+    branchmark_selections = render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark", add_all=True)
 
     # Combine all selections into a single dictionary
     all_selections = {**sidebar_selections, **branchmark_selections}
@@ -165,7 +165,7 @@ with st.container(border=True):
     # Apply the combined filters to the entire dataset
     df_filtered_benchmark = raw_data.copy()
     for field, value in all_selections.items():
-        if value:
+        if value and value != "All": # "All" means no filter
             df_filtered_benchmark = df_filtered_benchmark[df_filtered_benchmark[field] == value]
 
     # Get the aggregated data for all players

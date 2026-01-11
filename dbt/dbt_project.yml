@@ -25,6 +25,33 @@ models:
       +materialized: table
       +docs:
         node_color: '#C5A939' # Gold
+  dbt_project_evaluator:
+      +schema: eval
+      marts:
+        +enabled: false
+        core:
+          +enabled: true
+        structure:
+          +enabled: true
+          fct_source_directories: # Expects 1 .yaml per 1 source - too constraining.
+            +enabled: false
+        performance:
+          +enabled: true
+        dag:
+          +enabled: true 
+          fct_marts_or_intermediate_dependent_on_source: # Expects no direct dependency on source - overkill for this project size.
+            +enabled: false
+        documentation:
+          +enabled: true
+        governance:
+          +enabled: true
+        tests:
+          +enabled: true
+          fct_sources_without_freshness: # Expects all sources to have freshness tests - not needed for now since freshness is managed via heathchecks.
+            +enabled: false
+          fct_missing_primary_key_tests: # Expects all models to have primary key tests - not needed for all models, already done for the riskiest ones.
+            +enabled: false
+
 seeds:
   chess_com_bi_pg:
     +schema: stg_seeds
@@ -34,6 +61,10 @@ tests:
   chess_com_bi_pg:
     +docs:
       node_color: "#FF0000" # Red
+
+dispatch:
+  - macro_namespace: dbt
+    search_order: ['dbt_project_evaluator', 'dbt']
 
 vars:
   data_conversion:
@@ -50,6 +81,15 @@ vars:
         name: "'3-Late Game'"
       very_late:
         name: "'4-Very Late Game'"
+  dbt_project_evaluator:
+    # # Exclude path
+    # exclude_paths_from_project: ["models/datawarehouse/"]
+    # Add extra naming convention
+    model_types: ['staging', 'intermediate', 'marts', 'datawarehouse', 'other']
+    datawarehouse_folder_name: 'datawarehouse'
+    datawarehouse_prefixes: ['dwh_']
+    # Test coverage
+    test_coverage_target: 25 # No need to have as many tests as models. We value quality over quantity.
 
   elo_range: [400,600,800,1000,1200,1400,1600,1800]
   score_thresholds:

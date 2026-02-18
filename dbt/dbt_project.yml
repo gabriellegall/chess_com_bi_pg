@@ -61,6 +61,8 @@ tests:
   chess_com_bi_pg:
     +docs:
       node_color: "#FF0000" # Red
+  dbt_project_evaluator:
+    +severity: error
 
 dispatch:
   - macro_namespace: dbt

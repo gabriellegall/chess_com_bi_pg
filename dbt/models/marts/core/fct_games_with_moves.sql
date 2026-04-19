@@ -24,7 +24,6 @@ WITH games_scope AS (
         SELECT 1
         FROM {{ this }} i
         WHERE i.uuid = games.uuid
-          AND i.username = games.username
     )
     {% endif %}
 )

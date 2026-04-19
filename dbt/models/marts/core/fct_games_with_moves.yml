@@ -1,11 +1,17 @@
 version: 2
 
 models:
-  - name: dwh_games_with_moves
+  - name: fct_games_with_moves
     description: "
       Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc.
       ⚠️ Only games which are (1) rated, and (2) played in the last {{ var('data_scope')['month_history_depth'] }} full months, and (3) among the time class {{ var('data_scope')['time_class'] }} ⚠️.
       " 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - username
+            - move_number
     columns:
       - name: uuid
         description: "{{ doc('uuid') }}"

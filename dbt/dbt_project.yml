@@ -20,8 +20,8 @@ models:
       +materialized: table
       +docs:
         node_color: '#696969' # Silver
-    datawarehouse:
-      +schema: dwh
+    marts:
+      +schema: marts
       +materialized: table
       +docs:
         node_color: '#C5A939' # Gold
@@ -84,13 +84,7 @@ vars:
       very_late:
         name: "'4-Very Late Game'"
   dbt_project_evaluator:
-    # # Exclude path
-    # exclude_paths_from_project: ["models/datawarehouse/"]
-    # Add extra naming convention
-    model_types: ['staging', 'intermediate', 'marts', 'datawarehouse', 'other']
-    datawarehouse_folder_name: 'datawarehouse'
-    datawarehouse_prefixes: ['dwh_']
-    # Test coverage
+    model_types: ['staging', 'intermediate', 'marts', 'other']
     test_coverage_target: 25 # No need to have as many tests as models. We value quality over quantity.
 
   elo_range: [400,600,800,1000,1200,1400,1600,1800]

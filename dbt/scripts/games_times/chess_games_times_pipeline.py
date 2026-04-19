@@ -2,8 +2,9 @@ import sys
 import os
 import pandas as pd
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import text
+from sqlalchemy.types import DateTime
 import yaml
 
 sys.path.append(os.path.abspath('..'))
@@ -31,7 +32,7 @@ target_table    = config["postgres"]["tables"]["games_times"]
 
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table, limit=10000)
-# print(f"🔎 Query to execute:\n{query}")
+# print(f"Query to execute:\n{query}")
 games   = pd.read_sql(query, engine)
 print(f"Query executed successfully — {len(games)} rows fetched.")
 
@@ -41,7 +42,7 @@ if not games.empty:
     
     games_expanded = games.explode('move_data', ignore_index=True)
     games_expanded[['move_number', 'time_remaining_seconds', 'time_remaining']] = pd.json_normalize(games_expanded['move_data'])
-    games_expanded["log_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    games_expanded["log_timestamp"] = datetime.now(tz=timezone.utc)
     games_expanded = games_expanded.drop(columns=['move_data', 'pgn'])
 
     with engine.begin() as conn:
@@ -52,7 +53,8 @@ if not games.empty:
         con         = engine,
         schema      = target_schema,
         if_exists   = 'append', # If the table exists
-        index       = False # Ignore the df index
+        index       = False, # Ignore the df index
+        dtype       = {'log_timestamp': DateTime(timezone=True)}
     )
 
     print(f"Inserted {len(games_expanded)} rows into `{target_schema}.{target_table}`.")

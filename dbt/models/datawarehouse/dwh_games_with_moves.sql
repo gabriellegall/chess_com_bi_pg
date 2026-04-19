@@ -71,9 +71,9 @@ WITH games_scope AS (
       ELSE {{ var('game_phases')['very_late']['name'] }} END AS game_phase,
     games_moves.player_color_turn,
     games.playing_as,
-    player_color_turn = playing_as AS is_playing_turn,
+    games_moves.player_color_turn = games.playing_as AS is_playing_turn,
     CASE
-      WHEN player_color_turn = playing_as THEN 'Playing Turn'
+      WHEN games_moves.player_color_turn = games.playing_as THEN 'Playing Turn'
       ELSE 'Opponent Turn' END AS playing_turn_name,
     games.playing_rating, 
     CASE 
@@ -93,12 +93,12 @@ WITH games_scope AS (
       END AS opponent_rating_range,
     games.playing_result,
     CASE 
-      WHEN playing_as = 'White' THEN score_white
-      WHEN playing_as = 'Black' THEN score_black
+      WHEN games.playing_as = 'White' THEN games_moves.score_white
+      WHEN games.playing_as = 'Black' THEN games_moves.score_black
       ELSE NULL END AS score_playing,
     CASE 
-      WHEN playing_as = 'White' THEN win_probability_white
-      WHEN playing_as = 'Black' THEN win_probability_black
+      WHEN games.playing_as = 'White' THEN games_moves.win_probability_white
+      WHEN games.playing_as = 'Black' THEN games_moves.win_probability_black
       ELSE NULL END AS win_probability_playing,
     CURRENT_TIMESTAMP AS log_timestamp
     FROM games_moves_scope AS games_moves

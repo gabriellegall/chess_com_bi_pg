@@ -1,8 +1,9 @@
 import sys
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import text
+from sqlalchemy.types import DateTime
 import chess.pgn
 import chess.engine
 import io
@@ -98,7 +99,7 @@ if not games.empty:
     # Calculate all games moves for all games
     engine_path = get_stockfish_path()
     games_moves = analyze_multiple_games(games, engine_path)
-    games_moves["log_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    games_moves["log_timestamp"] = datetime.now(tz=timezone.utc)
 
     with engine.begin() as conn:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {target_schema}"))
@@ -108,7 +109,8 @@ if not games.empty:
         con         = engine,
         schema      = target_schema,     
         if_exists   = 'append', # If the table exists
-        index       = False # Ignore the df index   
+        index       = False, # Ignore the df index   
+        dtype       = {'log_timestamp': DateTime(timezone=True)}
     )
 
     print(f"Inserted {len(games_moves)} rows into `{target_schema}.{target_table}`.")

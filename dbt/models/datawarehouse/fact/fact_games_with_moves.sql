@@ -8,58 +8,31 @@
     ]
 ) }}
 
-{% set elo_range_values = var('elo_range') %}
-
 WITH games_scope AS (
   SELECT
-    games.*
+    games.uuid,
+    games.username,
+    games.playing_as
   FROM {{ ref ('int_games') }} games
   WHERE TRUE
     AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
     AND time_class = ANY(ARRAY{{ var('data_scope')['time_class'] }}::text[])    
     AND rated
-)
-
-, games_moves_scope AS (
-  SELECT
-    games_moves.*
-  FROM {{ ref ('int_games_moves') }} AS games_moves
-  {% if is_incremental() %}
-  WHERE games_moves.log_timestamp > (
-    SELECT MAX(i.log_timestamp)
-    FROM {{ this }} i
-  )
-  {% endif %}
-)
-
-, games_times_scope AS (
-  SELECT
-    games_times.*
-  FROM {{ ref ('int_games_times') }} AS games_times
-  {% if is_incremental() %}
-  WHERE games_times.log_timestamp > (
-    SELECT MAX(i.log_timestamp)
-    FROM {{ this }} i
-  )
-  {% endif %}
+    {% if is_incremental() %}
+    -- Game UUID is not already in the target table:
+    AND NOT EXISTS (
+        SELECT 1
+        FROM {{ this }} i
+        WHERE i.uuid = games.uuid
+          AND i.username = games.username
+    )
+    {% endif %}
 )
 
 , score_defintion AS (
   SELECT 
     games.uuid,
-    games.archive_url,
     COALESCE(username_mapping.target_username, games.username) AS username, -- Use the target username from the mapping table if it exists
-    games.url,
-    games.eco,
-    games.end_time,
-    games.end_time_date,
-    games.end_time_month,
-    games.time_class,
-    games.time_control,
-    games.white__username,
-    games.white__rating,
-    games.black__username,
-    games.black__rating,
     games_moves.move_number,
     games_times.time_remaining_seconds,
     games_times.time_remaining_seconds / FIRST_VALUE(games_times.time_remaining_seconds) OVER (PARTITION BY games.uuid, games_moves.player_color_turn ORDER BY games_moves.move_number ASC) AS prct_time_remaining,
@@ -75,38 +48,19 @@ WITH games_scope AS (
     CASE
       WHEN games_moves.player_color_turn = games.playing_as THEN 'Playing Turn'
       ELSE 'Opponent Turn' END AS playing_turn_name,
-    games.playing_rating, 
-    CASE 
-      {% for idx in range(elo_range_values|length) %}
-      WHEN games.playing_rating < {{ elo_range_values[idx] }} THEN 
-          '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
-      {% endfor %}
-      ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
-      END AS playing_rating_range,
-    games.opponent_rating,
-    CASE 
-      {% for idx in range(elo_range_values|length) %}
-      WHEN games.opponent_rating < {{ elo_range_values[idx] }} THEN 
-          '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
-      {% endfor %}
-      ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
-      END AS opponent_rating_range,
-    games.playing_result,
     CASE 
       WHEN games.playing_as = 'White' THEN games_moves.score_white
       WHEN games.playing_as = 'Black' THEN games_moves.score_black
       ELSE NULL END AS score_playing,
-    CASE 
-      WHEN games.playing_as = 'White' THEN games_moves.win_probability_white
-      WHEN games.playing_as = 'Black' THEN games_moves.win_probability_black
-      ELSE NULL END AS win_probability_playing,
     CURRENT_TIMESTAMP AS log_timestamp
-    FROM games_moves_scope AS games_moves
-    INNER JOIN games_times_scope AS games_times
+    FROM games_scope AS games
+    -- Game UUID has been processed with Stockfish and has move data:
+    INNER JOIN {{ ref ('int_games_moves') }} AS games_moves
+      ON games_moves.uuid = games.uuid
+    -- Game UUID has been processed with time data:
+    INNER JOIN {{ ref ('int_games_times') }} AS games_times
       ON games_moves.uuid = games_times.uuid
       AND games_moves.move_number = games_times.move_number
-    INNER JOIN games_scope AS games
-      ON games_moves.uuid = games.uuid
   LEFT OUTER JOIN {{ ref ('username_mapping') }} username_mapping
     ON LOWER(username_mapping.username) = LOWER(games.username) 
 )

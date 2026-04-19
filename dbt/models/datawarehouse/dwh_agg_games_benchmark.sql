@@ -1,5 +1,6 @@
 {{ config(
-    materialized='materialized_view'
+    materialized='materialized_view',
+    enabled = false
   ) 
 }}
 

@@ -1,11 +1,13 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'uuid',
+    incremental_strategy = 'append',
     post_hook=[
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_end_time ON {{ this }} (end_time)"
     ]
 ) }}
+
+{% set elo_range_values = var('elo_range') %}
 
 WITH incremental_partition AS (
     SELECT 
@@ -67,6 +69,26 @@ WITH incremental_partition AS (
     FROM define_playing
 )
 
+, define_rating_range AS (
+    SELECT
+        *,
+        CASE
+            {% for idx in range(elo_range_values|length) %}
+            WHEN playing_rating < {{ elo_range_values[idx] }} THEN
+                '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
+            {% endfor %}
+            ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
+        END AS playing_rating_range,
+        CASE
+            {% for idx in range(elo_range_values|length) %}
+            WHEN opponent_rating < {{ elo_range_values[idx] }} THEN
+                '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
+            {% endfor %}
+            ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
+        END AS opponent_rating_range
+    FROM define_result
+)
+
 , simplify_result AS (
     SELECT 
         *,
@@ -75,7 +97,7 @@ WITH incremental_partition AS (
             WHEN playing_result_detailed IN ('win')                                                                                 THEN 'Win'
             WHEN playing_result_detailed IN ('stalemate', 'repetition', 'agreed', 'timevsinsufficient', 'insufficient', '50move')   THEN 'Draw'
             ELSE NULL END AS playing_result
-    FROM define_result
+    FROM define_rating_range
 )
 
 SELECT 

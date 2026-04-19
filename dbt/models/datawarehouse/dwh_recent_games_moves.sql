@@ -5,7 +5,8 @@
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)",
         "DELETE FROM {{ this }} WHERE end_time::date < DATE_TRUNC('week', CURRENT_DATE - INTERVAL '7 days')"
-    ]
+    ],
+    enabled = false
 ) }}
 
 WITH define_expected_moves AS (

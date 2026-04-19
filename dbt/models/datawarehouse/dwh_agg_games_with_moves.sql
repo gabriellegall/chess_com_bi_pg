@@ -4,7 +4,8 @@
     post_hook=[
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)"
-    ]
+    ],
+    enabled = false
 ) }}
 
 {# This variable controls the maximum number of moves that are used to match and integrate the openings hierarchy #}

@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = ['uuid','move_number'],
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
     ]
 ) }}
 
@@ -15,9 +16,8 @@ SELECT
 FROM {{ source('stockfish', 'players_games_moves') }} pgm
 
 {% if is_incremental() %}
-WHERE NOT EXISTS (
-    SELECT 1
+WHERE pgm.log_timestamp > (
+    SELECT MAX(i.log_timestamp)
     FROM {{ this }} i
-    WHERE i.uuid = pgm.uuid
 )
 {% endif %}

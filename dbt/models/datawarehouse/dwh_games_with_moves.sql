@@ -17,14 +17,30 @@ WITH games_scope AS (
     AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
     AND time_class = ANY(ARRAY{{ var('data_scope')['time_class'] }}::text[])    
     AND rated
-    {% if is_incremental() %}
-    AND NOT EXISTS (
-        SELECT 1
-        FROM {{ this }} i
-        WHERE i.uuid = games.uuid
-          AND i.username = games.username
-    )
-    {% endif %}
+)
+
+, games_moves_scope AS (
+  SELECT
+    games_moves.*
+  FROM {{ ref ('int_games_moves') }} AS games_moves
+  {% if is_incremental() %}
+  WHERE games_moves.log_timestamp > (
+    SELECT MAX(i.log_timestamp)
+    FROM {{ this }} i
+  )
+  {% endif %}
+)
+
+, games_times_scope AS (
+  SELECT
+    games_times.*
+  FROM {{ ref ('int_games_times') }} AS games_times
+  {% if is_incremental() %}
+  WHERE games_times.log_timestamp > (
+    SELECT MAX(i.log_timestamp)
+    FROM {{ this }} i
+  )
+  {% endif %}
 )
 
 , score_defintion AS (
@@ -43,7 +59,6 @@ WITH games_scope AS (
     games.white__rating,
     games.black__username,
     games.black__rating,
-    games.log_timestamp,
     games_moves.move_number,
     games_times.time_remaining_seconds,
     games_times.time_remaining_seconds / FIRST_VALUE(games_times.time_remaining_seconds) OVER (PARTITION BY games.uuid, games_moves.player_color_turn ORDER BY games_moves.move_number ASC) AS prct_time_remaining,
@@ -83,15 +98,16 @@ WITH games_scope AS (
     CASE 
       WHEN playing_as = 'White' THEN win_probability_white
       WHEN playing_as = 'Black' THEN win_probability_black
-      ELSE NULL END AS win_probability_playing
-  FROM games_scope AS games
+      ELSE NULL END AS win_probability_playing,
+    CURRENT_TIMESTAMP AS log_timestamp
+    FROM games_moves_scope AS games_moves
+    INNER JOIN games_times_scope AS games_times
+      ON games_moves.uuid = games_times.uuid
+      AND games_moves.move_number = games_times.move_number
+    INNER JOIN games_scope AS games
+      ON games_moves.uuid = games.uuid
   LEFT OUTER JOIN {{ ref ('username_mapping') }} username_mapping
     ON LOWER(username_mapping.username) = LOWER(games.username) 
-  INNER JOIN {{ ref ('int_games_moves') }} AS games_moves
-    USING (uuid)
-  INNER JOIN {{ ref ('int_games_times') }} games_times
-    ON games.uuid = games_times.uuid
-    AND games_moves.move_number = games_times.move_number
 )
 
 , previous_score AS (

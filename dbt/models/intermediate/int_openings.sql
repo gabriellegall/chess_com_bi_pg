@@ -1,5 +1,5 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'table'
 ) }}
 
 -- Dynamically determine the maximum depth of UCI move sequences in the source data using [uci_moves_depth]

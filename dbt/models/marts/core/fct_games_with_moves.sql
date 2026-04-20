@@ -3,7 +3,6 @@
     incremental_strategy = 'append',
     post_hook=[
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
     ]
 ) }}
@@ -15,7 +14,7 @@ WITH games_scope AS (
     games.playing_as
   FROM {{ ref ('int_games') }} games
   WHERE TRUE
-    AND end_time_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
+    AND end_time >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '{{ var('data_scope')['month_history_depth'] }} months')
     AND time_class = ANY(ARRAY{{ var('data_scope')['time_class'] }}::text[])    
     AND rated
     {% if is_incremental() %}

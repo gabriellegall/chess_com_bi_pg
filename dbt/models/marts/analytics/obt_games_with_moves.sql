@@ -1,6 +1,16 @@
+{{ config(
+    materialized = 'incremental',
+    incremental_strategy = 'append',
+    post_hook=[
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (username)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+    ]
+) }}
+
 SELECT 
     games_stats.username,
     games_stats.uuid, 
+    games_stats.log_timestamp,
     -- Game info
     games_info.url,
     games_info.eco,
@@ -52,6 +62,12 @@ LEFT OUTER JOIN {{ ref('dim_games') }} games_info
 WHERE TRUE
     AND playing_rating_range = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')
+    {% if is_incremental() %}
+    AND games_stats.log_timestamp > (
+        SELECT MAX(i.log_timestamp)
+        FROM {{ this }} i
+    )
+    {% endif %}
     -- AND username = 'Zundorn'
     -- AND time_control = '300+5'
     -- AND playing_rating_range = '0800-1000'

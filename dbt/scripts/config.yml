@@ -14,7 +14,7 @@ api:
         - fluffy128li
         - d0niphan
         - djadja0327
-      start_month: "2010/01"
+      start_month: "2026/04"
     default_users:
       usernames:
         - aufhebungja
@@ -106,7 +106,7 @@ api:
         - dawid-26
         - getrektyousnail
         - angycaff
-      start_month: "2025/04"
+      start_month: "2026/04"
 
 postgres:
   schemas:

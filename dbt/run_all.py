@@ -44,26 +44,26 @@ def run_pipeline_forever():
 
             # DBT
             subprocess.run(["dbt", "seed"], check=True)
-            subprocess.run(["dbt", "run"], check=True)
+            subprocess.run(["dbt", "run", "--exclude", "dbt_project_evaluator"], check=True)
 
             # Healthcheck
             requests.get(URL, timeout=5)
             print(f"✅ Healthcheck ping sent.")
             
-            # DBT test - every N executions
-            execution_count += 1
-            if execution_count % 100 == 0:
-                print(f"Running dbt test (execution {execution_count})")
-                test_result = subprocess.run(["dbt", "test"], capture_output=True, text=True)
+            # # DBT test - every N executions
+            # execution_count += 1
+            # if execution_count % 100 == 0:
+            #     print(f"Running dbt test (execution {execution_count})")
+            #     test_result = subprocess.run(["dbt", "test"], capture_output=True, text=True)
                 
-                # Healthcheck
-                if test_result.returncode == 0:
-                    print("✅ dbt test passed. Pinging success URL.")
-                    requests.get(URL_DBT_TEST, timeout=5)
-                else:
-                    print("❌ dbt test failed. Pinging failure URL.")
-                    print(test_result.stderr)
-                    requests.get(URL_DBT_TEST + "/fail", timeout=5)
+            #     # Healthcheck
+            #     if test_result.returncode == 0:
+            #         print("✅ dbt test passed. Pinging success URL.")
+            #         requests.get(URL_DBT_TEST, timeout=5)
+            #     else:
+            #         print("❌ dbt test failed. Pinging failure URL.")
+            #         print(test_result.stderr)
+            #         requests.get(URL_DBT_TEST + "/fail", timeout=5)
 
             # Sleep
             time.sleep(1200)

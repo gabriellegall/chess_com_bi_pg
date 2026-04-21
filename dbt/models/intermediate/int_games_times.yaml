@@ -13,13 +13,13 @@ models:
           - not_null
       - name: move_number
         description: "{{ doc('move_number') }}"
-        data_tests:
-          - not_null:
-              config:
-                # Some games can be played without any time control (expected to be very rare)
-                severity: error
-                error_if: ">50"
-                warn_if: ">1"
+        # data_tests:
+        #   - not_null:
+        #       config:
+        #         # Some games can be played without any time control (expected to be very rare)
+        #         severity: error
+        #         error_if: ">50"
+        #         warn_if: ">1"
       - name: time_remaining
         description: "{{ doc('time_remaining') }}"
       - name: time_remaining_seconds

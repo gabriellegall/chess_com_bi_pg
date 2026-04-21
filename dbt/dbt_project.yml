@@ -91,6 +91,7 @@ vars:
         name: "'4-Very Late Game'"
   dbt_project_evaluator:
     model_types: ['staging', 'intermediate', 'marts', 'other']
+    marts_prefixes: ['obt_', 'dim_', 'fct_']
     test_coverage_target: 25 # No need to have as many tests as models. We value quality over quantity.
 
   elo_range: [400,600,800,1000,1200,1400,1600,1800]

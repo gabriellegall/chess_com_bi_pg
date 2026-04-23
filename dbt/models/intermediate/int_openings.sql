@@ -21,7 +21,7 @@ WITH extract_moves AS (
         *,
         REGEXP_SPLIT_TO_ARRAY(UCI, ' ')                         AS uci_moves_array,
         ARRAY_LENGTH(REGEXP_SPLIT_TO_ARRAY(UCI, ' '), 1)        AS uci_moves_depth
-    FROM {{ source('openings', 'chess_openings') }}
+    FROM {{ ref('stg_openings__chess_openings') }}
 ),
 
 -- Generate [uci] keys for previous hierarchy levels only
@@ -45,7 +45,7 @@ parent_hierarchy AS (
         {% endfor %}
     FROM parent_hierarchy p
     {% for i in range(1, max_depth) %}
-        LEFT JOIN {{ source('openings', 'chess_openings') }} AS level_{{ i }}
+        LEFT JOIN {{ ref('stg_openings__chess_openings') }} AS level_{{ i }}
         ON level_{{ i }}.UCI = p.uci_hierarchy_level_{{ i }}
     {% endfor %}
 )

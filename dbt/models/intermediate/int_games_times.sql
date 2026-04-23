@@ -9,8 +9,7 @@
 
 SELECT 
     pgt.*
-FROM {{ source('times', 'players_games_times') }} pgt
-
+FROM {{ ref('stg_times__players_games_times') }} pgt
 {% if is_incremental() %}
 WHERE pgt.log_timestamp > (
     SELECT MAX(i.log_timestamp)

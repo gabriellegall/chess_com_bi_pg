@@ -13,8 +13,7 @@ SELECT
     -score_white                                                    AS score_black,
     1.0 / (1 + EXP(-0.004 * score_white))                           AS win_probability_white,
     1.0 - 1.0 / (1 + EXP(-0.004 * score_white))                     AS win_probability_black
-FROM {{ source('stockfish', 'players_games_moves') }} pgm
-
+FROM {{ ref('stg_stockfish__players_games_moves') }} pgm
 {% if is_incremental() %}
 WHERE pgm.log_timestamp > (
     SELECT MAX(i.log_timestamp)

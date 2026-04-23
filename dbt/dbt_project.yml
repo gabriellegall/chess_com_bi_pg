@@ -15,6 +15,11 @@ clean-targets:
 
 models:
   chess_com_bi_pg:
+    staging:
+      +schema: stg
+      +materialized: view
+      +docs:
+        node_color: '#5fb825' # Light Green
     intermediate:
       +schema: int
       +materialized: table

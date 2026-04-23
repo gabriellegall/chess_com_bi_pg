@@ -12,7 +12,7 @@
 WITH incremental_partition AS (
     SELECT 
         pg.*
-    FROM {{ source('chess_com', 'players_games') }} pg
+    FROM {{ ref('stg_chess_com__players_games') }} pg
 
     {% if is_incremental() %}
     WHERE pg.end_time > (

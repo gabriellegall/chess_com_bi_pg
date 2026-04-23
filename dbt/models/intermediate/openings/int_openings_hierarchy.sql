@@ -6,7 +6,7 @@
 {% set get_max_depth_query %}
     select
         max(array_length(regexp_split_to_array(uci, ' '), 1)) as uci_moves_depth
-    from {{ source('openings', 'chess_openings') }}
+    from {{ ref('stg_openings__chess_openings') }}
 {% endset %}
 
 {% set max_depth_results = run_query(get_max_depth_query) %}

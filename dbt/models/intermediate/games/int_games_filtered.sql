@@ -9,7 +9,7 @@
 
 select
     g.*
-from {{ ref('int_games') }} g
+from {{ ref('int_games_base') }} g
 where true
     and g.end_time >= date_trunc('month', current_date - interval '{{ var('data_scope')['month_history_depth'] }} months')
     and g.time_class = any(array{{ var('data_scope')['time_class'] }}::text[])

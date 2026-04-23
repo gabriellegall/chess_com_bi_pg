@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: int_games
+  - name: int_games_base
     description: "Games data with few calculated fields that can be directly derived w/o any join."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
@@ -100,7 +100,7 @@ models:
       - name: match
         description: "{{ doc('match') }}"
 
-  - name: int_game_moves
+  - name: int_game_moves_base
     description: "Games moves data with few calculated fields that can be directly derived w/o any join."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
@@ -145,7 +145,7 @@ models:
   - name: int_games_stats
     description: "Games-level aggregated statistics."
 
-  - name: int_game_move_times
+  - name: int_game_move_times_base
     description: "Games timing data with few calculated fields that can be directly derived w/o any join."
     tests:
       - dbt_utils.unique_combination_of_columns:

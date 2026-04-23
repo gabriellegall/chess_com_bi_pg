@@ -116,7 +116,7 @@ models:
             - uuid
             - username
 
-  - name: fct_games_with_moves
+  - name: fct_game_moves
     description: "\n      Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc.\n      "
     tests:
       - dbt_utils.unique_combination_of_columns:

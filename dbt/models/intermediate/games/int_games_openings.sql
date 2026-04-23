@@ -9,41 +9,41 @@
 
 {% set openings_depth = var('openings')['hierarchy_depth'] + 1 %}
 
-WITH aggregate_fields AS (
-    SELECT
+with aggregate_fields as (
+    select
         username,
         uuid,
-        MAX(log_timestamp) AS log_timestamp,
+        max(log_timestamp) as log_timestamp,
         {% for n in range(1, openings_depth) %}
-            STRING_AGG(CASE WHEN move_number <= {{ n }} THEN move ELSE NULL END, ' ' ORDER BY move_number ASC) AS opener_{{ n }}_moves{% if not loop.last %},{% endif %}
+            string_agg(case when move_number <= {{ n }} then move else null end, ' ' order by move_number asc) as opener_{{ n }}_moves{% if not loop.last %},{% endif %}
         {% endfor %}
-    FROM {{ ref('int_games_with_moves_enriched') }} games
+    from {{ ref('int_games_with_moves_enriched') }} games
     {% if is_incremental() %}
-    WHERE games.log_timestamp > (
-        SELECT MAX(i.log_timestamp)
-        FROM {{ this }} i
+    where games.log_timestamp > (
+        select max(i.log_timestamp)
+        from {{ this }} i
     )
     {% endif %}
-    GROUP BY username, uuid
+    group by username, uuid
 )
 
-, integrate_openings_hierarchy AS (
-    SELECT
+, integrate_openings_hierarchy as (
+    select
         agg.*,
         {% for i in range(1, openings_depth, 1) %}
-            COALESCE(
+            coalesce(
                 {% for j in range(openings_depth - 1, 0, -1) %}
                     op{{ j }}.uci_hierarchy_level_{{ i }}_name{% if not loop.last %},{% endif %}
                 {% endfor %}
-            ) AS uci_hierarchy_level_{{ i }}_name{% if not loop.last %},{% endif %}
+            ) as uci_hierarchy_level_{{ i }}_name{% if not loop.last %},{% endif %}
         {% endfor %}
-    FROM aggregate_fields agg
+    from aggregate_fields agg
     {% for i in range(1, openings_depth, 1) %}
-    LEFT JOIN {{ ref('int_openings') }} op{{ i }}
-        ON agg.opener_{{ i }}_moves = op{{ i }}.uci
+    left join {{ ref('int_openings') }} op{{ i }}
+        on agg.opener_{{ i }}_moves = op{{ i }}.uci
     {% endfor %}
 )
 
-SELECT
+select
     *
-FROM integrate_openings_hierarchy
+from integrate_openings_hierarchy

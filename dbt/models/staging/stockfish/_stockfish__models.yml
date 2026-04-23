@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: stg_stockfish__players_games_moves
+    description: "Staging model for Stockfish-derived moves."

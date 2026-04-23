@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: stockfish
+    description: "Raw data calculated by Stockfish for each game and move"
+    schema: stg_stockfish
+    tables:
+      - name: players_games_moves
+        description: "Stockfish calculated moves"
+        columns:
+          - name: uuid
+            description: "{{ doc('uuid') }}"
+          - name: move_number
+            description: "{{ doc('move_number') }}"
+          - name: move
+            description: "{{ doc('move') }}"
+          - name: score_white
+            description: "{{ doc('score_white') }}"
+          - name: log_timestamp
+            description: "{{ doc('log_timestamp') }}"

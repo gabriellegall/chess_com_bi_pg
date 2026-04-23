@@ -1,3 +1,5 @@
+version: 2
+
 models:
   - name: int_openings
     description: "Openings data with few calculated fields that can be directly derived w/o any join."

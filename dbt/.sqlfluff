@@ -1,0 +1,11 @@
+[sqlfluff]
+dialect = postgres
+templater = dbt
+max_line_length = 80
+
+[sqlfluff:templater:dbt]
+project_dir = .
+
+[sqlfluff:rules]
+tab_space_size = 4
+indent_unit = space

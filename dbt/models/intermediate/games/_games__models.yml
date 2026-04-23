@@ -1,5 +1,7 @@
+version: 2
+
 models:
-  - name: dim_games
+  - name: int_games
     description: "Games data with few calculated fields that can be directly derived w/o any join."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
@@ -20,10 +22,7 @@ models:
       - name: time_control
         description: "{{ doc('time_control') }}"
       - name: end_time
-        description: "
-          {{ doc('end_time') }} 
-          Expressed in the timezone {{ var('data_conversion')['utc_to_target_timezone'] }}
-          "
+        description: "\n          {{ doc('end_time') }} \n          Expressed in the timezone {{ var('data_conversion')['utc_to_target_timezone'] }}\n          "
       - name: rated
         description: "{{ doc('rated') }}"
       - name: tcn
@@ -100,3 +99,69 @@ models:
         description: "{{ doc('tournament') }}"
       - name: match
         description: "{{ doc('match') }}"
+
+  - name: int_games_moves
+    description: "Games moves data with few calculated fields that can be directly derived w/o any join."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - move_number
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+        data_tests:
+          - not_null
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+        data_tests:
+          - not_null
+      - name: move
+        description: "{{ doc('move') }}"
+      - name: score_white
+        description: "{{ doc('score_white') }}"
+        data_tests:
+          - not_null
+      - name: player_color_turn
+        description: "{{ doc('player_color_turn') }}"
+      - name: score_black
+        description: "{{ doc('score_black') }}"
+      - name: win_probability_white
+        description: "{{ doc('win_probability_white') }}"
+      - name: win_probability_black
+        description: "{{ doc('win_probability_black') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"
+
+  - name: int_games_scoped
+    description: "Scoped games data filtered for the active analysis window."
+
+  - name: int_games_openings
+    description: "Games enriched with opening hierarchy."
+
+  - name: int_games_with_moves_enriched
+    description: "Games combined with move, timing, and opening context."
+
+  - name: int_games_stats
+    description: "Games-level aggregated statistics."
+
+  - name: int_games_times
+    description: "Games timing data with few calculated fields that can be directly derived w/o any join."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - move_number
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+        data_tests:
+          - not_null
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+      - name: time_remaining
+        description: "{{ doc('time_remaining') }}"
+      - name: time_remaining_seconds
+        description: "{{ doc('time_remaining_seconds') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"

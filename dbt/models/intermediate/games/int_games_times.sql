@@ -7,12 +7,12 @@
     ]
 ) }}
 
-SELECT 
+select
     pgt.*
-FROM {{ ref('stg_times__players_games_times') }} pgt
+from {{ ref('stg_times__players_games_times') }} pgt
 {% if is_incremental() %}
-WHERE pgt.log_timestamp > (
-    SELECT MAX(i.log_timestamp)
-    FROM {{ this }} i
+where pgt.log_timestamp > (
+    select max(i.log_timestamp)
+    from {{ this }} i
 )
 {% endif %}

@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: times
+    description: "Raw data calculated with Python to extract durations for each game and move"
+    schema: stg_times
+    tables:
+      - name: players_games_times
+        description: "Python calculated move durations"
+        columns:
+          - name: uuid
+            description: "{{ doc('uuid') }}"
+          - name: move_number
+            description: "{{ doc('move_number') }}"
+          - name: time_remaining_seconds
+            description: "{{ doc('time_remaining_seconds') }}"
+          - name: time_remaining
+            description: "{{ doc('time_remaining') }}"
+          - name: log_timestamp
+            description: "{{ doc('log_timestamp') }}"

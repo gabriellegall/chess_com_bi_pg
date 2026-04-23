@@ -143,7 +143,7 @@ WITH aggregate_fields AS (
     FROM aggregate_fields agg
     {% for i in range(1, openings_depth, 1) %}
     -- Attempt to match on each and every opening moves
-    LEFT OUTER JOIN {{ ref('int_openings') }} op{{ i }}
+    LEFT OUTER JOIN {{ ref('int_openings_hierarchy') }} op{{ i }}
         ON agg.opener_{{ i }}_moves = op{{ i }}.uci
     {% endfor %}
 )

@@ -100,7 +100,7 @@ models:
       - name: match
         description: "{{ doc('match') }}"
 
-  - name: int_games_moves
+  - name: int_game_moves
     description: "Games moves data with few calculated fields that can be directly derived w/o any join."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
@@ -133,19 +133,19 @@ models:
       - name: log_timestamp
         description: "{{ doc('log_timestamp') }}"
 
-  - name: int_games_scoped
+  - name: int_games_filtered
     description: "Scoped games data filtered for the active analysis window."
 
   - name: int_games_openings
     description: "Games enriched with opening hierarchy."
 
-  - name: int_games_with_moves_enriched
+  - name: int_game_moves_enriched
     description: "Games combined with move, timing, and opening context."
 
   - name: int_games_stats
     description: "Games-level aggregated statistics."
 
-  - name: int_games_times
+  - name: int_game_move_times
     description: "Games timing data with few calculated fields that can be directly derived w/o any join."
     tests:
       - dbt_utils.unique_combination_of_columns:

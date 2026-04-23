@@ -17,7 +17,7 @@ with aggregate_fields as (
         {% for n in range(1, openings_depth) %}
             string_agg(case when move_number <= {{ n }} then move else null end, ' ' order by move_number asc) as opener_{{ n }}_moves{% if not loop.last %},{% endif %}
         {% endfor %}
-    from {{ ref('int_games_with_moves_enriched') }} games
+    from {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
     where games.log_timestamp > (
         select max(i.log_timestamp)
@@ -39,7 +39,7 @@ with aggregate_fields as (
         {% endfor %}
     from aggregate_fields agg
     {% for i in range(1, openings_depth, 1) %}
-    left join {{ ref('int_openings') }} op{{ i }}
+    left join {{ ref('int_openings_hierarchy') }} op{{ i }}
         on agg.opener_{{ i }}_moves = op{{ i }}.uci
     {% endfor %}
 )

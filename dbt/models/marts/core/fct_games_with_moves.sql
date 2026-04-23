@@ -9,7 +9,7 @@
 
 SELECT
   gm.*
-FROM {{ ref('int_games_with_moves_enriched') }} gm
+FROM {{ ref('int_game_moves_enriched') }} gm
 {% if is_incremental() %}
 WHERE gm.log_timestamp > (
   SELECT MAX(i.log_timestamp)

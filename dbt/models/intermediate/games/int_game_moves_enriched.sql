@@ -62,10 +62,10 @@ with score_definition as (
       else null
     end as win_probability_playing,
     greatest(games.log_timestamp, games_moves.log_timestamp, games_times.log_timestamp) as log_timestamp
-  from {{ ref('int_games_scoped') }} as games
-  inner join {{ ref('int_games_moves') }} as games_moves
+  from {{ ref('int_games_filtered') }} as games
+  inner join {{ ref('int_game_moves') }} as games_moves
     on games_moves.uuid = games.uuid
-  inner join {{ ref('int_games_times') }} as games_times
+  inner join {{ ref('int_game_move_times') }} as games_times
     on games_moves.uuid = games_times.uuid
     and games_moves.move_number = games_times.move_number
   left join {{ ref('username_mapping') }} username_mapping

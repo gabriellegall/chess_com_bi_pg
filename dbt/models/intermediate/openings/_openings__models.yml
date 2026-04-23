@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: int_openings
+  - name: int_openings_hierarchy
     description: "Openings data with few calculated fields that can be directly derived w/o any join."
     columns:
       - name: eco-volume

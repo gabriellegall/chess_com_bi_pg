@@ -65,7 +65,7 @@ with agg_definitions as (
             when max(score_playing) > {{ var('should_win_range')['mid'] }} then 'Decisive advantage'
             else 'No decisive advantage'
         end as max_score_playing_type
-    from {{ ref('int_games_with_moves_enriched') }} games
+    from {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
     where games.log_timestamp > (
         select max(i.log_timestamp)

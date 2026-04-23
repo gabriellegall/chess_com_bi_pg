@@ -10,7 +10,7 @@
 WITH incremental_partition AS (
     SELECT 
         g.*
-    FROM {{ ref('int_games_scoped') }} g
+    FROM {{ ref('int_games_filtered') }} g
 
     {% if is_incremental() %}
     WHERE g.end_time > (

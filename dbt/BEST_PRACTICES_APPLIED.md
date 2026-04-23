@@ -73,13 +73,13 @@ Implemented in:
 
 Key files:
 - `models/intermediate/games/int_games.sql`
-- `models/intermediate/games/int_games_scoped.sql`
-- `models/intermediate/games/int_games_moves.sql`
-- `models/intermediate/games/int_games_times.sql`
-- `models/intermediate/games/int_games_with_moves_enriched.sql`
+- `models/intermediate/games/int_games_filtered.sql`
+- `models/intermediate/games/int_game_moves.sql`
+- `models/intermediate/games/int_game_move_times.sql`
+- `models/intermediate/games/int_game_moves_enriched.sql`
 - `models/intermediate/games/int_games_openings.sql`
 - `models/intermediate/games/int_games_stats.sql`
-- `models/intermediate/openings/int_openings.sql`
+- `models/intermediate/openings/int_openings_hierarchy.sql`
 
 ## 6. Mart YAML consolidated by folder
 

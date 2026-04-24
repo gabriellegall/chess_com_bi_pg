@@ -139,6 +139,10 @@ models:
 
   - name: int_games_filtered
     description: "Scoped games data filtered for the active analysis window."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_base')
+          compare_row_condition: "{{ games_scope_condition() }}"
 
   - name: int_games_openings
     description: "Games enriched with opening hierarchy."

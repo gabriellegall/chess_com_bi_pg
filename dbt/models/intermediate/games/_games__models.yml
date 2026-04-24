@@ -8,6 +8,8 @@ models:
           combination_of_columns:
             - uuid
             - username
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('stg_chess_com__players_games')
     columns:
       - name: archive_url
         description: "{{ doc('archive_url') }}"
@@ -107,6 +109,8 @@ models:
           combination_of_columns:
             - uuid
             - move_number
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: source('stockfish', 'players_games_moves')
     columns:
       - name: uuid
         description: "{{ doc('uuid') }}"
@@ -138,12 +142,18 @@ models:
 
   - name: int_games_openings
     description: "Games enriched with opening hierarchy."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_filtered')
 
   - name: int_game_moves_enriched
     description: "Games combined with move, timing, and opening context."
 
   - name: int_games_stats
     description: "Games-level aggregated statistics."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_filtered')
 
   - name: int_game_move_times_base
     description: "Games timing data with few calculated fields that can be directly derived w/o any join."
@@ -152,6 +162,8 @@ models:
           combination_of_columns:
             - uuid
             - move_number
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: source('times', 'players_games_times')
     columns:
       - name: uuid
         description: "{{ doc('uuid') }}"

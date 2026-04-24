@@ -8,6 +8,8 @@ models:
           combination_of_columns:
             - uuid
             - username
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_filtered')
     columns:
       - name: archive_url
         description: "{{ doc('archive_url') }}"
@@ -107,6 +109,8 @@ models:
           combination_of_columns:
             - uuid
             - username
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_openings')
 
   - name: fct_games_stats
     description: ""
@@ -115,6 +119,8 @@ models:
           combination_of_columns:
             - uuid
             - username
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_stats')
 
   - name: fct_game_moves
     description: "\n      Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc.\n      "
@@ -124,6 +130,8 @@ models:
             - uuid
             - username
             - move_number
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_game_moves_enriched')
     columns:
       - name: uuid
         description: "{{ doc('uuid') }}"

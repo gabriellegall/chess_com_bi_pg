@@ -1,3 +1,4 @@
 - Remove SELECT * in the int layer and beyond
 - Implement SQL fluff
 - Check the incremental updates work as expected
+- Update the meta keys

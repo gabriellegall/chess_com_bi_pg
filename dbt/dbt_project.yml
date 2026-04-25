@@ -48,14 +48,10 @@ models:
           +enabled: true
         structure:
           +enabled: true
-          fct_source_directories: # Expects 1 .yaml per 1 source - too constraining.
-            +enabled: false
         performance:
           +enabled: true
         dag:
           +enabled: true 
-          fct_marts_or_intermediate_dependent_on_source: # Expects no direct dependency on source - overkill for this project size.
-            +enabled: false
         documentation:
           +enabled: true
         governance:

@@ -19,7 +19,7 @@ models:
       +schema: stg
       +materialized: view
       +docs:
-        node_color: '#5fb825' # Light Green
+        node_color: '#498D1C' # Darker green than seeds
     intermediate:
       +schema: int
       +materialized: table
@@ -28,14 +28,18 @@ models:
     marts:
       +schema: marts
       +materialized: table
-      +docs:
-        node_color: '#C5A939' # Gold
+      analytics:
+        +docs:
+          node_color: '#C57B39' # Darker gold
       core:
+        +docs:
+          node_color: '#C5A939' # Gold
         +meta:
           data_scope_filters:
-            - rated games
-            - games played in the last full months defined by vars.data_scope.month_history_depth
-            - games having a time class among vars.data_scope.time_class
+          - rated games
+          - games played in the last full months defined by vars.data_scope.month_history_depth
+          - games having a time class among vars.data_scope.time_class
+          - games having game_times and game_move_times processed without errors
   dbt_project_evaluator:
       +schema: eval
       marts:

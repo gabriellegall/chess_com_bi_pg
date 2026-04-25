@@ -7,5 +7,5 @@ select
     pb.username,
     coalesce(pm.username_global, pb.username) as username_global
 from {{ ref('int_players_base') }} pb
-left join {{ ref('int_players_mapping') }} pm
+left join {{ ref('stg_seeds__username_mapping') }} pm
     on pm.username_normalized = lower(pb.username)

@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: stg_seeds__username_mapping
+    description: "Staging model for username mapping."

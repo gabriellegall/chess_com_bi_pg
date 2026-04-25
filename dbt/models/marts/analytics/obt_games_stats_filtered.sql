@@ -69,7 +69,4 @@ WHERE TRUE
         FROM {{ this }} i
     )
     {% endif %}
-    -- AND username = 'Zundorn'
-    -- AND time_control = '300+5'
-    -- AND playing_rating_range = '0800-1000'
 ORDER BY end_time DESC

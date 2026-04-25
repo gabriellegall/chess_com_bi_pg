@@ -13,9 +13,8 @@ from {{ ref('int_games_base') }} g
 where true
     and {{ games_scope_condition('g') }}
     {% if is_incremental() %}
-    and not exists (
-        select 1
+    and g.end_time > (
+        select max(i.end_time)
         from {{ this }} i
-        where i.uuid = g.uuid
     )
     {% endif %}

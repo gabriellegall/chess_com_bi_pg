@@ -15,10 +15,10 @@ with incremental_partition as (
     from {{ ref('stg_chess_com__players_games') }} pg
 
     {% if is_incremental() %}
-    where pg.end_time > (
-        select max(i.end_time)
-        from {{ this }} i
-    )
+        where pg.end_time > (
+                select max(i.end_time)
+                from {{ this }} i
+        )
     {% endif %}
 ),
 

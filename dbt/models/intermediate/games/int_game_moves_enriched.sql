@@ -7,7 +7,21 @@
     ]
 ) }}
 
-with score_definition as (
+with games_scope as (
+  select
+    games.*
+  from {{ ref('int_games_filtered') }} as games
+  where true
+  {% if is_incremental() %}
+    and not exists (
+      select 1
+      from {{ this }} i
+      where i.uuid = games.uuid
+    )
+  {% endif %}
+)
+
+, score_definition as (
   select
     games.uuid,
     games.username,
@@ -61,8 +75,8 @@ with score_definition as (
       when games.playing_as = 'Black' then games_moves.win_probability_black
       else null
     end as win_probability_playing,
-    greatest(games.log_timestamp, games_moves.log_timestamp, games_times.log_timestamp) as log_timestamp
-  from {{ ref('int_games_filtered') }} as games
+    current_timestamp as log_timestamp
+  from games_scope as games
   inner join {{ ref('int_game_moves_base') }} as games_moves
     on games_moves.uuid = games.uuid
   inner join {{ ref('int_game_move_times_base') }} as games_times
@@ -170,9 +184,3 @@ with score_definition as (
 select
   *
 from context_definition
-{% if is_incremental() %}
-where log_timestamp > (
-  select max(i.log_timestamp)
-  from {{ this }} i
-)
-{% endif %}

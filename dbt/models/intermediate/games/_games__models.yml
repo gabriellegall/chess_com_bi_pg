@@ -140,6 +140,10 @@ models:
   - name: int_games_filtered
     description: "Scoped games data filtered for the active analysis window."
     data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - username
+            - uuid
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_games_base')
           compare_row_condition: "{{ games_scope_condition() }}"
@@ -152,6 +156,14 @@ models:
 
   - name: int_game_moves_enriched
     description: "Games combined with move, timing, and opening context."
+    meta:
+      incremental_strategy_explanation: >-
+        Incremental appends are UUID-driven: on incremental runs, only games whose
+        UUID does not already exist in this model are considered. Rows are inserted
+        only when the inner join with moves and time tables returns matching move rows.
+        log_timestamp is set to current_timestamp at load time (not inherited from source
+        log_timestamp values), and this load timestamp is intended to drive incremental
+        updates in downstream models.
 
   - name: int_games_stats
     description: "Games-level aggregated statistics."

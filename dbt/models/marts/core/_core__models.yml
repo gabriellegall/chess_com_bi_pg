@@ -1,6 +1,27 @@
 version: 2
 
 models:
+  - name: dim_players
+    description: "Player-level dimension that centralizes username mapping between original username and global username."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_players')
+    columns:
+      - name: players_sk
+        description: "Hash surrogate key for player grain (username)."
+        data_tests:
+          - not_null
+          - unique
+      - name: username
+        description: "Original player username used as the player primary key."
+        data_tests:
+          - not_null
+          - unique
+      - name: username_global
+        description: "Global mapped username from username_mapping; falls back to original username when no mapping exists."
+        data_tests:
+          - not_null
+
   - name: dim_games
     description: "Games data with few calculated fields that can be directly derived w/o any join."
     data_tests:
@@ -11,6 +32,18 @@ models:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_games_filtered')
     columns:
+      - name: players_sk
+        description: "Hash foreign key to dim_players (username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: players_sk
+      - name: games_sk
+        description: "Hash surrogate key for the game grain (uuid + username)."
+        data_tests:
+          - not_null
+          - unique
       - name: archive_url
         description: "{{ doc('archive_url') }}"
       - name: username
@@ -103,7 +136,7 @@ models:
         description: "{{ doc('match') }}"
 
   - name: dim_games_openings
-    description: ""
+    description: "One row per game and user with opening-level enrichment from the intermediate openings model."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -111,9 +144,24 @@ models:
             - username
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_games_openings')
+    columns:
+      - name: players_sk
+        description: "Hash foreign key to dim_players (username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: players_sk
+      - name: games_sk
+        description: "Hash foreign key to dim_games (uuid + username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_games')
+              field: games_sk
 
   - name: fct_games_stats
-    description: ""
+    description: "One row per game and user with aggregated game-level quality and blunder statistics."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -121,6 +169,22 @@ models:
             - username
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_games_stats')
+    columns:
+      - name: players_sk
+        description: "Hash foreign key to dim_players (username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: players_sk
+      - name: games_sk
+        description: "Hash foreign key to dim_games (uuid + username)."
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_games')
+              field: games_sk
 
   - name: fct_game_moves
     description: "\n      Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc.\n      "
@@ -133,6 +197,20 @@ models:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_game_moves_enriched')
     columns:
+      - name: players_sk
+        description: "Hash foreign key to dim_players (username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: players_sk
+      - name: games_sk
+        description: "Hash foreign key to dim_games (uuid + username)."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_games')
+              field: games_sk
       - name: uuid
         description: "{{ doc('uuid') }}"
       - name: archive_url

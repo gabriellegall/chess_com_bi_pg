@@ -8,6 +8,8 @@
 ) }}
 
 SELECT
+    {{ dbt_utils.generate_surrogate_key(['igo.username']) }} as players_sk,
+    {{ dbt_utils.generate_surrogate_key(['igo.uuid', 'igo.username']) }} as games_sk,
     igo.*
 FROM {{ ref('int_games_openings') }} igo
 {% if is_incremental() %}

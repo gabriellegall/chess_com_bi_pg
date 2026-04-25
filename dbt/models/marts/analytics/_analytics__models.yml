@@ -2,9 +2,14 @@ version: 2
 
 models:
   - name: obt_games_stats_filtered
-    description: ""
+    description: "Filtered one-big-table of game statistics used for downstream analytics and dashboarding."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid
             - username
+    columns:
+      - name: players_sk
+        description: "Hash foreign key to dim_players (username)."
+      - name: games_sk
+        description: "Hash foreign key to dim_games (uuid + username)."

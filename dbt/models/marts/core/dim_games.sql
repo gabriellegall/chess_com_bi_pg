@@ -19,5 +19,8 @@ WITH incremental_partition AS (
     )
     {% endif %}
 )
-
-SELECT * FROM incremental_partition
+select
+    {{ dbt_utils.generate_surrogate_key(['username']) }} as players_sk,
+    {{ dbt_utils.generate_surrogate_key(['uuid', 'username']) }} as games_sk,
+    *
+from incremental_partition

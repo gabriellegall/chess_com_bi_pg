@@ -10,7 +10,7 @@
 with score_definition as (
   select
     games.uuid,
-    coalesce(username_mapping.target_username, games.username) as username,
+    games.username,
     games.url,
     games.archive_url,
     games.pgn,
@@ -68,8 +68,6 @@ with score_definition as (
   inner join {{ ref('int_game_move_times_base') }} as games_times
     on games_moves.uuid = games_times.uuid
     and games_moves.move_number = games_times.move_number
-  left join {{ ref('username_mapping') }} username_mapping
-    on lower(username_mapping.username) = lower(games.username)
 )
 
 , previous_score as (

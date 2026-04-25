@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_players
+    description: "Distinct players from scoped games, enriched with global username mapping."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_filtered')
+    columns:
+      - name: username
+        description: "Original player username from games data."
+        data_tests:
+          - not_null
+          - unique
+      - name: username_global
+        description: "Mapped global username from username_mapping, defaulting to the original username when no mapping exists."
+        data_tests:
+          - not_null

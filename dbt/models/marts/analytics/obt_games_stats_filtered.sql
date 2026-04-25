@@ -8,6 +8,8 @@
 ) }}
 
 SELECT 
+    games_stats.players_sk,
+    games_stats.games_sk,
     games_stats.username,
     games_stats.uuid, 
     games_stats.log_timestamp,
@@ -56,9 +58,9 @@ SELECT
     games_stats.first_throw_massive_blunder_playing_prct_time_remaining
 FROM {{ ref('fct_games_stats') }} games_stats
 LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
-    USING (username, uuid)
+    ON games_openings.games_sk = games_stats.games_sk
 LEFT OUTER JOIN {{ ref('dim_games') }} games_info
-    USING (username, uuid)
+    ON games_info.games_sk = games_stats.games_sk
 WHERE TRUE
     AND playing_rating_range = opponent_rating_range
     AND playing_result IN ('Win', 'Lose')

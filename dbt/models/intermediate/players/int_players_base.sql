@@ -3,7 +3,6 @@
     incremental_strategy = 'merge',
     unique_key = 'username',
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
     ]
 ) }}

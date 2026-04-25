@@ -2,7 +2,6 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid, move_number)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
     ]
 ) }}

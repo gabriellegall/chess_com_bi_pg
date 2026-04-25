@@ -1,18 +1,28 @@
 version: 2
 
 models:
-  - name: int_players
-    description: "Distinct players from scoped games, enriched with global username mapping."
-    data_tests:
-      - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_games_filtered')
+  - name: int_players_base
+    description: "Distinct players from scoped games with latest seen log timestamp."
     columns:
       - name: username
         description: "Original player username from games data."
         data_tests:
           - not_null
           - unique
+      - name: log_timestamp
+        description: "Latest log timestamp seen for the player in scoped games."
+        data_tests:
+          - not_null
+
+  - name: int_players_mapping
+    description: "Normalized username mapping from seed to support case-insensitive joins."
+    columns:
+      - name: username_normalized
+        description: "Lower-cased source username from mapping seed."
+        data_tests:
+          - not_null
+          - unique
       - name: username_global
-        description: "Mapped global username from username_mapping, defaulting to the original username when no mapping exists."
+        description: "Global username for grouped analysis."
         data_tests:
           - not_null

@@ -1,21 +1,11 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'append',
-    post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_players_sk ON {{ this }} (players_sk)",
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)"
-    ]
+    materialized = 'view'
 ) }}
 
 select
-    {{ dbt_utils.generate_surrogate_key(['p.username']) }} as players_sk,
-    p.username,
-    p.username_global
-from {{ ref('int_players') }} p
-{% if is_incremental() %}
-where not exists (
-    select 1
-    from {{ this }} i
-    where i.username = p.username
-)
-{% endif %}
+    {{ dbt_utils.generate_surrogate_key(['pb.username']) }} as players_sk,
+    pb.username,
+    coalesce(pm.username_global, pb.username) as username_global
+from {{ ref('int_players_base') }} pb
+left join {{ ref('int_players_mapping') }} pm
+    on pm.username_normalized = lower(pb.username)

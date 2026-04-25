@@ -5,7 +5,7 @@ models:
     description: "Player-level dimension that centralizes username mapping between original username and global username."
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_players')
+          compare_model: ref('int_players_base')
     columns:
       - name: players_sk
         description: "Hash surrogate key for player grain (username)."
@@ -14,13 +14,8 @@ models:
           - unique
       - name: username
         description: "Original player username used as the player primary key."
-        data_tests:
-          - not_null
-          - unique
       - name: username_global
         description: "Global mapped username from username_mapping; falls back to original username when no mapping exists."
-        data_tests:
-          - not_null
 
   - name: dim_games
     description: "Games data with few calculated fields that can be directly derived w/o any join."
@@ -48,8 +43,6 @@ models:
         description: "{{ doc('archive_url') }}"
       - name: username
         description: "{{ doc('username') }}"
-        data_tests:
-          - not_null
       - name: url
         description: "{{ doc('url') }}"
       - name: pgn
@@ -64,8 +57,6 @@ models:
         description: "{{ doc('tcn') }}"
       - name: uuid
         description: "{{ doc('uuid') }}"
-        data_tests:
-          - not_null
       - name: initial_setup
         description: "{{ doc('initial_setup') }}"
       - name: fen

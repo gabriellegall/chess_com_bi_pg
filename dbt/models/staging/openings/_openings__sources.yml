@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: openings
     description: "Raw data on chess openings"
-    schema: stg_openings
+    schema: raw_openings
     tables:
       - name: chess_openings
         description: "Raw data on all chess openings, downloaded with Python from https://huggingface.co/datasets/Lichess/chess-openings"

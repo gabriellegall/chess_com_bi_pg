@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: times
     description: "Raw data calculated with Python to extract durations for each game and move"
-    schema: stg_times
+    schema: raw_times
     tables:
       - name: players_games_times
         description: "Python calculated move durations"

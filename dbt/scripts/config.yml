@@ -110,10 +110,10 @@ api:
 
 postgres:
   schemas:
-    chess_com_api:  "stg_chess_com"
-    stockfish:      "stg_stockfish"
-    games_times:    "stg_times"
-    openings:       "stg_openings"
+    chess_com_api:  "raw_chess_com"
+    stockfish:      "raw_stockfish"
+    games_times:    "raw_times"
+    openings:       "raw_openings"
   tables:
     stockfish:      "players_games_moves"
     games_times:    "players_games_times"

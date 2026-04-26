@@ -157,7 +157,7 @@ models:
   - name: int_game_moves_enriched
     description: "Games combined with move, timing, and opening context."
     meta:
-      incremental_strategy_explanation: >-
+      update_strategy_explanation: >-
         Incremental appends are UUID-driven: on incremental runs, only games whose
         UUID does not already exist in this model are considered. Rows are inserted
         only when the inner join with moves and time tables returns matching move rows.

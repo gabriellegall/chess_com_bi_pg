@@ -3,6 +3,9 @@ version: 2
 models:
   - name: int_openings_hierarchy
     description: "Openings data with few calculated fields that can be directly derived w/o any join."
+    meta:
+      update_strategy_explanation: >-
+        For performance reasons, rebuilds only with --full-refresh; otherwise runs select * from {{ this }}.
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: source('openings', 'chess_openings')

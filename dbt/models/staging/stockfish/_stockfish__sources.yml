@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: stockfish
     description: "Raw data calculated by Stockfish for each game and move"
-    schema: stg_stockfish
+    schema: raw_stockfish
     tables:
       - name: players_games_moves
         description: "Stockfish calculated moves"

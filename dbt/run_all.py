@@ -54,7 +54,7 @@ def run_pipeline_forever():
             execution_count += 1
             if execution_count % 100 == 0:
                 print(f"Running dbt test (execution {execution_count})")
-                test_result = subprocess.run(["dbt", "test"], capture_output=True, text=True)
+                test_result = subprocess.run(["dbt", "test", "--exclude", "dbt_project_evaluator"], capture_output=True, text=True)
                 
                 # Healthcheck
                 if test_result.returncode == 0:

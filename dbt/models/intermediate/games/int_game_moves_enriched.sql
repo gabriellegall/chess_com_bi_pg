@@ -52,11 +52,6 @@ with games_scope as (
       when games.playing_as = 'Black' then games_moves.score_black
       else null
     end as score_playing,
-    case
-      when games.playing_as = 'White' then games_moves.win_probability_white
-      when games.playing_as = 'Black' then games_moves.win_probability_black
-      else null
-    end as win_probability_playing,
     current_timestamp as log_timestamp
   from games_scope as games
   inner join {{ ref('int_game_moves_base') }} as games_moves

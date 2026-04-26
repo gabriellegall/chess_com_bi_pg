@@ -2,10 +2,17 @@
     materialized = 'table'
 ) }}
 
-{# Required for dbt dependency inference because ref() is inside the FULL_REFRESH conditional block. #}
+{# Required for dbt dependency inference because ref() is inside the conditional block. #}
 -- depends_on: {{ ref('stg_openings__chess_openings') }}
 
-{% if not flags.FULL_REFRESH %}
+{# Rebuild when FULL_REFRESH is requested OR target relation does not exist yet. #}
+{% set existing_relation = adapter.get_relation(
+    database=this.database,
+    schema=this.schema,
+    identifier=this.identifier
+) %}
+
+{% if not flags.FULL_REFRESH and existing_relation is not none %}
 
     select
         *

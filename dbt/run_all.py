@@ -44,7 +44,7 @@ def run_pipeline_forever():
 
             # DBT
             subprocess.run(["dbt", "seed"], check=True)
-            subprocess.run(["dbt", "run", "--exclude", "dbt_project_evaluator"], check=True)
+            subprocess.run(["dbt", "build", "--exclude", "dbt_project_evaluator"], check=True)
 
             # Healthcheck
             requests.get(URL, timeout=5)

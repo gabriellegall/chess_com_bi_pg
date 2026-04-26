@@ -2,13 +2,16 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
     ]
 ) }}
 
 with games_scope as (
   select
-    games.*
+    games.uuid,
+    games.username,
+    games.playing_as
   from {{ ref('int_games_filtered') }} as games
   where true
   {% if is_incremental() %}
@@ -24,27 +27,7 @@ with games_scope as (
   select
     games.uuid,
     games.username,
-    games.url,
-    games.archive_url,
-    games.pgn,
-    games.time_control,
-    games.end_time,
-    games.end_time_date,
-    games.end_time_month,
-    games.rated,
-    games.time_class,
-    games.rules,
-    games.eco,
-    games.white__username,
-    games.white__rating,
-    games.black__username,
-    games.black__rating,
     games.playing_as,
-    games.playing_result,
-    games.playing_rating,
-    games.playing_rating_range,
-    games.opponent_rating,
-    games.opponent_rating_range,
     games_moves.move_number,
     games_moves.move,
     games_times.time_remaining_seconds,

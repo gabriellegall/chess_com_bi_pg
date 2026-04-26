@@ -115,6 +115,15 @@ postgres:
     games_times:    "raw_times"
     openings:       "raw_openings"
   tables:
-    stockfish:      "players_games_moves"
-    games_times:    "players_games_times"
-    openings:       "chess_openings"
+    chess_com_api:
+      name: # managed by dlt
+      index_field:  "end_time"
+    stockfish:
+      name:         "players_games_moves"
+      index_field:  "log_timestamp"
+    games_times:
+      name:         "players_games_times"
+      index_field:  "log_timestamp"
+    openings:
+      name:         "chess_openings"
+      index_field: # no index needed

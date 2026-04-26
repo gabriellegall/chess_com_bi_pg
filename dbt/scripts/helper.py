@@ -1,9 +1,12 @@
-import pandas as pd
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine
 import os
 from dotenv import load_dotenv
 import yaml
+import hashlib
+import re
+
+IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 def get_engine() -> Engine:
 
@@ -17,6 +20,64 @@ def get_engine() -> Engine:
 
     return create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
 
+
+def load_config() -> dict:
+    config_path = os.path.join(os.path.dirname(__file__), 'config.yml')
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def get_table_settings(config: dict, source_key: str) -> tuple[str, str | None]:
+    table_config = config["postgres"]["tables"][source_key]
+
+    if not isinstance(table_config, dict):
+        raise ValueError(
+            f"Invalid postgres.tables.{source_key} config: expected mapping with 'name' and optional 'index_field'"
+        )
+
+    table_name = table_config.get("name")
+    index_field = table_config.get("index_field")
+
+    # DLT players_games table is managed by the source and not renamed in config.
+    if not table_name and source_key == "chess_com_api":
+        table_name = "players_games"
+
+    if not table_name:
+        raise ValueError(f"Missing postgres.tables.{source_key}.name in config.yml")
+
+    return table_name, index_field
+
+
+def _validate_identifier(value: str, label: str) -> str:
+    if not IDENTIFIER_RE.match(value):
+        raise ValueError(f"Invalid SQL identifier for {label}: {value}")
+    return value
+
+
+def _build_index_name(table_name: str, index_field: str) -> str:
+    base = f"idx_{table_name}_{index_field}"
+    if len(base) <= 63:
+        return base
+    suffix = hashlib.md5(base.encode("utf-8")).hexdigest()[:8]
+    return f"{base[:54]}_{suffix}"
+
+
+def create_index_if_not_exists(engine: Engine, schema_name: str, table_name: str, index_field: str | None) -> None:
+    if not index_field:
+        return
+
+    schema_name = _validate_identifier(schema_name, "schema")
+    table_name = _validate_identifier(table_name, "table")
+    index_field = _validate_identifier(index_field, "index_field")
+    index_name = _validate_identifier(_build_index_name(table_name, index_field), "index_name")
+
+    query = text(
+        f'CREATE INDEX IF NOT EXISTS "{index_name}" '
+        f'ON "{schema_name}"."{table_name}" ("{index_field}")'
+    )
+    with engine.begin() as conn:
+        conn.execute(query)
+
 def table_with_prefix_exists(engine: Engine, schema_name: str, table_prefix: str) -> bool:
 
     inspector = inspect(engine)
@@ -25,10 +86,7 @@ def table_with_prefix_exists(engine: Engine, schema_name: str, table_prefix: str
     return any(t.startswith(table_prefix) for t in tables)
 
 def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) -> str:
-
-    config_path = os.path.join(os.path.abspath('..'), 'config.yml')
-    with open(config_path, "r") as f:
-            config = yaml.safe_load(f)
+    config = load_config()
 
     schema_games = config["postgres"]["schemas"]["chess_com_api"]
     table_games  = "players_games" # DLT built-in table name (cannot be changed)

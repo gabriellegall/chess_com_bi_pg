@@ -5,10 +5,9 @@ import re
 from datetime import datetime, timezone
 from sqlalchemy import text
 from sqlalchemy.types import DateTime
-import yaml
 
 sys.path.append(os.path.abspath('..'))
-from helper import get_engine, games_to_process
+from helper import get_engine, games_to_process, load_config, get_table_settings, create_index_if_not_exists
 
 print("Starting games times processing")
 
@@ -23,12 +22,10 @@ def extract_move_data(pgn):
         for i, (h, m, s) in enumerate(clocks)
     ]
 
-config_path = os.path.join(os.path.abspath('..'), 'config.yml')
-with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
+config = load_config()
 
 target_schema   = config["postgres"]["schemas"]["games_times"]
-target_table    = config["postgres"]["tables"]["games_times"]
+target_table, target_index_field = get_table_settings(config, "games_times")
 
 engine  = get_engine()
 query   = games_to_process(engine, schema=target_schema, table=target_table, limit=10000)
@@ -56,6 +53,8 @@ if not games.empty:
         index       = False, # Ignore the df index
         dtype       = {'log_timestamp': DateTime(timezone=True)}
     )
+
+    create_index_if_not_exists(engine, target_schema, target_table, target_index_field)
 
     print(f"Inserted {len(games_expanded)} rows into `{target_schema}.{target_table}`.")
 else:

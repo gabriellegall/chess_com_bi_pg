@@ -2,13 +2,18 @@ import dlt
 from chess import source
 from dotenv import load_dotenv
 import os
-import yaml
+import sys
+
+sys.path.append(os.path.abspath('..'))
+from helper import (
+    load_config,
+    get_engine,
+    get_table_settings,
+    create_index_if_not_exists,
+)
 
 load_dotenv()
-
-config_path = os.path.join(os.path.abspath('..'), 'config.yml')
-with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
+config = load_config()
 
 def run_pipeline_for_group(pipeline, users, start_month):
     """Runs the DLT pipeline for a specific group of users."""
@@ -47,6 +52,10 @@ def run_pipeline():
         if users:
             print(f"Running pipeline for group: {group_name}")
             run_pipeline_for_group(pipeline, users, start_month)
+
+    schema_name = config["postgres"]["schemas"]["chess_com_api"]
+    table_name, index_field = get_table_settings(config, "chess_com_api")
+    create_index_if_not_exists(get_engine(), schema_name, table_name, index_field)
 
 if __name__ == "__main__":
     run_pipeline()

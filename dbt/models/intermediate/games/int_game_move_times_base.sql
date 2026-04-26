@@ -7,7 +7,11 @@
 ) }}
 
 select
-    pgt.*
+    pgt.uuid,
+    pgt.move_number,
+    pgt.time_remaining_seconds,
+    pgt.time_remaining,
+    pgt.log_timestamp
 from {{ ref('stg_times__players_games_times') }} pgt
 {% if is_incremental() %}
 where pgt.log_timestamp > (

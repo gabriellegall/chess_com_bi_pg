@@ -36,7 +36,13 @@
 
     with extract_moves as (
         select
-            *,
+            eco,
+            "eco-volume",
+            name,
+            pgn,
+            epd,
+            log_timestamp,
+            uci,
             regexp_split_to_array(uci, ' ')                         as uci_moves_array,
             array_length(regexp_split_to_array(uci, ' '), 1)        as uci_moves_depth
         from {{ ref('stg_openings__chess_openings') }}

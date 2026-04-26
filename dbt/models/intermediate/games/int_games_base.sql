@@ -10,9 +10,42 @@
 
 with incremental_partition as (
     select 
-        pg.*
+        pg.end_time,
+        pg.url,
+        pg.pgn,
+        pg.time_control,
+        pg.rated,
+        pg.tcn,
+        pg.uuid,
+        pg.initial_setup,
+        pg.fen,
+        pg.time_class,
+        pg.rules,
+        pg.white__rating,
+        pg.white__result,
+        pg.white__aid,
+        pg.white__username,
+        pg.white__uuid,
+        pg.black__rating,
+        pg.black__result,
+        pg.black__aid,
+        pg.black__username,
+        pg.black__uuid,
+        pg.eco,
+        pg.username,
+        pg.archive_url,
+        pg.log_timestamp,
+        pg.accuracies__white,
+        pg.accuracies__black,
+        pg.start_time,
+        pg.tournament,
+        pg.end_time_date,
+        pg.end_time_month,
+        pg.playing_as,
+        pg.playing_result_detailed,
+        pg.playing_rating,
+        pg.opponent_rating
     from {{ ref('stg_chess_com__players_games') }} pg
-
     {% if is_incremental() %}
         where pg.end_time > (
                 select max(i.end_time)

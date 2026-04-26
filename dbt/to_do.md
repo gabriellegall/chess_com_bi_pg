@@ -1,8 +1,9 @@
 P1:
-- Solve the bug on incremental key end_time
+- [?] Solve the bug on incremental key end_time
 
 P2:
-- Remove SELECT * in the int layer and beyond
+- Remove SELECT * in the int & fct layer
+- Simplify int_game_moves_enriched
 - Implement SQL fluff
 - Update the meta keys
 - Update the Streamlit app with the new data model

@@ -9,18 +9,18 @@
 {% set openings_depth = var('openings')['hierarchy_depth'] + 1 %}
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['igo.username']) }} as players_sk,
-    {{ dbt_utils.generate_surrogate_key(['igo.uuid', 'igo.username']) }} as games_sk,
-    igo.username,
-    igo.uuid,
+    {{ dbt_utils.generate_surrogate_key(['gop.username']) }} as players_sk,
+    {{ dbt_utils.generate_surrogate_key(['gop.uuid', 'gop.username']) }} as games_sk,
+    gop.username,
+    gop.uuid,
     {% for n in range(1, openings_depth) %}
-        igo.opener_{{ n }}_moves,
-        igo.uci_hierarchy_level_{{ n }}_name,
+        gop.opener_{{ n }}_moves,
+        gop.uci_hierarchy_level_{{ n }}_name,
     {% endfor %}
-    igo.log_timestamp
-FROM {{ ref('int_games_openings') }} igo
+    gop.log_timestamp
+FROM {{ ref('int_games_openings') }} gop
 {% if is_incremental() %}
-WHERE igo.log_timestamp > (
+WHERE gop.log_timestamp > (
     SELECT MAX(i.log_timestamp)
     FROM {{ this }} i
 )

@@ -7,3 +7,5 @@ stockfish
 python-dotenv
 huggingface-hub
 pyarrow
+sqlfluff
+sqlfluff-templater-dbt

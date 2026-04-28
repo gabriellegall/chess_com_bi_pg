@@ -10,11 +10,11 @@
 
 with aggregate_fields as (
     select
-        username,
-        uuid,
-        max(log_timestamp) as log_timestamp,
+        games.username,
+        games.uuid,
+        max(games.log_timestamp) as log_timestamp,
         {% for n in range(1, openings_depth) %}
-            string_agg(case when move_number <= {{ n }} then move else null end, ' ' order by move_number asc) as opener_{{ n }}_moves{% if not loop.last %},{% endif %}
+            string_agg(case when games.move_number <= {{ n }} then games.move else null end, ' ' order by games.move_number asc) as opener_{{ n }}_moves{% if not loop.last %},{% endif %}
         {% endfor %}
     from {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
@@ -23,7 +23,7 @@ with aggregate_fields as (
         from {{ this }} i
     )
     {% endif %}
-    group by username, uuid
+    group by games.username, games.uuid
 )
 
 , integrate_openings_hierarchy as (

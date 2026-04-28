@@ -3,7 +3,6 @@ P1:
 
 P2:
 - Remove SELECT * in the int & fct layer
-- Simplify int_game_moves_enriched
 - Implement SQL fluff
 - Update the meta keys
 - Update the Streamlit app with the new data model

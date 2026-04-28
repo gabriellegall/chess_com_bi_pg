@@ -61,12 +61,12 @@ LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
 LEFT OUTER JOIN {{ ref('dim_games') }} games_info
     ON games_info.games_sk = games_stats.games_sk
 WHERE TRUE
-    AND playing_rating_range = opponent_rating_range
-    AND playing_result IN ('Win', 'Lose')
+    AND games_info.playing_rating_range = games_info.opponent_rating_range
+    AND games_info.playing_result IN ('Win', 'Lose')
     {% if is_incremental() %}
     AND games_stats.log_timestamp > (
         SELECT MAX(i.log_timestamp)
         FROM {{ this }} i
     )
     {% endif %}
-ORDER BY end_time DESC
+ORDER BY games_info.end_time DESC

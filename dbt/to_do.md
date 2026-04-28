@@ -3,11 +3,11 @@ P1:
 
 P2:
 - Remove SELECT * in the int & fct layer
-- Implement SQL fluff
 - Update the meta keys
 - Update the Streamlit app with the new data model
 
 Done:
+- [OK] Implement SQL fluff
 - [OK] Add an index key on the raw_ tables
 - [OK] Update the run_all to execute --exclude package
 - [OK] Rename stg_ to raw_ for Python scripts

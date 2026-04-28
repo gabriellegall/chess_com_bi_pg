@@ -31,8 +31,10 @@ rules =
 
     # cosmetic rules
     capitalisation.keywords,
+    capitalisation.identifiers,
     capitalisation.functions,
     capitalisation.literals,
+    capitalisation.types,
     layout.spacing,
     layout.indent,
 
@@ -43,8 +45,14 @@ profiles_dir = ./
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
 
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = upper
+
 [sqlfluff:rules:capitalisation.functions]
 capitalisation_policy = upper
 
 [sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
 capitalisation_policy = upper

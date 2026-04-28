@@ -105,7 +105,7 @@ SELECT
     igs.has_missed_opportunity_massive_blunder_playing,
     igs.has_missed_opportunity_massive_blunder_playing_early,
     igs.has_missed_opportunity_massive_blunder_playing_mid,
-    igs.has_missed_opportunity_massive_blunder_playing_late,
+    igs.has_missed_opportunity_massive_blunder_playing_late
 FROM {{ ref('int_games_stats') }} igs
 {% if is_incremental() %}
 WHERE igs.log_timestamp > (

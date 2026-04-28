@@ -9,8 +9,8 @@
 {% set openings_depth = var('openings')['hierarchy_depth'] + 1 %}
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['gop.username']) }} as players_sk,
-    {{ dbt_utils.generate_surrogate_key(['gop.uuid', 'gop.username']) }} as games_sk,
+    {{ dbt_utils.generate_surrogate_key(['gop.username']) }} AS players_sk,
+    {{ dbt_utils.generate_surrogate_key(['gop.uuid', 'gop.username']) }} AS games_sk,
     gop.username,
     gop.uuid,
     {% for n in range(1, openings_depth) %}

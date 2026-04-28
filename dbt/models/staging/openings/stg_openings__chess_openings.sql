@@ -1,4 +1,4 @@
 {{ config(materialized = 'view') }}
 
-select *
-from {{ source('openings', 'chess_openings') }}
+SELECT *
+FROM {{ source('openings', 'chess_openings') }}

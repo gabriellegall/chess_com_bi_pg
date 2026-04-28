@@ -6,7 +6,7 @@
     ]
 ) }}
 
-select 
+SELECT 
     pgm.uuid,
     pgm.move_number,
     pgm.move,
@@ -16,10 +16,10 @@ select
     pgm.score_black,
     pgm.win_probability_white,
     pgm.win_probability_black
-from {{ ref('stg_stockfish__players_games_moves') }} pgm
+FROM {{ ref('stg_stockfish__players_games_moves') }} pgm
 {% if is_incremental() %}
-where pgm.log_timestamp > (
-    select max(i.log_timestamp)
-    from {{ this }} i
+WHERE pgm.log_timestamp > (
+    SELECT max(i.log_timestamp)
+    FROM {{ this }} i
 )
 {% endif %}

@@ -7,15 +7,15 @@
     ]
 ) }}
 
-select
+SELECT
     g.username,
-    max(g.log_timestamp) as log_timestamp
-from {{ ref('int_games_filtered') }} g
-where true
+    max(g.log_timestamp) AS log_timestamp
+FROM {{ ref('int_games_filtered') }} g
+WHERE true
 {% if is_incremental() %}
-  and g.log_timestamp > (
-      select max(i.log_timestamp)
-      from {{ this }} i
+  AND g.log_timestamp > (
+      SELECT max(i.log_timestamp)
+      FROM {{ this }} i
   )
 {% endif %}
-group by g.username
+GROUP BY g.username

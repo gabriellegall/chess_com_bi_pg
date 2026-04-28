@@ -2,8 +2,8 @@
     materialized = 'view'
 ) }}
 
-select
+SELECT
     username,
-    lower(username) as username_normalized,
-    target_username as username_global
-from {{ ref('username_mapping') }}
+    lower(username) AS username_normalized,
+    target_username AS username_global
+FROM {{ ref('username_mapping') }}

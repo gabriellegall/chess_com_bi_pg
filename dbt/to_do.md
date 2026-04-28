@@ -2,6 +2,7 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
+- Capitalize SQL keywords
 - Update the meta keys
 - Update the Streamlit app with the new data model
 

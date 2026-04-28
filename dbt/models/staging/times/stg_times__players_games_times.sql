@@ -1,4 +1,4 @@
 {{ config(materialized = 'view') }}
 
-select *
-from {{ source('times', 'players_games_times') }}
+SELECT *
+FROM {{ source('times', 'players_games_times') }}

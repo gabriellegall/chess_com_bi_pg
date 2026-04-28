@@ -2,10 +2,10 @@
     materialized = 'view'
 ) }}
 
-select
-    {{ dbt_utils.generate_surrogate_key(['pb.username']) }} as players_sk,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['pb.username']) }} AS players_sk,
     pb.username,
-    coalesce(pm.username_global, pb.username) as username_global
-from {{ ref('int_players_base') }} pb
-left join {{ ref('stg_seeds__username_mapping') }} pm
-    on pm.username_normalized = lower(pb.username)
+    coalesce(pm.username_global, pb.username) AS username_global
+FROM {{ ref('int_players_base') }} pb
+LEFT JOIN {{ ref('stg_seeds__username_mapping') }} pm
+    ON pm.username_normalized = lower(pb.username)

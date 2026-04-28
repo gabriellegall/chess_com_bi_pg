@@ -1,62 +1,62 @@
 {{ config(materialized = 'view') }}
 
-with source_data as (
-	select *
-	from {{ source('chess_com', 'players_games') }}
+WITH source_data AS (
+	SELECT *
+	FROM {{ source('chess_com', 'players_games') }}
 ),
 
-filter_table as (
-	select *
-	from source_data
-	where true
-		and rules = 'chess'
-		and (
+filter_table AS (
+	SELECT *
+	FROM source_data
+	WHERE true
+		AND rules = 'chess'
+		AND (
 			length(initial_setup) = 0
-			or initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+			OR initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 		)
-		and length(pgn) > 0
-		and pgn ~ E'\\d+\\. '
+		AND length(pgn) > 0
+		AND pgn ~ E'\\d+\\. '
 ),
 
-cast_types as (
-	select
+cast_types AS (
+	SELECT
 		*,
-		end_time::date as end_time_date,
-		to_char(end_time, 'YYYY-MM') as end_time_month
-	from filter_table
+		end_time::date AS end_time_date,
+		to_char(end_time, 'YYYY-MM') AS end_time_month
+	FROM filter_table
 ),
 
-define_playing as (
-	select
+define_playing AS (
+	SELECT
 		*,
-		case
-			when lower(username) = lower(white__username) then 'White'
-			when lower(username) = lower(black__username) then 'Black'
-			else null
-		end as playing_as
-	from cast_types
+		CASE
+			WHEN lower(username) = lower(white__username) THEN 'White'
+			WHEN lower(username) = lower(black__username) THEN 'Black'
+			ELSE null
+		END AS playing_as
+	FROM cast_types
 ),
 
-define_result as (
-	select
+define_result AS (
+	SELECT
 		*,
-		case
-			when playing_as = 'White' then white__result
-			when playing_as = 'Black' then black__result
-			else null
-		end as playing_result_detailed,
-		case
-			when playing_as = 'White' then white__rating
-			when playing_as = 'Black' then black__rating
-			else null
-		end as playing_rating,
-		case
-			when playing_as = 'White' then black__rating
-			when playing_as = 'Black' then white__rating
-			else null
-		end as opponent_rating
-	from define_playing
+		CASE
+			WHEN playing_as = 'White' THEN white__result
+			WHEN playing_as = 'Black' THEN black__result
+			ELSE null
+		END AS playing_result_detailed,
+		CASE
+			WHEN playing_as = 'White' THEN white__rating
+			WHEN playing_as = 'Black' THEN black__rating
+			ELSE null
+		END AS playing_rating,
+		CASE
+			WHEN playing_as = 'White' THEN black__rating
+			WHEN playing_as = 'Black' THEN white__rating
+			ELSE null
+		END AS opponent_rating
+	FROM define_playing
 )
 
-select *
-from define_result
+SELECT *
+FROM define_result

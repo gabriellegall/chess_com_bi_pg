@@ -13,6 +13,7 @@ rules =
     ambiguous.column_references,
     ambiguous.set_columns,
     ambiguous.join_condition,
+    capitalisation.keywords,
     convention.not_equal,
     convention.coalesce,
     convention.is_null,
@@ -32,3 +33,6 @@ rules =
 [sqlfluff:templater:dbt]
 project_dir = ./
 profiles_dir = ./
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper

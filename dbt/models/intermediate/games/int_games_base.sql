@@ -8,8 +8,8 @@
 
 {% set elo_range_values = var('elo_range') %}
 
-with incremental_partition as (
-    select 
+WITH incremental_partition AS (
+    SELECT 
         pg.end_time,
         pg.url,
         pg.pgn,
@@ -45,46 +45,46 @@ with incremental_partition as (
         pg.playing_result_detailed,
         pg.playing_rating,
         pg.opponent_rating
-    from {{ ref('stg_chess_com__players_games') }} pg
+    FROM {{ ref('stg_chess_com__players_games') }} pg
     {% if is_incremental() %}
-        where pg.end_time > (
-                select max(i.end_time)
-                from {{ this }} i
+        WHERE pg.end_time > (
+                SELECT max(i.end_time)
+                FROM {{ this }} i
         )
     {% endif %}
 ),
 
-define_rating_range as (
-    select
+define_rating_range AS (
+    SELECT
         *,
-        case
+        CASE
             {% for idx in range(elo_range_values|length) %}
-            when playing_rating < {{ elo_range_values[idx] }} then
+            WHEN playing_rating < {{ elo_range_values[idx] }} THEN
                 '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
             {% endfor %}
-            else '{{ "%04d"|format(elo_range_values[-1]) }}+'
-        end as playing_rating_range,
-        case
+            ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
+        END AS playing_rating_range,
+        CASE
             {% for idx in range(elo_range_values|length) %}
-            when opponent_rating < {{ elo_range_values[idx] }} then
+            WHEN opponent_rating < {{ elo_range_values[idx] }} THEN
                 '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
             {% endfor %}
-            else '{{ "%04d"|format(elo_range_values[-1]) }}+'
-        end as opponent_rating_range
-    from incremental_partition
+            ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
+        END AS opponent_rating_range
+    FROM incremental_partition
 ),
 
-simplify_result as (
-    select 
+simplify_result AS (
+    SELECT 
         *,
-        case    
-            when playing_result_detailed in ('checkmated', 'resigned', 'abandoned', 'timeout')                                      then 'Lose'
-            when playing_result_detailed in ('win')                                                                                 then 'Win'
-            when playing_result_detailed in ('stalemate', 'repetition', 'agreed', 'timevsinsufficient', 'insufficient', '50move')   then 'Draw'
-            else null end as playing_result
-    from define_rating_range
+        CASE    
+            WHEN playing_result_detailed IN ('checkmated', 'resigned', 'abandoned', 'timeout')                                      THEN 'Lose'
+            WHEN playing_result_detailed IN ('win')                                                                                 THEN 'Win'
+            WHEN playing_result_detailed IN ('stalemate', 'repetition', 'agreed', 'timevsinsufficient', 'insufficient', '50move')   THEN 'Draw'
+            ELSE null END AS playing_result
+    FROM define_rating_range
 )
 
-select 
+SELECT 
     * 
-from simplify_result
+FROM simplify_result

@@ -1,9 +1,9 @@
 {{ config(materialized = 'view') }}
 
-select
+SELECT
 	pgm.*,
-	case when mod(pgm.move_number, 2) = 1 then 'White' else 'Black' end as player_color_turn,
-	-pgm.score_white as score_black,
-	1.0 / (1 + exp(-0.004 * pgm.score_white)) as win_probability_white,
-	1.0 - 1.0 / (1 + exp(-0.004 * pgm.score_white)) as win_probability_black
-from {{ source('stockfish', 'players_games_moves') }} pgm
+	CASE WHEN mod(pgm.move_number, 2) = 1 THEN 'White' ELSE 'Black' END AS player_color_turn,
+	-pgm.score_white AS score_black,
+	1.0 / (1 + exp(-0.004 * pgm.score_white)) AS win_probability_white,
+	1.0 - 1.0 / (1 + exp(-0.004 * pgm.score_white)) AS win_probability_black
+FROM {{ source('stockfish', 'players_games_moves') }} pgm

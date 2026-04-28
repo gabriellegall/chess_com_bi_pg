@@ -7,8 +7,8 @@
 ) }}
 
 SELECT
-    {{ dbt_utils.generate_surrogate_key(['gs.username']) }} as players_sk,
-    {{ dbt_utils.generate_surrogate_key(['gs.uuid', 'gs.username']) }} as games_sk,
+    {{ dbt_utils.generate_surrogate_key(['gs.username']) }} AS players_sk,
+    {{ dbt_utils.generate_surrogate_key(['gs.uuid', 'gs.username']) }} AS games_sk,
     gs.username,
     gs.uuid,
     gs.log_timestamp,

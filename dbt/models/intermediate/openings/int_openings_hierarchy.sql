@@ -14,9 +14,9 @@
 
 {% if not flags.FULL_REFRESH and existing_relation is not none %}
 
-    select
+    SELECT
         *
-    from {{ this }}
+    FROM {{ this }}
 
 {% else %}
 

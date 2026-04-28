@@ -6,90 +6,90 @@
     ]
 ) }}
 
-with agg_definitions as (
-    select
-        username,
-        uuid,
-        max(log_timestamp) as log_timestamp,
+WITH agg_definitions AS (
+    SELECT
+        games.username,
+        games.uuid,
+        max(log_timestamp) AS log_timestamp,
 
-        count(move_number) as nb_moves,
-        count(*) filter (where miss_category_playing in ('Blunder', 'Massive Blunder')) as nb_blunder_massive_blunder_playing,
-        count(*) filter (where miss_category_playing = 'Massive Blunder') as nb_massive_blunder_playing,
-        count(*) filter (where score_playing > {{ var('should_win_range')['mid'] }}) as nb_moves_above_decisive_advantage,
-        string_agg(massive_blunder_move_number_playing::text, ', ') as massive_blunder_move_number_playing,
+        count(games.move_number) AS nb_moves,
+        count(*) FILTER (WHERE games.miss_category_playing IN ('Blunder', 'Massive Blunder')) AS nb_blunder_massive_blunder_playing,
+        count(*) FILTER (WHERE games.miss_category_playing = 'Massive Blunder') AS nb_massive_blunder_playing,
+        count(*) FILTER (WHERE games.score_playing > {{ var('should_win_range')['mid'] }}) AS nb_moves_above_decisive_advantage,
+        string_agg(massive_blunder_move_number_playing::text, ', ') AS massive_blunder_move_number_playing,
         {% set player_prefixes = ['playing', 'opponent'] %}
         {% for prefix in player_prefixes %}
-            count(*) filter (where miss_context_{{ prefix }} = 'Throw') as nb_throw_{{ prefix }},
-            count(*) filter (where miss_context_{{ prefix }} = 'Throw' and miss_category_{{ prefix }} = 'Blunder') as nb_throw_blunder_{{ prefix }},
-            count(*) filter (where miss_context_{{ prefix }} = 'Throw' and miss_category_{{ prefix }} = 'Massive Blunder') as nb_throw_massive_blunder_{{ prefix }},
-            count(*) filter (where miss_context_{{ prefix }} = 'Missed Opportunity') as nb_missed_opportunity_{{ prefix }},
-            count(*) filter (where miss_context_{{ prefix }} = 'Missed Opportunity' and miss_category_{{ prefix }} = 'Blunder') as nb_missed_opportunity_blunder_{{ prefix }},
-            count(*) filter (where miss_context_{{ prefix }} = 'Missed Opportunity' and miss_category_{{ prefix }} = 'Massive Blunder') as nb_missed_opportunity_massive_blunder_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw') AS nb_throw_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Blunder') AS nb_throw_blunder_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_throw_massive_blunder_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity') AS nb_missed_opportunity_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder') AS nb_missed_opportunity_blunder_{{ prefix }},
+            count(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }},
             {% for phase, values in var('game_phases').items() %}
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_category_{{ prefix }} = 'Massive Blunder') as nb_massive_blunder_{{ prefix }}_{{ phase }},
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_category_{{ prefix }} in ('Blunder', 'Massive Blunder')) as nb_blunder_massive_blunder_{{ prefix }}_{{ phase }},
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_context_{{ prefix }} = 'Missed Opportunity' and miss_category_{{ prefix }} = 'Blunder') as nb_missed_opportunity_blunder_{{ prefix }}_{{ phase }},
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_context_{{ prefix }} = 'Missed Opportunity' and miss_category_{{ prefix }} = 'Massive Blunder') as nb_missed_opportunity_massive_blunder_{{ prefix }}_{{ phase }},
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_context_{{ prefix }} = 'Throw' and miss_category_{{ prefix }} = 'Blunder') as nb_throw_blunder_{{ prefix }}_{{ phase }},
-            count(*) filter (where game_phase = {{ values['name'] }} and miss_context_{{ prefix }} = 'Throw' and miss_category_{{ prefix }} = 'Massive Blunder') as nb_throw_massive_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_massive_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} IN ('Blunder', 'Massive Blunder')) AS nb_blunder_massive_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder') AS nb_missed_opportunity_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_missed_opportunity_massive_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Blunder') AS nb_throw_blunder_{{ prefix }}_{{ phase }},
+            count(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw' AND miss_category_{{ prefix }} = 'Massive Blunder') AS nb_throw_massive_blunder_{{ prefix }}_{{ phase }},
             {% endfor %}
         {% endfor %}
 
-        min(case when miss_category_playing in ('Blunder', 'Massive Blunder') then prct_time_remaining else null end) as first_blunder_massive_blunder_playing_prct_time_remaining,
-        min(case when miss_category_playing = 'Massive Blunder' then prct_time_remaining else null end) as first_massive_blunder_playing_prct_time_remaining,
-        min(case when miss_category_playing = 'Massive Blunder' and miss_context_playing = 'Missed Opportunity' then prct_time_remaining else null end) as first_missed_opp_massive_blunder_playing_prct_time_remaining,
-        min(case when miss_category_playing = 'Massive Blunder' and miss_context_playing = 'Throw' then prct_time_remaining else null end) as first_throw_massive_blunder_playing_prct_time_remaining,
+        min(CASE WHEN games.miss_category_playing IN ('Blunder', 'Massive Blunder') THEN games.prct_time_remaining ELSE null END) AS first_blunder_massive_blunder_playing_prct_time_remaining,
+        min(CASE WHEN games.miss_category_playing = 'Massive Blunder' THEN games.prct_time_remaining ELSE null END) AS first_massive_blunder_playing_prct_time_remaining,
+        min(CASE WHEN games.miss_category_playing = 'Massive Blunder' AND games.miss_context_playing = 'Missed Opportunity' THEN games.prct_time_remaining ELSE null END) AS first_missed_opp_massive_blunder_playing_prct_time_remaining,
+        min(CASE WHEN games.miss_category_playing = 'Massive Blunder' AND games.miss_context_playing = 'Throw' THEN games.prct_time_remaining ELSE null END) AS first_throw_massive_blunder_playing_prct_time_remaining,
         {% for phase, values in var('game_phases').items() %}
             {% if 'end_game_move' in values %}
             min(
-            case
-                when is_playing_turn and move_number in ({{ values.end_game_move }}, {{ values.end_game_move }} - 1)
-                then prct_time_remaining
-                else null
-            end
-            ) as prct_time_remaining_playing_{{ phase }},
+            CASE
+                WHEN games.is_playing_turn AND games.move_number IN ({{ values.end_game_move }}, {{ values.end_game_move }} - 1)
+                THEN games.prct_time_remaining
+                ELSE null
+            END
+            ) AS prct_time_remaining_playing_{{ phase }},
             {% endif %}
         {% endfor %}
 
-        percentile_cont(0.5) within group (order by score_playing) as median_score_playing,
-        max(score_playing) as max_score_playing,
-        min(score_playing) as min_score_playing,
-        stddev_samp(score_playing) as std_score_playing,
-        case
-            when max(score_playing) < {{ var('should_win_range')['low'] }} then '0-{{ var('should_win_range')['low'] }}'
-            when max(score_playing) < {{ var('should_win_range')['mid'] }} then '{{ var('should_win_range')['low'] }}-{{ var('should_win_range')['mid'] }}'
-            else '{{ var('should_win_range')['mid'] }}+'
-        end as max_score_playing_range,
-        case
-            when max(score_playing) > {{ var('should_win_range')['mid'] }} then 'Decisive advantage'
-            else 'No decisive advantage'
-        end as max_score_playing_type
-    from {{ ref('int_game_moves_enriched') }} games
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY games.score_playing) AS median_score_playing,
+        max(games.score_playing) AS max_score_playing,
+        min(games.score_playing) AS min_score_playing,
+        stddev_samp(games.score_playing) AS std_score_playing,
+        CASE
+            WHEN max(games.score_playing) < {{ var('should_win_range')['low'] }} THEN '0-{{ var('should_win_range')['low'] }}'
+            WHEN max(games.score_playing) < {{ var('should_win_range')['mid'] }} THEN '{{ var('should_win_range')['low'] }}-{{ var('should_win_range')['mid'] }}'
+            ELSE '{{ var('should_win_range')['mid'] }}+'
+        END AS max_score_playing_range,
+        CASE
+            WHEN max(games.score_playing) > {{ var('should_win_range')['mid'] }} THEN 'Decisive advantage'
+            ELSE 'No decisive advantage'
+        END AS max_score_playing_type
+    FROM {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
-    where games.log_timestamp > (
-        select max(i.log_timestamp)
-        from {{ this }} i
+    WHERE games.log_timestamp > (
+        SELECT max(i.log_timestamp)
+        FROM {{ this }} i
     )
     {% endif %}
-    group by username, uuid
+    GROUP BY games.username, games.uuid
 )
 
-select
+SELECT
     agg_definitions.*,
-    case when agg_definitions.nb_throw_blunder_playing > 0 then 1 else 0 end as has_throw_blunder_playing,
-    case when agg_definitions.nb_throw_blunder_playing_early > 0 then 1 else 0 end as has_throw_blunder_playing_early,
-    case when agg_definitions.nb_throw_blunder_playing_mid > 0 then 1 else 0 end as has_throw_blunder_playing_mid,
-    case when agg_definitions.nb_throw_blunder_playing_late > 0 then 1 else 0 end as has_throw_blunder_playing_late,
-    case when agg_definitions.nb_throw_massive_blunder_playing > 0 then 1 else 0 end as has_throw_massive_blunder_playing,
-    case when agg_definitions.nb_throw_massive_blunder_playing_early > 0 then 1 else 0 end as has_throw_massive_blunder_playing_early,
-    case when agg_definitions.nb_throw_massive_blunder_playing_mid > 0 then 1 else 0 end as has_throw_massive_blunder_playing_mid,
-    case when agg_definitions.nb_throw_massive_blunder_playing_late > 0 then 1 else 0 end as has_throw_massive_blunder_playing_late,
-    case when agg_definitions.nb_missed_opportunity_blunder_playing > 0 then 1 else 0 end as has_missed_opportunity_blunder_playing,
-    case when agg_definitions.nb_missed_opportunity_blunder_playing_early > 0 then 1 else 0 end as has_missed_opportunity_blunder_playing_early,
-    case when agg_definitions.nb_missed_opportunity_blunder_playing_mid > 0 then 1 else 0 end as has_missed_opportunity_blunder_playing_mid,
-    case when agg_definitions.nb_missed_opportunity_blunder_playing_late > 0 then 1 else 0 end as has_missed_opportunity_blunder_playing_late,
-    case when agg_definitions.nb_missed_opportunity_massive_blunder_playing > 0 then 1 else 0 end as has_missed_opportunity_massive_blunder_playing,
-    case when agg_definitions.nb_missed_opportunity_massive_blunder_playing_early > 0 then 1 else 0 end as has_missed_opportunity_massive_blunder_playing_early,
-    case when agg_definitions.nb_missed_opportunity_massive_blunder_playing_mid > 0 then 1 else 0 end as has_missed_opportunity_massive_blunder_playing_mid,
-    case when agg_definitions.nb_missed_opportunity_massive_blunder_playing_late > 0 then 1 else 0 end as has_missed_opportunity_massive_blunder_playing_late
-from agg_definitions
+    CASE WHEN agg_definitions.nb_throw_blunder_playing > 0 THEN 1 ELSE 0 END AS has_throw_blunder_playing,
+    CASE WHEN agg_definitions.nb_throw_blunder_playing_early > 0 THEN 1 ELSE 0 END AS has_throw_blunder_playing_early,
+    CASE WHEN agg_definitions.nb_throw_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS has_throw_blunder_playing_mid,
+    CASE WHEN agg_definitions.nb_throw_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_throw_blunder_playing_late,
+    CASE WHEN agg_definitions.nb_throw_massive_blunder_playing > 0 THEN 1 ELSE 0 END AS has_throw_massive_blunder_playing,
+    CASE WHEN agg_definitions.nb_throw_massive_blunder_playing_early > 0 THEN 1 ELSE 0 END AS has_throw_massive_blunder_playing_early,
+    CASE WHEN agg_definitions.nb_throw_massive_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS has_throw_massive_blunder_playing_mid,
+    CASE WHEN agg_definitions.nb_throw_massive_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_throw_massive_blunder_playing_late,
+    CASE WHEN agg_definitions.nb_missed_opportunity_blunder_playing > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_blunder_playing,
+    CASE WHEN agg_definitions.nb_missed_opportunity_blunder_playing_early > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_blunder_playing_early,
+    CASE WHEN agg_definitions.nb_missed_opportunity_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_blunder_playing_mid,
+    CASE WHEN agg_definitions.nb_missed_opportunity_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_blunder_playing_late,
+    CASE WHEN agg_definitions.nb_missed_opportunity_massive_blunder_playing > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_massive_blunder_playing,
+    CASE WHEN agg_definitions.nb_missed_opportunity_massive_blunder_playing_early > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_massive_blunder_playing_early,
+    CASE WHEN agg_definitions.nb_missed_opportunity_massive_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_massive_blunder_playing_mid,
+    CASE WHEN agg_definitions.nb_missed_opportunity_massive_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_missed_opportunity_massive_blunder_playing_late
+FROM agg_definitions

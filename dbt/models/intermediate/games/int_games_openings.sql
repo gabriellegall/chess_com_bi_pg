@@ -14,14 +14,14 @@ WITH aggregate_fields AS (
         games.uuid,
         max(games.log_timestamp) AS log_timestamp,
         {% for n in range(1, openings_depth) %}
-            string_agg(CASE WHEN games.move_number <= {{ n }} THEN games.move ELSE null END, ' ' ORDER BY games.move_number ASC) AS opener_{{ n }}_moves{% if not loop.last %},{% endif %}
+            string_agg(CASE WHEN games.move_number <= {{ n }} THEN games.move ELSE NULL END, ' ' ORDER BY games.move_number ASC) AS opener_{{ n }}_moves{% if not loop.last %},{% endif %}
         {% endfor %}
     FROM {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
-    WHERE games.log_timestamp > (
-        SELECT max(i.log_timestamp)
-        FROM {{ this }} i
-    )
+        WHERE games.log_timestamp > (
+            SELECT max(i.log_timestamp)
+            FROM {{ this }} i
+        )
     {% endif %}
     GROUP BY games.username, games.uuid
 )
@@ -38,8 +38,8 @@ WITH aggregate_fields AS (
         {% endfor %}
     FROM aggregate_fields agg
     {% for i in range(1, openings_depth, 1) %}
-    LEFT JOIN {{ ref('int_openings_hierarchy') }} op{{ i }}
-        ON agg.opener_{{ i }}_moves = op{{ i }}.uci
+        LEFT JOIN {{ ref('int_openings_hierarchy') }} op{{ i }}
+            ON agg.opener_{{ i }}_moves = op{{ i }}.uci
     {% endfor %}
 )
 

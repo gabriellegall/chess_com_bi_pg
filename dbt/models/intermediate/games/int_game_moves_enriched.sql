@@ -8,156 +8,171 @@
 ) }}
 
 WITH games_scope AS (
-  SELECT
-    games.uuid,
-    games.username,
-    games.playing_as
-  FROM {{ ref('int_games_filtered') }} AS games
-  WHERE true
-  {% if is_incremental() %}
-    AND NOT EXISTS (
-      SELECT 1
-      FROM {{ this }} i
-      WHERE i.uuid = games.uuid
-    )
-  {% endif %}
+    SELECT
+        games.uuid,
+        games.username,
+        games.playing_as
+    FROM {{ ref('int_games_filtered') }} AS games
+    WHERE
+        TRUE
+        {% if is_incremental() %}
+            AND NOT EXISTS (
+                SELECT 1
+                FROM {{ this }} i
+                WHERE i.uuid = games.uuid
+            )
+        {% endif %}
 )
 
 , score_definition AS (
-  SELECT
-    games.uuid,
-    games.username,
-    games.playing_as,
-    games_moves.move_number,
-    games_moves.move,
-    games_times.time_remaining_seconds,
-    games_times.time_remaining_seconds / first_value(games_times.time_remaining_seconds) OVER (
-      PARTITION BY games.uuid, games_moves.player_color_turn
-      ORDER BY games_moves.move_number ASC
-    ) AS prct_time_remaining,
-    CASE
-      WHEN games_moves.move_number <= {{ var('game_phases')['early']['end_game_move'] }} THEN {{ var('game_phases')['early']['name'] }}
-      WHEN games_moves.move_number <= {{ var('game_phases')['mid']['end_game_move'] }} THEN {{ var('game_phases')['mid']['name'] }}
-      WHEN games_moves.move_number <= {{ var('game_phases')['late']['end_game_move'] }} THEN {{ var('game_phases')['late']['name'] }}
-      ELSE {{ var('game_phases')['very_late']['name'] }}
-    END AS game_phase,
-    games_moves.player_color_turn,
-    games_moves.player_color_turn = games.playing_as AS is_playing_turn,
-    CASE
-      WHEN games_moves.player_color_turn = games.playing_as THEN 'Playing Turn'
-      ELSE 'Opponent Turn'
-    END AS playing_turn_name,
-    CASE
-      WHEN games.playing_as = 'White' THEN games_moves.score_white
-      WHEN games.playing_as = 'Black' THEN games_moves.score_black
-      ELSE null
-    END AS score_playing,
-    current_timestamp AS log_timestamp
-  FROM games_scope AS games
-  INNER JOIN {{ ref('int_game_moves_base') }} AS games_moves
-    ON games_moves.uuid = games.uuid
-  INNER JOIN {{ ref('int_game_move_times_base') }} AS games_times
-    ON games_moves.uuid = games_times.uuid
-    AND games_moves.move_number = games_times.move_number
+    SELECT
+        games.uuid,
+        games.username,
+        games.playing_as,
+        games_moves.move_number,
+        games_moves.move,
+        games_times.time_remaining_seconds,
+        games_times.time_remaining_seconds / first_value(games_times.time_remaining_seconds) OVER (
+            PARTITION BY games.uuid, games_moves.player_color_turn
+            ORDER BY games_moves.move_number ASC
+        ) AS prct_time_remaining,
+        CASE
+            WHEN games_moves.move_number <= {{ var('game_phases')['early']['end_game_move'] }} THEN {{ var('game_phases')['early']['name'] }}
+            WHEN games_moves.move_number <= {{ var('game_phases')['mid']['end_game_move'] }} THEN {{ var('game_phases')['mid']['name'] }}
+            WHEN games_moves.move_number <= {{ var('game_phases')['late']['end_game_move'] }} THEN {{ var('game_phases')['late']['name'] }}
+            ELSE {{ var('game_phases')['very_late']['name'] }}
+        END AS game_phase,
+        games_moves.player_color_turn,
+        games_moves.player_color_turn = games.playing_as AS is_playing_turn,
+        CASE
+            WHEN games_moves.player_color_turn = games.playing_as THEN 'Playing Turn'
+            ELSE 'Opponent Turn'
+        END AS playing_turn_name,
+        CASE
+            WHEN games.playing_as = 'White' THEN games_moves.score_white
+            WHEN games.playing_as = 'Black' THEN games_moves.score_black
+            ELSE NULL
+        END AS score_playing,
+        current_timestamp AS log_timestamp
+    FROM games_scope AS games
+    INNER JOIN {{ ref('int_game_moves_base') }} AS games_moves
+        ON games_moves.uuid = games.uuid
+    INNER JOIN {{ ref('int_game_move_times_base') }} AS games_times
+        ON
+            games_moves.uuid = games_times.uuid
+            AND games_moves.move_number = games_times.move_number
 )
 
 , previous_score AS (
-  SELECT
-    *,
-    lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_score_playing,
-    score_playing - lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS variance_score_playing
-  FROM score_definition
+    SELECT
+        *,
+        lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_score_playing,
+        score_playing - lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS variance_score_playing
+    FROM score_definition
 )
 
 , position_definition AS (
-  SELECT
-    *,
-    CASE
-      WHEN is_playing_turn
-        AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
-        AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
-        AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
-      WHEN is_playing_turn
-        AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_blunder'] }}
-        AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
-        AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Blunder'
-      WHEN is_playing_turn
-        AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} THEN 'Mistake'
-      ELSE null
-    END AS miss_category_playing,
-    CASE
-      WHEN is_playing_turn
-        AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} THEN move_number
-      ELSE null
-    END AS miss_move_number_playing,
-    CASE
-      WHEN is_playing_turn
-        AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
-        AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
-        AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN move_number
-      ELSE null
-    END AS massive_blunder_move_number_playing,
-    CASE
-      WHEN NOT is_playing_turn
-        AND variance_score_playing >= {{ var('score_thresholds')['variance_score_massive_blunder'] }}
-        AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }}
-        AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
-      WHEN NOT is_playing_turn
-        AND variance_score_playing >= {{ var('score_thresholds')['variance_score_blunder'] }}
-        AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }}
-        AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Blunder'
-      WHEN NOT is_playing_turn
-        AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} THEN 'Mistake'
-      ELSE null
-    END AS miss_category_opponent,
-    CASE
-      WHEN NOT is_playing_turn
-        AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} THEN move_number
-      ELSE null
-    END AS miss_move_number_opponent,
-    CASE
-      WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
-      WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
-      WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
-      ELSE null
-    END AS position_status_playing,
-    CASE
-      WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
-      WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
-      WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
-      ELSE null
-    END AS position_status_opponent
-  FROM previous_score
+    SELECT
+        *,
+        CASE
+            WHEN
+                is_playing_turn
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
+                AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
+            WHEN
+                is_playing_turn
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_blunder'] }}
+                AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
+                AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Blunder'
+            WHEN
+                is_playing_turn
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} THEN 'Mistake'
+            ELSE NULL
+        END AS miss_category_playing,
+        CASE
+            WHEN
+                is_playing_turn
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_mistake'] }} THEN move_number
+            ELSE NULL
+        END AS miss_move_number_playing,
+        CASE
+            WHEN
+                is_playing_turn
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
+                AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN move_number
+            ELSE NULL
+        END AS massive_blunder_move_number_playing,
+        CASE
+            WHEN
+                NOT is_playing_turn
+                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }}
+                AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
+            WHEN
+                NOT is_playing_turn
+                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_blunder'] }}
+                AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }}
+                AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Blunder'
+            WHEN
+                NOT is_playing_turn
+                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} THEN 'Mistake'
+            ELSE NULL
+        END AS miss_category_opponent,
+        CASE
+            WHEN
+                NOT is_playing_turn
+                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_mistake'] }} THEN move_number
+            ELSE NULL
+        END AS miss_move_number_opponent,
+        CASE
+            WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+            WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
+            WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
+            ELSE NULL
+        END AS position_status_playing,
+        CASE
+            WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+            WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
+            WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
+            ELSE NULL
+        END AS position_status_opponent
+    FROM previous_score
 )
 
 , prev_position_definition AS (
-  SELECT
-    *,
-    lag(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing,
-    lag(position_status_opponent) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_opponent
-  FROM position_definition
+    SELECT
+        *,
+        lag(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing,
+        lag(position_status_opponent) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_opponent
+    FROM position_definition
 )
 
 , context_definition AS (
-  SELECT
-    *,
-    CASE
-      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder')
-        AND prev_position_status_playing IN ('Even', 'Disadvantage') THEN 'Throw'
-      WHEN miss_category_playing IN ('Blunder', 'Massive Blunder')
-        AND prev_position_status_playing IN ('Advantage') THEN 'Missed Opportunity'
-      ELSE null
-    END AS miss_context_playing,
-    CASE
-      WHEN miss_category_opponent IN ('Blunder', 'Massive Blunder')
-        AND prev_position_status_opponent IN ('Even', 'Disadvantage') THEN 'Throw'
-      WHEN miss_category_opponent IN ('Blunder', 'Massive Blunder')
-        AND prev_position_status_opponent IN ('Advantage') THEN 'Missed Opportunity'
-      ELSE null
-    END AS miss_context_opponent
-  FROM prev_position_definition
+    SELECT
+        *,
+        CASE
+            WHEN
+                miss_category_playing IN ('Blunder', 'Massive Blunder')
+                AND prev_position_status_playing IN ('Even', 'Disadvantage') THEN 'Throw'
+            WHEN
+                miss_category_playing IN ('Blunder', 'Massive Blunder')
+                AND prev_position_status_playing IN ('Advantage') THEN 'Missed Opportunity'
+            ELSE NULL
+        END AS miss_context_playing,
+        CASE
+            WHEN
+                miss_category_opponent IN ('Blunder', 'Massive Blunder')
+                AND prev_position_status_opponent IN ('Even', 'Disadvantage') THEN 'Throw'
+            WHEN
+                miss_category_opponent IN ('Blunder', 'Massive Blunder')
+                AND prev_position_status_opponent IN ('Advantage') THEN 'Missed Opportunity'
+            ELSE NULL
+        END AS miss_context_opponent
+    FROM prev_position_definition
 )
 
 SELECT
-  *
+    *
 FROM context_definition

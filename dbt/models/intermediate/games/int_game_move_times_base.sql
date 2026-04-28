@@ -14,8 +14,8 @@ SELECT
     pgt.log_timestamp
 FROM {{ ref('stg_times__players_games_times') }} pgt
 {% if is_incremental() %}
-WHERE pgt.log_timestamp > (
-    SELECT max(i.log_timestamp)
-    FROM {{ this }} i
-)
+    WHERE pgt.log_timestamp > (
+        SELECT max(i.log_timestamp)
+        FROM {{ this }} i
+    )
 {% endif %}

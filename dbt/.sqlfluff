@@ -29,12 +29,22 @@ rules =
     structure.constant_expression,
     structure.unused_join,
 
-    # cosmetic rule(s)
-    capitalisation.keywords
+    # cosmetic rules
+    capitalisation.keywords,
+    capitalisation.functions,
+    capitalisation.literals,
+    layout.spacing,
+    layout.indent,
 
 [sqlfluff:templater:dbt]
 project_dir = ./
 profiles_dir = ./
 
 [sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
 capitalisation_policy = upper

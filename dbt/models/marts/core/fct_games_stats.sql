@@ -108,8 +108,8 @@ SELECT
     gs.has_missed_opportunity_massive_blunder_playing_late
 FROM {{ ref('int_games_stats') }} gs
 {% if is_incremental() %}
-WHERE gs.log_timestamp > (
-    SELECT MAX(i.log_timestamp)
-    FROM {{ this }} i
-)
+    WHERE gs.log_timestamp > (
+        SELECT MAX(i.log_timestamp)
+        FROM {{ this }} i
+    )
 {% endif %}

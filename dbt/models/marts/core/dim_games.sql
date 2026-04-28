@@ -6,7 +6,7 @@
     ]
 ) }}
 
-SELECT 
+SELECT
     {{ dbt_utils.generate_surrogate_key(['username']) }} AS players_sk,
     {{ dbt_utils.generate_surrogate_key(['uuid', 'username']) }} AS games_sk,
     g.end_time,
@@ -49,8 +49,8 @@ SELECT
     g.playing_result
 FROM {{ ref('int_games_filtered') }} g
 {% if is_incremental() %}
-WHERE g.end_time > (
-    SELECT MAX(i.end_time)
-    FROM {{ this }} i
-)
+    WHERE g.end_time > (
+        SELECT MAX(i.end_time)
+        FROM {{ this }} i
+    )
 {% endif %}

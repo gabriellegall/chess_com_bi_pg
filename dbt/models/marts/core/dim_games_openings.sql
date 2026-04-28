@@ -20,8 +20,8 @@ SELECT
     gop.log_timestamp
 FROM {{ ref('int_games_openings') }} gop
 {% if is_incremental() %}
-WHERE gop.log_timestamp > (
-    SELECT MAX(i.log_timestamp)
-    FROM {{ this }} i
-)
+    WHERE gop.log_timestamp > (
+        SELECT MAX(i.log_timestamp)
+        FROM {{ this }} i
+    )
 {% endif %}

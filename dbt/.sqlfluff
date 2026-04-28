@@ -13,7 +13,6 @@ rules =
     ambiguous.column_references,
     ambiguous.set_columns,
     ambiguous.join_condition,
-    capitalisation.keywords,
     convention.not_equal,
     convention.coalesce,
     convention.is_null,
@@ -28,7 +27,10 @@ rules =
     structure.nested_case,
     structure.distinct,
     structure.constant_expression,
-    structure.unused_join
+    structure.unused_join,
+
+    # cosmetic rule(s)
+    capitalisation.keywords
 
 [sqlfluff:templater:dbt]
 project_dir = ./

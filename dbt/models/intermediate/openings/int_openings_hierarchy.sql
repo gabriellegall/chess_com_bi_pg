@@ -46,10 +46,10 @@
             REGEXP_SPLIT_TO_ARRAY(uci, ' ')                         AS uci_moves_array,
             ARRAY_LENGTH(REGEXP_SPLIT_TO_ARRAY(uci, ' '), 1)        AS uci_moves_depth
         FROM {{ ref('stg_openings__chess_openings') }}
-    ),
+    )
 
     -- Generate [uci] keys for previous hierarchy levels only
-    parent_hierarchy AS (
+    , parent_hierarchy AS (
         SELECT
             *,
             {% for i in range(1, max_depth) %}

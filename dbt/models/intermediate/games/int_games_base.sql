@@ -52,9 +52,9 @@ WITH incremental_partition AS (
             FROM {{ this }} i
         )
     {% endif %}
-),
+)
 
-define_rating_range AS (
+, define_rating_range AS (
     SELECT
         *,
         CASE
@@ -72,9 +72,9 @@ define_rating_range AS (
             ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
         END AS opponent_rating_range
     FROM incremental_partition
-),
+)
 
-simplify_result AS (
+, simplify_result AS (
     SELECT
         *,
         CASE

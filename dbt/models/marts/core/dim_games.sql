@@ -48,9 +48,11 @@ SELECT
     g.opponent_rating_range,
     g.playing_result
 FROM {{ ref('int_games_filtered') }} g
-{% if is_incremental() %}
-    WHERE g.end_time > (
-        SELECT MAX(i.end_time)
-        FROM {{ this }} i
-    )
-{% endif %}
+WHERE
+    TRUE
+    {% if is_incremental() %}
+        AND g.end_time > (
+            SELECT MAX(i.end_time)
+            FROM {{ this }} i
+        )
+    {% endif %}

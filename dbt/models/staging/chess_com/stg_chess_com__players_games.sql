@@ -3,9 +3,9 @@
 WITH source_data AS (
     SELECT *
     FROM {{ source('chess_com', 'players_games') }}
-),
+)
 
-filter_table AS (
+, filter_table AS (
     SELECT *
     FROM source_data
     WHERE
@@ -17,17 +17,17 @@ filter_table AS (
         )
         AND LENGTH(pgn) > 0
         AND pgn ~ E'\\d+\\. '
-),
+)
 
-cast_types AS (
+, cast_types AS (
     SELECT
         *,
         end_time::date AS end_time_date,
         TO_CHAR(end_time, 'YYYY-MM') AS end_time_month
     FROM filter_table
-),
+)
 
-define_playing AS (
+, define_playing AS (
     SELECT
         *,
         CASE
@@ -36,9 +36,9 @@ define_playing AS (
             ELSE NULL
         END AS playing_as
     FROM cast_types
-),
+)
 
-define_result AS (
+, define_result AS (
     SELECT
         *,
         CASE

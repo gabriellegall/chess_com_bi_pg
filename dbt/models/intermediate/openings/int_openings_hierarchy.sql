@@ -23,7 +23,7 @@
     -- Dynamically determine the maximum depth of UCI move sequences in the source data using [uci_moves_depth]
     {% set get_max_depth_query %}
         SELECT
-            max(array_length(regexp_split_to_array(uci, ' '), 1)) AS uci_moves_depth
+            MAX(array_length(regexp_split_to_array(uci, ' '), 1)) AS uci_moves_depth
         FROM {{ ref('stg_openings__chess_openings') }}
     {% endset %}
 
@@ -43,8 +43,8 @@
             epd,
             log_timestamp,
             uci,
-            regexp_split_to_array(uci, ' ')                         AS uci_moves_array,
-            array_length(regexp_split_to_array(uci, ' '), 1)        AS uci_moves_depth
+            REGEXP_SPLIT_TO_ARRAY(uci, ' ')                         AS uci_moves_array,
+            ARRAY_LENGTH(REGEXP_SPLIT_TO_ARRAY(uci, ' '), 1)        AS uci_moves_depth
         FROM {{ ref('stg_openings__chess_openings') }}
     ),
 
@@ -54,14 +54,14 @@
             *,
             {% for i in range(1, max_depth) %}
                 CASE
-                    WHEN {{ i }} <= uci_moves_depth THEN array_to_string(uci_moves_array[1:{{ i }}], ' ')
+                    WHEN {{ i }} <= uci_moves_depth THEN ARRAY_TO_STRING(uci_moves_array[1:{{ i }}], ' ')
                 END AS uci_hierarchy_level_{{ i }}{% if not loop.last %},{% endif %}
             {% endfor %}
         FROM extract_moves
     )
 
     -- For each previous hierarchy level, join to the original table to get the [name] (if any matches!)
-    , parent_hierarchy_with_names as (
+    , parent_hierarchy_with_names AS (
         SELECT
             p.*,
             {% for i in range(1, max_depth) %}
@@ -74,7 +74,7 @@
         {% endfor %}
     )
 
-    , parent_hierarchy_with_filled_names as (
+    , parent_hierarchy_with_filled_names AS (
         SELECT
             eco,
             "eco-volume",
@@ -89,7 +89,7 @@
                 {% if i == 1 %}
                     uci_hierarchy_level_1_name_matching AS uci_hierarchy_level_1_name
                 {% else %}
-                    coalesce(
+                    COALESCE(
                         -- To fill the blank [name], search for the first non-null name_matching from the current level up to level 1
                         uci_hierarchy_level_{{ i }}_name_matching,
                         {% for j in range(i-1, 0, -1) %}

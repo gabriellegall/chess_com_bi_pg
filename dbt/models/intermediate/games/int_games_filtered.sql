@@ -51,7 +51,7 @@ WHERE
     AND {{ games_scope_condition('g') }}
     {% if is_incremental() %}
         AND g.end_time > (
-            SELECT max(i.end_time)
+            SELECT MAX(i.end_time)
             FROM {{ this }} i
         )
     {% endif %}

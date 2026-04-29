@@ -48,7 +48,7 @@ WITH incremental_partition AS (
     FROM {{ ref('stg_chess_com__players_games') }} pg
     {% if is_incremental() %}
         WHERE pg.end_time > (
-            SELECT max(i.end_time)
+            SELECT MAX(i.end_time)
             FROM {{ this }} i
         )
     {% endif %}

@@ -32,7 +32,7 @@ WITH games_scope AS (
         games_moves.move_number,
         games_moves.move,
         games_times.time_remaining_seconds,
-        games_times.time_remaining_seconds / first_value(games_times.time_remaining_seconds) OVER (
+        games_times.time_remaining_seconds / FIRST_VALUE(games_times.time_remaining_seconds) OVER (
             PARTITION BY games.uuid, games_moves.player_color_turn
             ORDER BY games_moves.move_number ASC
         ) AS prct_time_remaining,
@@ -66,8 +66,8 @@ WITH games_scope AS (
 , previous_score AS (
     SELECT
         *,
-        lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_score_playing,
-        score_playing - lag(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS variance_score_playing
+        LAG(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_score_playing,
+        score_playing - LAG(score_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS variance_score_playing
     FROM score_definition
 )
 
@@ -127,13 +127,13 @@ WITH games_scope AS (
             ELSE NULL
         END AS miss_move_number_opponent,
         CASE
-            WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+            WHEN ABS(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
             WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
             WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
             ELSE NULL
         END AS position_status_playing,
         CASE
-            WHEN abs(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
+            WHEN ABS(score_playing) <= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Even'
             WHEN score_playing <= -{{ var('score_thresholds')['even_score_limit'] }} THEN 'Advantage'
             WHEN score_playing >= {{ var('score_thresholds')['even_score_limit'] }} THEN 'Disadvantage'
             ELSE NULL
@@ -144,8 +144,8 @@ WITH games_scope AS (
 , prev_position_definition AS (
     SELECT
         *,
-        lag(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing,
-        lag(position_status_opponent) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_opponent
+        LAG(position_status_playing) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_playing,
+        LAG(position_status_opponent) OVER (PARTITION BY uuid, username ORDER BY move_number ASC) AS prev_position_status_opponent
     FROM position_definition
 )
 

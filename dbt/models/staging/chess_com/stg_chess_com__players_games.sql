@@ -12,10 +12,10 @@ filter_table AS (
         TRUE
         AND rules = 'chess'
         AND (
-            length(initial_setup) = 0
+            LENGTH(initial_setup) = 0
             OR initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
         )
-        AND length(pgn) > 0
+        AND LENGTH(pgn) > 0
         AND pgn ~ E'\\d+\\. '
 ),
 
@@ -23,7 +23,7 @@ cast_types AS (
     SELECT
         *,
         end_time::date AS end_time_date,
-        to_char(end_time, 'YYYY-MM') AS end_time_month
+        TO_CHAR(end_time, 'YYYY-MM') AS end_time_month
     FROM filter_table
 ),
 
@@ -31,8 +31,8 @@ define_playing AS (
     SELECT
         *,
         CASE
-            WHEN lower(username) = lower(white__username) THEN 'White'
-            WHEN lower(username) = lower(black__username) THEN 'Black'
+            WHEN LOWER(username) = LOWER(white__username) THEN 'White'
+            WHEN LOWER(username) = LOWER(black__username) THEN 'Black'
             ELSE NULL
         END AS playing_as
     FROM cast_types

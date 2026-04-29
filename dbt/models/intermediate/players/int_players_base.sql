@@ -9,13 +9,13 @@
 
 SELECT
     g.username,
-    max(g.log_timestamp) AS log_timestamp
+    MAX(g.log_timestamp) AS log_timestamp
 FROM {{ ref('int_games_filtered') }} g
 WHERE
     TRUE
     {% if is_incremental() %}
         AND g.log_timestamp > (
-            SELECT max(i.log_timestamp)
+            SELECT MAX(i.log_timestamp)
             FROM {{ this }} i
         )
     {% endif %}

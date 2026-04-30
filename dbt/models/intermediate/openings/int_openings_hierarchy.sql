@@ -7,7 +7,7 @@
 
 {# 
     ### Update strategy explanation:
-    For performance reasons, rebuilds only with --full-refresh; otherwise runs select * from {{ this }}.
+    For performance reasons, rebuilds only with --full-refresh; otherwise runs SELECT * FROM {{ this }}.
 #}
 
 

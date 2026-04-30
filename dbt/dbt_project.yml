@@ -34,12 +34,6 @@ models:
       core:
         +docs:
           node_color: '#C5A939' # Gold
-        +meta:
-          data_scope_filters:
-          - rated games
-          - games played in the last full months defined by vars.data_scope.month_history_depth
-          - games having a time class among vars.data_scope.time_class
-          - games having game_times and game_move_times processed without errors
   dbt_project_evaluator:
       +schema: eval
       marts:

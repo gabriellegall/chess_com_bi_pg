@@ -3,6 +3,8 @@ P1:
 
 P2:
 - Ensure the doc has Jinja placeholders
+- Review the model definitions
+- Delete the /n in the definitions
 
 Done:
 - [OK] Update the meta keys

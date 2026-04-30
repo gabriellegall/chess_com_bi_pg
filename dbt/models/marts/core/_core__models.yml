@@ -13,9 +13,9 @@ models:
           - not_null
           - unique
       - name: username
-        description: "Original player username used as the player primary key."
+        description: "{{ doc('username') }}"
       - name: username_global
-        description: "Global mapped username from username_mapping; falls back to original username when no mapping exists."
+        description: "{{ doc('username_global') }}"
 
   - name: dim_games
     description: "Games data with few calculated fields that can be directly derived w/o any join."

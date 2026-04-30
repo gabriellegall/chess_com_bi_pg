@@ -108,7 +108,5 @@ vars:
   data_scope:
     month_history_depth: 12
     time_class: ['blitz', 'rapid', 'bullet']
-  datamart:
-    min_games_played: 20
   openings:
     hierarchy_depth: 10

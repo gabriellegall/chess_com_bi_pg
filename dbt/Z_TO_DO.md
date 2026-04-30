@@ -2,10 +2,11 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
-- Update the definitions
-- Update the meta keys
+- Ensure the doc has Jinja placeholders
 
 Done:
+- [OK] Update the meta keys
+- [OK] Update the definitions
 - [OK] Update the Streamlit app with the new data model
 - [OK] Capitalize SQL keywords
 - [OK] Remove SELECT * in the int & fct layer

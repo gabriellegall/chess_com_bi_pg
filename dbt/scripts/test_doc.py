@@ -1,11 +1,24 @@
 # This script compares the fields documented in a Markdown file (doc.md) with the fields
 # defined in YAML files (used in dbt). It performs the following steps:
+#
 # 1. Extracts the column names from the `doc.md` file where fields are documented using `{% docs FIELD_NAME %}`.
-# 2. Extracts the column names and their respective tables from all YAML files in the specified models directory.
-# 3. Compares the two datasets and identifies:
-#    - Columns documented in `doc.md` but not present in the YAML files.
-#    - Columns present in the YAML files but not documented in `doc.md`.
-# 4. Prints warnings if there are discrepancies or indicates if the documentation is consistent.
+# 
+# 2. Extracts the column names and their respective tables from all YAML files in the specified 
+#    models directory. For each column, it also extracts the doc reference from the description field.
+#    - For example, a column description like "{{ doc('openings_eco_1char') }}" will extract 
+#      the reference 'openings_eco_1char' for comparison.
+#    - If no doc reference is found in the description, it falls back to the column name itself.
+#
+# 3. Compares the two datasets by matching documented fields against extracted doc references, 
+#    which handles cases where the YAML field name differs from the doc reference name:
+#    - E.g., a YAML column named 'eco-volume' with description "{{ doc('openings_eco_1char') }}"
+#      will correctly match with the documented field 'openings_eco_1char'.
+#
+# 4. Identifies discrepancies:
+#    - Docs that reference columns not found in the YAML files.
+#    - YAML columns without corresponding doc references or matches in doc.md.
+#
+# 5. Prints warnings if there are discrepancies or indicates if the documentation is consistent.
 
 import re
 import os
@@ -27,6 +40,16 @@ def extract_docs_from_md(md_file):
 import os
 import yaml
 import pandas as pd
+
+def extract_doc_ref_from_description(description):
+    """Extract doc reference from description field.
+    E.g., "{{ doc('openings_eco_1char') }}" -> "openings_eco_1char"
+    """
+    if description:
+        match = re.search(r"\{\{%?\s*doc\('(\w+)'\)\s*%?\}\}", str(description))
+        if match:
+            return match.group(1)
+    return None
 
 def extract_fields_from_yaml(models_dir):
     data = []  # Store extracted data
@@ -52,8 +75,14 @@ def extract_fields_from_yaml(models_dir):
                                             if "columns" in table:
                                                 for column in table["columns"]:
                                                     column_name = column["name"]
+                                                    description = column.get("description", "")
+                                                    doc_ref = extract_doc_ref_from_description(description)
+                                                    
+                                                    # Use doc_ref if available, otherwise fall back to column_name
+                                                    yaml_ref = doc_ref if doc_ref else column_name
                                                     data.append({"yaml_table_name": table_name, 
                                                                   "yaml_column_name": column_name,
+                                                                  "yaml_doc_ref": yaml_ref,
                                                                   "yaml_repository": root})
                             
                             # Handle "models" structure (if applicable)
@@ -63,8 +92,14 @@ def extract_fields_from_yaml(models_dir):
                                         for column in model["columns"]:
                                             model_name = model["name"]
                                             column_name = column["name"]
+                                            description = column.get("description", "")
+                                            doc_ref = extract_doc_ref_from_description(description)
+                                            
+                                            # Use doc_ref if available, otherwise fall back to column_name
+                                            yaml_ref = doc_ref if doc_ref else column_name
                                             data.append({"yaml_table_name": model_name, 
                                                           "yaml_column_name": column_name,
+                                                          "yaml_doc_ref": yaml_ref,
                                                           "yaml_repository": root})
                     except yaml.YAMLError as e:
                         print(f"⚠️ Error parsing {yaml_path}: {e}")
@@ -77,21 +112,21 @@ yaml_fields = extract_fields_from_yaml(MODELS_DIR)
 DOCS_FILE = "models/doc.md"
 doc_fields = extract_docs_from_md(DOCS_FILE)
 
-# Compare the two dataframes
-gap_analysis = pd.merge(doc_fields, yaml_fields, how='outer', left_on='doc_column_name', right_on='yaml_column_name')
+# Compare the two dataframes using doc references
+gap_analysis = pd.merge(doc_fields, yaml_fields, how='outer', left_on='doc_column_name', right_on='yaml_doc_ref')
 
 # Get the columns without match
-missing_yaml_columns = gap_analysis[gap_analysis['yaml_column_name'].isnull()]
+missing_yaml_columns = gap_analysis[gap_analysis['yaml_doc_ref'].isnull()]
 missing_doc_columns = gap_analysis[gap_analysis['doc_column_name'].isnull()]
 
 # Print a warning if there are any missing matches
 if not missing_yaml_columns.empty:
-    print("⚠️ Warning: There are columns in the docs that are missing in the YAML files:")
-    print(missing_yaml_columns)
+    print("⚠️ Warning: There are docs that are missing in the YAML files:")
+    print(missing_yaml_columns[['doc_column_name']])
 
 if not missing_doc_columns.empty:
-    print("⚠️ Warning: There are columns in the YAML files that are missing in the docs:")
-    print(missing_doc_columns)
+    print("⚠️ Warning: There are columns in the YAML files without doc references:")
+    print(missing_doc_columns[['yaml_table_name', 'yaml_column_name', 'yaml_doc_ref']])
 
 if missing_yaml_columns.empty and missing_doc_columns.empty:
-    print("✅ The documentation is consistent")
+    print("✅ The documentation is consistent - all doc references match!")

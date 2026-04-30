@@ -1,4 +1,10 @@
-# Games
+{% docs players_sk %}
+Hash surrogate key for player grain (username).
+{% enddocs %}
+
+{% docs games_sk %}
+Hash surrogate key for the game grain (uuid + username).
+{% enddocs %}
 
 {% docs archive_url %}
 Partition queried via the API to fetch the games. Contains the month and the username.
@@ -124,12 +130,6 @@ Start time of the game in integer (raw) format, expressed in Unix timestamp.
 API URL of the tournament on chess.com, if the game was part of a tournament.
 {% enddocs %}
 
-{% docs match %}
-API URL of the team match on chess.com, if the game was part of a team match.
-{% enddocs %}
-
-# Openings
-
 {% docs openings_eco_1char %}
 The **ECO (Encyclopedia of Chess Openings)** parent category. 
 This one-character code classifies openings into five major groups based on the initial moves:
@@ -163,155 +163,9 @@ The same moves described by the pgn field in UCI notation.
 The EPD (FEN without move numbers) of the opening position, en passant field only if legal.
 {% enddocs %}
 
-{% docs uci_moves_array %}
-Translation of the UCI opener from a string to an array of individual moves.
+{% docs uci_hierarchy_level_x_name %}
+Opening name as defined at move X in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
 {% enddocs %}
-
-{% docs uci_moves_depth %}
-Number of moves defining the opener (i.e. number of moves in the UCI string).
-{% enddocs %}
-
-{% docs uci_hierarchy_level_1_name %}
-Opening name as defined at the move 1 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_2_name %}
-Opening name as defined at the move 2 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_3_name %}
-Opening name as defined at the move 3 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_4_name %}
-Opening name as defined at the move 4 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_5_name %}
-Opening name as defined at the move 5 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_6_name %}
-Opening name as defined at the move 6 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_7_name %}
-Opening name as defined at the move 7 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_8_name %}
-Opening name as defined at the move 8 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_9_name %}
-Opening name as defined at the move 9 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_10_name %}
-Opening name as defined at the move 10 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_11_name %}
-Opening name as defined at the move 11 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_12_name %}
-Opening name as defined at the move 12 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_13_name %}
-Opening name as defined at the move 13 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_14_name %}
-Opening name as defined at the move 14 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_15_name %}
-Opening name as defined at the move 15 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_16_name %}
-Opening name as defined at the move 16 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_17_name %}
-Opening name as defined at the move 17 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_18_name %}
-Opening name as defined at the move 18 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_19_name %}
-Opening name as defined at the move 19 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_20_name %}
-Opening name as defined at the move 20 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_21_name %}
-Opening name as defined at the move 21 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_22_name %}
-Opening name as defined at the move 22 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_23_name %}
-Opening name as defined at the move 23 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_24_name %}
-Opening name as defined at the move 24 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_25_name %}
-Opening name as defined at the move 25 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_26_name %}
-Opening name as defined at the move 26 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_27_name %}
-Opening name as defined at the move 27 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_28_name %}
-Opening name as defined at the move 28 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_29_name %}
-Opening name as defined at the move 29 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_30_name %}
-Opening name as defined at the move 30 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_31_name %}
-Opening name as defined at the move 31 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_32_name %}
-Opening name as defined at the move 32 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_33_name %}
-Opening name as defined at the move 33 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_34_name %}
-Opening name as defined at the move 34 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-{% docs uci_hierarchy_level_35_name %}
-Opening name as defined at the move 35 in the opening hierarchy. If the opener is long, the lowest levels of the hierarchy typically refer to the parent opening (e.g. 'King Pawn'), while the highest level refers to the actual opening.
-{% enddocs %}
-
-# Games moves
 
 {% docs move_number %}
 Sequential move number starting from 1.
@@ -324,8 +178,6 @@ Move played.
 {% docs score_white %}
 Stockfish evaluation (in centipawns) of the position (after the move has been played), from the perspective of white. When >0 white has an advantage, when <0 black has an advantage.
 {% enddocs %}
-
-# Processed - Games
 
 {% docs end_time_date %}
 End time field casted as DATE.
@@ -363,8 +215,6 @@ Normalized username (lowercased) for consistent grouping and comparison.
 Target username to use for aggregation and display purposes, allowing multi-account grouping under a single name.
 {% enddocs %}
 
-# Processed - Games moves
-
 {% docs player_color_turn %}
 Color of the player who played the move, derived from the move number : white's turn on odd numbers, black's turn on even numbers.
 {% enddocs %}
@@ -372,16 +222,6 @@ Color of the player who played the move, derived from the move number : white's 
 {% docs score_black %}
 Score of the black player calculated by Stockfish, derived as the opposite of white's score.
 {% enddocs %}
-
-{% docs win_probability_white %}
-Translation of the white score into a win probability, derived using the sigmoid function, converts the Stockfish evaluation into a probability between 0 and 1.
-{% enddocs %}
-
-{% docs win_probability_black %}
-Translation of the black score into a win probability, derived using the sigmoid function, converts the Stockfish evaluation into a probability between 0 and 1.
-{% enddocs %}
-
-# Games with moves
 
 {% docs game_phase %}
 Game phase determined by the move number.
@@ -405,10 +245,6 @@ ELO range based on the opponent's rating.
 
 {% docs score_playing %}
 Score defined from the perspective of username. This normalized field is used in all subsequent calculations whenever the notion of score is used. 
-{% enddocs %}
-
-{% docs win_probability_playing %}
-Win probability defined from the perspective of username. 
 {% enddocs %}
 
 {% docs prev_score_playing %}
@@ -467,26 +303,12 @@ A 'Throw' occurs when the previous situation was even or already disadvantageous
 A 'Missed Opportunity' occurs when the previous situation was advantageous (for the player username).
 {% enddocs %}
 
-# Agg games with moves
-
 {% docs max_score_playing_type %}
 Simplification of the maximum game score, aiming to define if the username was in a decisive winning position (at any point).
 {% enddocs %}
 
-{% docs aggregation_level %}
-Aggregation level at which the metrics are defined. Several different and independent aggregation levels are mixed within the table.
-{% enddocs %}
-
-{% docs game_phase_key %}
-`game_phase` if applicable for the given aggregation level, otherwise returns a generic values describing the aggregation.
-{% enddocs %}
-
 {% docs nb_moves %}
 Total number of moves played in the game.
-{% enddocs %}
-
-{% docs nb_blunder_playing %}
-Number of blunders detected for username. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
 {% enddocs %}
 
 {% docs nb_massive_blunder_playing %}
@@ -733,32 +555,32 @@ Number of blunders that are throws for the opponent in the very-late-game. I.e. 
 Number of massive blunders detected for the opponent in the early-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'early'.
 {% enddocs %}
 
-{% docs nb_blunder_opponent_early %}
-Number of blunders detected for the opponent in the early-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'early'.
+{% docs nb_blunder_massive_blunder_opponent_early %}
+Number of blunders and massive blunders detected for the opponent in the early-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_opponent_mid %}
 Number of massive blunders detected for the opponent in the mid-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'mid'.
 {% enddocs %}
 
-{% docs nb_blunder_opponent_mid %}
-Number of blunders detected for the opponent in the mid-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'mid'.
+{% docs nb_blunder_massive_blunder_opponent_mid %}
+Number of blunders and massive blunders detected for the opponent in the mid-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_opponent_late %}
 Number of massive blunders detected for the opponent in the late-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'late'.
 {% enddocs %}
 
-{% docs nb_blunder_opponent_late %}
-Number of blunders detected for the opponent in the late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'late'.
+{% docs nb_blunder_massive_blunder_opponent_late %}
+Number of blunders and massive blunders detected for the opponent in the late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_opponent_very_late %}
 Number of massive blunders detected for the opponent in the very late-game phase. Technically it is a count of 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
-{% docs nb_blunder_opponent_very_late %}
-Number of blunders detected for the opponent in the very late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'very_late'.
+{% docs nb_blunder_massive_blunder_opponent_very_late %}
+Number of blunders and massive blunders detected for the opponent in the very-late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_opponent` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs median_score_playing %}
@@ -785,32 +607,32 @@ Categorical range representation of the maximum evaluation score.
 Number of massive blunders detected in the early-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
-{% docs nb_blunder_playing_early %}
-Number of blunders detected in the early-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
+{% docs nb_blunder_massive_blunder_playing_early %}
+Number of blunders and massive blunders detected for username in the early-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'early'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_playing_mid %}
 Number of massive blunders detected in the mid-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
-{% docs nb_blunder_playing_mid %}
-Number of blunders detected in the mid-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
+{% docs nb_blunder_massive_blunder_playing_mid %}
+Number of blunders and massive blunders detected for username in the mid-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'mid'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_playing_late %}
 Number of massive blunders detected in the late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
-{% docs nb_blunder_playing_late %}
-Number of blunders detected in the late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
+{% docs nb_blunder_massive_blunder_playing_late %}
+Number of blunders and massive blunders detected for username in the late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'late'.
 {% enddocs %}
 
 {% docs nb_massive_blunder_playing_very_late %}
 Number of massive blunders detected in the very late-game phase, technically it is a count of 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
-{% docs nb_blunder_playing_very_late %}
-Number of blunders detected in the very late-game phase, technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
+{% docs nb_blunder_massive_blunder_playing_very_late %}
+Number of blunders and massive blunders detected for username in the very-late-game phase. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing` AND `game_phase` = 'very_late'.
 {% enddocs %}
 
 {% docs nb_moves_above_decisive_advantage %}
@@ -837,89 +659,9 @@ Total number of 'Blunder' throws that username has made in the game.
 Total number of 'Massive Blunder' throws that username has made in the game.
 {% enddocs %}
 
-{% docs opener_1_moves %}
-Concatenation of the first move in the game.
+{% docs opener_x_moves %}
+Concatenation of the first X moves in the game.
 {% enddocs %}
-
-{% docs opener_2_moves %}
-Concatenation of the first 2 moves in the game.
-{% enddocs %}
-
-{% docs opener_3_moves %}
-Concatenation of the first 3 moves in the game.
-{% enddocs %}
-
-{% docs opener_4_moves %}
-Concatenation of the first 4 moves in the game.
-{% enddocs %}
-
-{% docs opener_5_moves %}
-Concatenation of the first 5 moves in the game.
-{% enddocs %}
-
-{% docs opener_6_moves %}
-Concatenation of the first 6 moves in the game.
-{% enddocs %}
-
-{% docs opener_7_moves %}
-Concatenation of the first 7 moves in the game.
-{% enddocs %}
-
-{% docs opener_8_moves %}
-Concatenation of the first 8 moves in the game.
-{% enddocs %}
-
-{% docs opener_9_moves %}
-Concatenation of the first 9 moves in the game.
-{% enddocs %}
-
-{% docs opener_10_moves %}
-Concatenation of the first 10 moves in the game.
-{% enddocs %}
-
-# Games benchmark
-
-{% docs bench_nb_games %}
-Number of games played by other players in the benchmark group.
-{% enddocs %}
-
-{% docs bench_rate_nb_blunder_playing %}
-For all games in the benchmark group of players: number of games containing a blunder, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_massive_blunder_playing %}
-For all games in the benchmark group of players: number of games containing a massive blunder, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_missed_opportunity_playing %}
-For all games in the benchmark group of players: number of games containing a missed opportunity, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_throw_playing %}
-For all games in the benchmark group of players: number of games containing a throw, divided by the total number of games played.
-{% enddocs %}
-
-{% docs nb_games %}
-The total number of games played by username.
-{% enddocs %}
-
-{% docs rate_nb_blunder_playing %}
-For username: number of games containing a blunder, divided by the total number of games played.
-{% enddocs %}
-
-{% docs rate_nb_massive_blunder_playing %}
-For username: number of games containing a massive blunder, divided by the total number of games played.
-{% enddocs %}
-
-{% docs rate_nb_missed_opportunity_playing %}
-For username: number of games containing a missed opportunity, divided by the total number of games played.
-{% enddocs %}
-
-{% docs rate_nb_throw_playing %}
-For username: number of games containing a throw, divided by the total number of games played.
-{% enddocs %}
-
-# Games times
 
 {% docs time_remaining %}
 Raw string timestamp describing the time remaining at the end of the move.
@@ -933,8 +675,8 @@ Timestamp describing the time remaining at the end of the move, expressed in sec
 Percent of the clock time remaining (after the move has been played), compared to the time available when the 1st move of the game was made.
 {% enddocs %}
 
-{% docs first_blunder_playing_prct_time_remaining %}
-Percent of the clock time remaining when username made the first blunder.
+{% docs first_blunder_massive_blunder_playing_prct_time_remaining %}
+Percent of the clock time remaining when username made the first blunder or massive blunder.
 {% enddocs %}
 
 {% docs first_massive_blunder_playing_prct_time_remaining %}
@@ -947,28 +689,4 @@ Percent of the clock time remaining when username made the first massive blunder
 
 {% docs first_throw_massive_blunder_playing_prct_time_remaining %}
 Percent of the clock time remaining when username made the first massive blunder on a throw.
-{% enddocs %}
-
-{% docs rate_nb_massive_blunder_playing_prct_time_50 %}
-For username: number of games containing a massive blunder with a percent of the clock time remaining above 50%, divided by the total number of games played.
-{% enddocs %}
-
-{% docs rate_nb_massive_blunder_playing_prct_time_70 %}
-For username: number of games containing a massive blunder with a percent of the clock time remaining above 70%, divided by the total number of games played.
-{% enddocs %}
-
-{% docs rate_nb_massive_blunder_playing_prct_time_90 %}
-For username: number of games containing a massive blunder with a percent of the clock time remaining above 90%, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_massive_blunder_playing_prct_time_50 %}
-For all games in the benchmark group of players: number of games containing a massive blunder with a percent of the clock time remaining above 50%, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_massive_blunder_playing_prct_time_70 %}
-For all games in the benchmark group of players: number of games containing a massive blunder with a percent of the clock time remaining above 70%, divided by the total number of games played.
-{% enddocs %}
-
-{% docs bench_rate_nb_massive_blunder_playing_prct_time_90 %}
-For all games in the benchmark group of players: number of games containing a massive blunder with a percent of the clock time remaining above 90%, divided by the total number of games played.
 {% enddocs %}

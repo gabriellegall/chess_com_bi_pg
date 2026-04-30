@@ -11,96 +11,24 @@ models:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('stg_chess_com__players_games')
     columns:
-      - name: archive_url
-        description: "{{ doc('archive_url') }}"
       - name: username
-        description: "{{ doc('username') }}"
         data_tests:
           - not_null
-      - name: url
-        description: "{{ doc('url') }}"
-      - name: pgn
-        description: "{{ doc('pgn') }}"
-      - name: time_control
-        description: "{{ doc('time_control') }}"
-      - name: end_time
-        description: "\n          {{ doc('end_time') }} \n          Expressed in the timezone {{ var('data_conversion')['utc_to_target_timezone'] }}\n          "
-      - name: rated
-        description: "{{ doc('rated') }}"
-      - name: tcn
-        description: "{{ doc('tcn') }}"
       - name: uuid
-        description: "{{ doc('uuid') }}"
         data_tests:
           - not_null
-      - name: initial_setup
-        description: "{{ doc('initial_setup') }}"
-      - name: fen
-        description: "{{ doc('fen') }}"
-      - name: time_class
-        description: "{{ doc('time_class') }}"
-      - name: rules
-        description: "{{ doc('rules') }}"
-      - name: white__username
-        description: "{{ doc('white__username') }}"
-      - name: white__rating
-        description: "{{ doc('white__rating') }}"
-      - name: white__result
-        description: "{{ doc('white__result') }}"
-      - name: white__aid
-        description: "{{ doc('white__aid') }}"
-      - name: white__uuid
-        description: "{{ doc('white__uuid') }}"
-      - name: black__username
-        description: "{{ doc('black__username') }}"
-      - name: black__rating
-        description: "{{ doc('black__rating') }}"
-      - name: black__result
-        description: "{{ doc('black__result') }}"
-      - name: black__aid
-        description: "{{ doc('black__aid') }}"
-      - name: black__uuid
-        description: "{{ doc('black__uuid') }}"
-      - name: end_time_date
-        description: "{{ doc('end_time_date') }}"
-      - name: end_time_month
-        description: "{{ doc('end_time_month') }}"
       - name: playing_as
-        description: "{{ doc('playing_as') }}"
         data_tests:
           - not_null
       - name: playing_result_detailed
-        description: "{{ doc('playing_result_detailed') }}"
         data_tests:
           - not_null
       - name: playing_rating
-        description: "{{ doc('playing_rating') }}"
         data_tests:
           - not_null
       - name: opponent_rating
-        description: "{{ doc('opponent_rating') }}"
         data_tests:
           - not_null
-      - name: playing_result
-        description: "{{ doc('playing_result') }}"
-      - name: accuracies__white
-        description: "{{ doc('accuracies__white') }}"
-      - name: accuracies__black
-        description: "{{ doc('accuracies__black') }}"
-      - name: eco
-        description: "{{ doc('eco') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"
-      - name: _dlt_load_id
-        description: "{{ doc('_dlt_load_id') }}"
-      - name: _dlt_id
-        description: "{{ doc('_dlt_id') }}"
-      - name: start_time
-        description: "{{ doc('start_time') }}"
-      - name: tournament
-        description: "{{ doc('tournament') }}"
-      - name: match
-        description: "{{ doc('match') }}"
 
   - name: int_game_moves_base
     description: "Games moves data with few calculated fields that can be directly derived w/o any join."
@@ -113,29 +41,14 @@ models:
           compare_model: source('stockfish', 'players_games_moves')
     columns:
       - name: uuid
-        description: "{{ doc('uuid') }}"
         data_tests:
           - not_null
       - name: move_number
-        description: "{{ doc('move_number') }}"
         data_tests:
           - not_null
-      - name: move
-        description: "{{ doc('move') }}"
       - name: score_white
-        description: "{{ doc('score_white') }}"
         data_tests:
           - not_null
-      - name: player_color_turn
-        description: "{{ doc('player_color_turn') }}"
-      - name: score_black
-        description: "{{ doc('score_black') }}"
-      - name: win_probability_white
-        description: "{{ doc('win_probability_white') }}"
-      - name: win_probability_black
-        description: "{{ doc('win_probability_black') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"
 
   - name: int_games_filtered
     description: "Scoped games data filtered for the active analysis window."
@@ -153,15 +66,7 @@ models:
 
   - name: int_game_moves_enriched
     description: "Games combined with move, timing, and opening context."
-    meta:
-      update_strategy_explanation: >-
-        Incremental appends are UUID-driven: on incremental runs, only games whose
-        UUID does not already exist in this model are considered. Rows are inserted
-        only when the inner join with moves and time tables returns matching move rows.
-        log_timestamp is set to current_timestamp at load time (not inherited from source
-        log_timestamp values), and this load timestamp is intended to drive incremental
-        updates in downstream models.
-
+    
   - name: int_games_stats
     description: "Games-level aggregated statistics."
     data_tests:
@@ -179,14 +84,5 @@ models:
           compare_model: source('times', 'players_games_times')
     columns:
       - name: uuid
-        description: "{{ doc('uuid') }}"
         data_tests:
           - not_null
-      - name: move_number
-        description: "{{ doc('move_number') }}"
-      - name: time_remaining
-        description: "{{ doc('time_remaining') }}"
-      - name: time_remaining_seconds
-        description: "{{ doc('time_remaining_seconds') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"

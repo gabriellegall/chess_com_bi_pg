@@ -7,6 +7,12 @@
     ]
 ) }}
 
+{# 
+    ### Update strategy explanation:
+    - Incremental appends are UUID-driven: on incremental runs, only games whose UUID does not already exist in this model are considered. Rows are inserted only when the INNER JOIN with moves and time tables returns matching move rows.
+    - log_timestamp is set to current_timestamp at load time (not inherited from source log_timestamp values), and this load timestamp is intended to drive incremental updates in downstream models.
+#}
+
 WITH games_scope AS (
     SELECT
         games.uuid,

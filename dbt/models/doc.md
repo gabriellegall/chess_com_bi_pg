@@ -493,6 +493,10 @@ Number of blunders detected for username. Technically it is a count of 'Blunder'
 Number of massive blunders detected for username. Technically it is a count of 'Massive Blunder' on the field `miss_category_playing`.
 {% enddocs %}
 
+{% docs nb_blunder_massive_blunder_playing %}
+Total number of blunders and massive blunders detected for username. Technically it is a count of 'Blunder' OR 'Massive Blunder' on the field `miss_category_playing`.
+{% enddocs %}
+
 {% docs nb_throw_playing %}
 Number of throws detected for username. Technically it is a count of 'Throw' on the field `miss_context_playing`. A throw can be a 'Blunder' OR a 'Massive Blunder'.
 {% enddocs %}
@@ -555,6 +559,70 @@ Number of blunders that are throws for username in the late-game. I.e. `miss_cat
 
 {% docs nb_throw_massive_blunder_playing_late %}
 Number of massive blunders that are throws for username in the late-game. I.e. `miss_category_playing` = 'Massive Blunder' AND `miss_context_playing` = 'Throw' AND `game_phase` = 'late'.
+{% enddocs %}
+
+{% docs has_throw_blunder_playing %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are throws for username.
+{% enddocs %}
+
+{% docs has_throw_blunder_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are throws for username in the early-game.
+{% enddocs %}
+
+{% docs has_throw_blunder_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are throws for username in the mid-game.
+{% enddocs %}
+
+{% docs has_throw_blunder_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are throws for username in the late-game.
+{% enddocs %}
+
+{% docs has_throw_massive_blunder_playing %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are throws for username.
+{% enddocs %}
+
+{% docs has_throw_massive_blunder_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are throws for username in the early-game.
+{% enddocs %}
+
+{% docs has_throw_massive_blunder_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are throws for username in the mid-game.
+{% enddocs %}
+
+{% docs has_throw_massive_blunder_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are throws for username in the late-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_blunder_playing %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are missed opportunities for username.
+{% enddocs %}
+
+{% docs has_missed_opportunity_blunder_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are missed opportunities for username in the early-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_blunder_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are missed opportunities for username in the mid-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_blunder_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any blunders that are missed opportunities for username in the late-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_massive_blunder_playing %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are missed opportunities for username.
+{% enddocs %}
+
+{% docs has_missed_opportunity_massive_blunder_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are missed opportunities for username in the early-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_massive_blunder_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are missed opportunities for username in the mid-game.
+{% enddocs %}
+
+{% docs has_missed_opportunity_massive_blunder_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any massive blunders that are missed opportunities for username in the late-game.
 {% enddocs %}
 
 {% docs nb_missed_opportunity_blunder_playing_very_late %}

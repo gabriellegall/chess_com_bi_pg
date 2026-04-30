@@ -5,7 +5,12 @@
 {# Required for dbt dependency inference because ref() is inside the conditional block. #}
 -- depends_on: {{ ref('stg_openings__chess_openings') }}
 
-{# Rebuild when FULL_REFRESH is requested OR target relation does not exist yet. #}
+{# 
+    ### Update strategy explanation:
+    For performance reasons, rebuilds only with --full-refresh; otherwise runs select * from {{ this }}.
+#}
+
+
 {% set existing_relation = adapter.get_relation(
     database=this.database,
     schema=this.schema,

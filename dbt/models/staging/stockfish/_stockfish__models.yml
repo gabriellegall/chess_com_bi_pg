@@ -3,3 +3,14 @@ version: 2
 models:
   - name: stg_stockfish__players_games_moves
     description: "Staging model for Stockfish-derived moves."
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+      - name: move
+        description: "{{ doc('move') }}"
+      - name: score_white
+        description: "{{ doc('score_white') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"

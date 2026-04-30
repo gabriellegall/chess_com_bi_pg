@@ -3,3 +3,10 @@ version: 2
 models:
   - name: stg_seeds__username_mapping
     description: "Staging model for username mapping."
+    columns:
+      - name: username
+        description: "{{ doc('username') }}"
+      - name: username_normalized
+        description: "{{ doc('username_normalized') }}"
+      - name: username_global
+        description: "{{ doc('username_global') }}"

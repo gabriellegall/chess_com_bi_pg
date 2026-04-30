@@ -355,6 +355,14 @@ ELO rating of the opponent of username.
 Simplified result of the game, from the perspective of the username playing.
 {% enddocs %}
 
+{% docs username_normalized %}
+Normalized username (lowercased) for consistent grouping and comparison.
+{% enddocs %}
+
+{% docs username_global %}
+Target username to use for aggregation and display purposes, allowing multi-account grouping under a single name.
+{% enddocs %}
+
 # Processed - Games moves
 
 {% docs player_color_turn %}

@@ -14,3 +14,11 @@ models:
         description: "{{ doc('score_white') }}"
       - name: log_timestamp
         description: "{{ doc('log_timestamp') }}"
+      - name: player_color_turn
+        description: "{{ doc('player_color_turn') }}"
+      - name: score_black
+        description: "{{ doc('score_black') }}"
+      - name: win_probability_white
+        description: "{{ doc('win_probability_white') }}"
+      - name: win_probability_black
+        description: "{{ doc('win_probability_black') }}"

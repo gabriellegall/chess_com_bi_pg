@@ -66,5 +66,15 @@ models:
         description: "{{ doc('start_time') }}"
       - name: tournament
         description: "{{ doc('tournament') }}"
-      - name: match
-        description: "{{ doc('match') }}"
+      - name: end_time_date
+        description: "{{ doc('end_time_date') }}"
+      - name: end_time_month
+        description: "{{ doc('end_time_month') }}"
+      - name: playing_as
+        description: "{{ doc('playing_as') }}"
+      - name: playing_result_detailed
+        description: "{{ doc('playing_result_detailed') }}"
+      - name: playing_rating
+        description: "{{ doc('playing_rating') }}"
+      - name: opponent_rating
+        description: "{{ doc('opponent_rating') }}"

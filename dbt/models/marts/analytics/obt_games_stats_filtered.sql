@@ -2,14 +2,14 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook=[
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username ON {{ this }} (username)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username_global ON {{ this }} (username_global)"
     ]
 ) }}
 
 SELECT
     games_stats.players_sk,
     games_stats.games_sk,
-    games_stats.username,
+    players.username_global,
     games_stats.uuid,
     games_stats.log_timestamp,
     -- Game info
@@ -60,6 +60,8 @@ LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
     ON games_openings.games_sk = games_stats.games_sk
 LEFT OUTER JOIN {{ ref('dim_games') }} games_info
     ON games_info.games_sk = games_stats.games_sk
+LEFT OUTER JOIN {{ ref('dim_players') }} players
+    ON players.players_sk = games_stats.players_sk
 WHERE
     TRUE
     AND games_info.playing_rating_range = games_info.opponent_rating_range

@@ -20,7 +20,7 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
         y="category",
         labels={metric: metric.replace('_', ' ').title(), "category": ""},
         orientation='h',
-        hover_data=['username']
+        hover_data=["username_global"]
     )
 
     # Replace the default box plot with one that has jittered points and better colors for dark theme

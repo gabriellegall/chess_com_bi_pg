@@ -8,10 +8,10 @@ def get_raw_data() -> pd.DataFrame:
     """
     Loads the raw game data from the specified SQL query.
     """
-    return load_query("data/agg_games_with_moves__games.sql")
+    return load_query("data/streamlit_games_stats_filtered.sql")
 
 @st.cache_data
-def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = 15, group_by_col: str = 'username') -> pd.DataFrame:
+def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = 15, group_by_col: str = 'username_global') -> pd.DataFrame:
     """
     Aggregates the data for each player based on the provided dictionary.
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').
@@ -44,7 +44,7 @@ def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg
     If `aggregation_dimension` is provided, it returns two DataFrames, one for all games and one for recent games,
     with the metric aggregated by the specified dimension.
     """
-    user_data = data[data['username'] == username]
+    user_data = data[data['username_global'] == username]
     if user_data.empty:
         return (None, None) if not aggregation_dimension else (pd.DataFrame(), pd.DataFrame())
 

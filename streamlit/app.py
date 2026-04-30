@@ -150,7 +150,7 @@ section_config              = get_section_config(dbt_game_phases_config, dbt_sco
 st.title("Chess.com Player Performance Benchmark")
 
 ### --- Sidebar selection ---
-all_usernames = sorted(raw_data["username"].unique())
+all_usernames = sorted(raw_data["username_global"].unique())
 default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
 
 selected_username = st.sidebar.selectbox(
@@ -170,7 +170,7 @@ last_n_games = st.sidebar.slider(
 )
 
 ### --- Dependent filters ---
-user_specific_data = raw_data[raw_data['username'] == selected_username]
+user_specific_data = raw_data[raw_data["username_global"] == selected_username]
 
 # Define filter fields for each section 
 fields_sidebar_filter   = ["time_control", "playing_rating_range"]
@@ -228,7 +228,7 @@ with st.container(border=True):
         st.warning("No player data available for the selected filters. Please adjust your selections.")
     else:
         username_to_highlight = selected_username
-        if username_to_highlight not in df_player_agg['username'].unique():
+        if username_to_highlight not in df_player_agg["username_global"].unique():
             st.warning(f"'{username_to_highlight}' has fewer than 30 games for the selected filters and cannot be benchmarked. Please adjust the filters or select another player.")
         else:
             # Render the legend
@@ -260,7 +260,6 @@ with st.container(border=True):
 
     # Sunburst charts
     list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
-    print(df_filtered_opener)
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games, list_dim=list_dim)
 
     # Apply additional filters only to the raw table

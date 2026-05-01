@@ -233,7 +233,10 @@ models:
       - name: nb_massive_blunder_playing
         description: "{{ doc('nb_massive_blunder_playing') }}"
       - name: nb_moves_above_decisive_advantage
-        description: "{{ doc('nb_moves_above_decisive_advantage') }}"
+        description: "
+          {{ doc('nb_moves_above_decisive_advantage') }} 
+          Any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
+          "
       - name: massive_blunder_move_number_playing
         description: "{{ doc('massive_blunder_move_number_playing') }}"
       - name: nb_throw_playing
@@ -381,7 +384,10 @@ models:
       - name: max_score_playing_range
         description: "{{ doc('max_score_playing_range') }}"
       - name: max_score_playing_type
-        description: "{{ doc('max_score_playing_type') }}"
+        description: "
+          {{ doc('max_score_playing_type') }}
+          Any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
+          "
       - name: has_throw_blunder_playing
         description: "{{ doc('has_throw_blunder_playing') }}"
       - name: has_throw_blunder_playing_early
@@ -414,6 +420,12 @@ models:
         description: "{{ doc('has_missed_opportunity_massive_blunder_playing_mid') }}"
       - name: has_missed_opportunity_massive_blunder_playing_late
         description: "{{ doc('has_missed_opportunity_massive_blunder_playing_late') }}"
+    meta:
+      definition_game_phases: |
+        The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.
+        The mid game phase is defined from move {{ var('game_phases')['early']['end_game_move'] + 1 }} to {{ var('game_phases')['mid']['end_game_move'] }}.
+        The late game phase is defined from move {{ var('game_phases')['mid']['end_game_move'] + 1 }} to {{ var('game_phases')['late']['end_game_move'] }}.
+        The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
 
   - name: fct_game_moves
     description: "Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc."
@@ -492,3 +504,13 @@ models:
         description: "{{ doc('prev_position_status_opponent') }}"
       - name: miss_context_opponent
         description: "{{ doc('miss_context_opponent') }}"
+    meta:
+      definition_score_thresholds: |
+        A 'Massive Blunder' is any score variance decrease beyond {{ var('score_thresholds')['variance_score_massive_blunder'] }}.
+        A 'Blunder' is any score variance decrease between {{ var('score_thresholds')['variance_score_blunder'] }} and {{ var('score_thresholds')['variance_score_massive_blunder'] }}.
+        A 'Mistake' is any score variance decrease between {{ var('score_thresholds')['variance_score_mistake'] }} and {{ var('score_thresholds')['variance_score_blunder'] }}.
+      definition_miss_category: |
+        Miss category for 'Massive Blunder' and 'Blunder' are defined only if they respect two conditions:
+        (1) the previous disadvantage does not exceed -{{ var('score_thresholds')['score_balanced_limit'] }}, and
+        (2) the resulting position is below +{{ var('score_thresholds')['score_balanced_limit'] }}.
+        Otherwise, it means the situation was already massively imbalanced or remains favorable.

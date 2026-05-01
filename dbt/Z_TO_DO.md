@@ -2,11 +2,11 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
-- Ensure the doc has Jinja placeholders
-- Delete the /n in the definitions
 - Review the model definitions
 
 Done:
+- [OK] Ensure the doc has Jinja placeholders
+- [OK] Delete the /n in the definitions
 - [OK] Spacing in Jinja config blocks in SQL
 - [OK] Update the meta keys
 - [OK] Update the definitions

@@ -4,6 +4,8 @@ P1:
 P2:
 - Perform Streamlit integration testing
 - Update readme.md
+    - Openings
+    - Data modeling strategy
 
 Done:
 - [OK] Review the model definitions

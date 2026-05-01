@@ -48,7 +48,7 @@ def run_pipeline_forever():
 
             # Healthcheck
             requests.get(URL, timeout=5)
-            print(f"✅ Healthcheck ping sent.")
+            print(f"Healthcheck ping sent.")
             
             # DBT test - every N executions
             execution_count += 1
@@ -58,10 +58,10 @@ def run_pipeline_forever():
                 
                 # Healthcheck
                 if test_result.returncode == 0:
-                    print("✅ dbt test passed. Pinging success URL.")
+                    print("dbt test passed. Pinging success URL.")
                     requests.get(URL_DBT_TEST, timeout=5)
                 else:
-                    print("❌ dbt test failed. Pinging failure URL.")
+                    print("dbt test failed. Pinging failure URL.")
                     print(test_result.stderr)
                     requests.get(URL_DBT_TEST + "/fail", timeout=5)
 
@@ -70,7 +70,7 @@ def run_pipeline_forever():
 
         except Exception as e:
             requests.get(URL + "/fail", timeout=5)
-            print("❌ Healthcheck failure ping sent.")
+            print("Healthcheck failure ping sent.")
             print(e)
             sys.exit(1)
 

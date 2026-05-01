@@ -63,8 +63,8 @@ def drop_schemas():
                 print(f"Dropping schema: {schema}")
                 conn.execute(text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE;'))
             conn.commit()
-        print("✅ Schemas dropped.")
-        print("🚀 Running run_all.py...")
+        print("chemas dropped.")
+        print("Running run_all.py...")
         subprocess.run([sys.executable, "run_all.py"], check=True)
     else:
         print("Operation cancelled.")

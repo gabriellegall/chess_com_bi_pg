@@ -102,7 +102,7 @@ def extract_fields_from_yaml(models_dir):
                                                           "yaml_doc_ref": yaml_ref,
                                                           "yaml_repository": root})
                     except yaml.YAMLError as e:
-                        print(f"⚠️ Error parsing {yaml_path}: {e}")
+                        print(f"Error parsing {yaml_path}: {e}")
     
     df = pd.DataFrame(data)
     return df
@@ -121,12 +121,12 @@ missing_doc_columns = gap_analysis[gap_analysis['doc_column_name'].isnull()]
 
 # Print a warning if there are any missing matches
 if not missing_yaml_columns.empty:
-    print("⚠️ Warning: There are docs that are missing in the YAML files:")
+    print("Warning: There are docs that are missing in the YAML files:")
     print(missing_yaml_columns[['doc_column_name']])
 
 if not missing_doc_columns.empty:
-    print("⚠️ Warning: There are columns in the YAML files without doc references:")
+    print("Warning: There are columns in the YAML files without doc references:")
     print(missing_doc_columns[['yaml_table_name', 'yaml_column_name', 'yaml_doc_ref']])
 
 if missing_yaml_columns.empty and missing_doc_columns.empty:
-    print("✅ The documentation is consistent - all doc references match!")
+    print("The documentation is consistent - all doc references match!")

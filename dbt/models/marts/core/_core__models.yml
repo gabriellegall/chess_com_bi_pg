@@ -428,7 +428,7 @@ models:
         The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
 
   - name: fct_game_moves
-    description: "Publishes the move-level fact that captures evaluation swings, phase context, and mistake classification for detailed move-by-move analysis."
+    description: "Publishes the move-level fact that captures evaluation variance, phase context, and mistake classification for detailed move-by-move analysis."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

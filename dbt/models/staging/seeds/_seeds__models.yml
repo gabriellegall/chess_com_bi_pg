@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_seeds__username_mapping
-    description: "Standardizes the maintained username mapping seed into a join-ready lookup, ensuring identity consolidation can be applied consistently across models."
+    description: "Standardizes the maintained username mapping, ensuring identity consolidation can be applied consistently across models."
     columns:
       - name: username
         description: "{{ doc('username') }}"

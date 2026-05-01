@@ -2,6 +2,10 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
+- Streamlit: Opponent Error Conversion Rate: P(Win|opponent made ≥ 1 massive throw)
+- Streamlit: Ability to win when reaching a decisive advantage
+- Streamlit: Opening advantage stability score
+- Streamlit: Endgame Collapse Detector: Focus on games reaching late/very-late phases with near-equal eval and compute loss/blunder rates there. 
 - Update readme.md
     - Openings
     - Data modeling strategy

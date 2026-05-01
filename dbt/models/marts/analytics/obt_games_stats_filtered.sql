@@ -64,7 +64,6 @@ LEFT OUTER JOIN {{ ref('dim_players') }} players
     ON players.players_sk = games_stats.players_sk
 WHERE
     TRUE
-    AND games_info.playing_rating_range = games_info.opponent_rating_range
     AND games_info.playing_result IN ('Win', 'Lose')
     {% if is_incremental() %}
         AND games_stats.log_timestamp > (

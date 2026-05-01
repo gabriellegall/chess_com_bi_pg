@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_chess_com__players_games
-    description: "Staging model for chess.com games."
+    description: "Provides the canonical, source-aligned game feed from chess.com with core quality filters and derived playing-side fields so downstream transformations start from consistent per-game records."
     columns:
       - name: end_time
         description: "{{ doc('end_time') }}"

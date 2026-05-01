@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_openings__chess_openings
-    description: "Staging model for chess.com openings."
+    description: "Exposes the raw openings reference dataset as a stable contract so enrichment logic can map played move sequences to standardized opening metadata."
     columns:
       - name: eco-volume
         description: "{{ doc('openings_eco_1char') }}"

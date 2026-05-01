@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_games_base
-    description: "Games data with few calculated fields that can be directly derived w/o any join."
+    description: "Builds the reusable per-game foundation by adding core analytical fields such as rating ranges and simplified outcomes without introducing table joins."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -31,7 +31,7 @@ models:
           - not_null
 
   - name: int_game_moves_base
-    description: "Games moves data with few calculated fields that can be directly derived w/o any join."
+    description: "Builds the reusable per-game-move foundation without introducing table joins."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -51,7 +51,7 @@ models:
           - not_null
 
   - name: int_games_filtered
-    description: "Scoped games data filtered for the active analysis window."
+    description: "Applies the project data-scope policy to keep only analytically relevant games, making downstream tables consistent."
     meta:
       data_scope_filters:
         - "rated games"
@@ -67,20 +67,20 @@ models:
           compare_row_condition: "{{ games_scope_condition() }}"
 
   - name: int_games_openings
-    description: "Games enriched with opening hierarchy."
+    description: "Maps observed early move sequences to opening hierarchy labels, enabling opening-based analysis at the game level."
 
   - name: int_game_moves_enriched
-    description: "Games combined with move, timing, and opening context."
+    description: "Integrates scoped games, engine evaluations, and clock data at move grain to derive game phases, score variance, and mistake context."
 
   - name: int_games_stats
-    description: "Games-level aggregated statistics."
+    description: "Aggregates move-level events into one record per game and player, producing quantitative metrics."
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_games_openings')
 
   - name: int_game_move_times_base
-    description: "Games timing data with few calculated fields that can be directly derived w/o any join."
-    tests:
+    description: "Builds the reusable per-game-move time foundation without introducing table joins."
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid

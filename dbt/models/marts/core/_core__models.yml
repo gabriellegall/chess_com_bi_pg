@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: dim_players
-    description: "Player-level dimension that centralizes username mapping between original username and global username."
+    description: "Publishes the conformed player dimension with stable surrogate keys and identity rollup, so all downstream facts and analytics join to one player entity definition."
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: ref('int_players_base')
@@ -18,7 +18,7 @@ models:
         description: "{{ doc('username_global') }}"
 
   - name: dim_games
-    description: "Games data with few calculated fields that can be directly derived w/o any join."
+    description: "Publishes the conformed game dimension at one row per game and player, carrying scoped game attributes and durable keys for fact joins."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -125,7 +125,7 @@ models:
         description: "{{ doc('tournament') }}"
 
   - name: dim_games_openings
-    description: "One row per game and user with opening-level enrichment from the intermediate openings model."
+    description: "Publishes the game-opening dimension that attaches hierarchical opening labels to each game, enabling consistent slicing of facts by opening context."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -196,7 +196,7 @@ models:
         description: "{{ doc('log_timestamp') }}"
 
   - name: fct_games_stats
-    description: "One row per game and user with aggregated game-level quality and blunder statistics."
+    description: "Publishes the game-level statistics fact with aggregated quality, error, and timing indicators used for performance analysis and trend reporting."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -428,7 +428,7 @@ models:
         The very late game phase is defined from move {{ var('game_phases')['late']['end_game_move'] + 1 }} onwards.
 
   - name: fct_game_moves
-    description: "Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc."
+    description: "Publishes the move-level fact that captures evaluation swings, phase context, and mistake classification for detailed move-by-move analysis."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

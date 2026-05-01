@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_players_base
-    description: "Distinct players from scoped games with latest seen log timestamp."
+    description: "Defines the per-player intermediate base from scoped games."
     columns:
       - name: username
         description: "Original player username from games data."
@@ -11,18 +11,5 @@ models:
           - unique
       - name: log_timestamp
         description: "Latest log timestamp seen for the player in scoped games."
-        data_tests:
-          - not_null
-
-  - name: int_players_mapping
-    description: "Normalized username mapping from seed to support case-insensitive joins."
-    columns:
-      - name: username_normalized
-        description: "Lower-cased source username from mapping seed."
-        data_tests:
-          - not_null
-          - unique
-      - name: username_global
-        description: "Global username for grouped analysis."
         data_tests:
           - not_null

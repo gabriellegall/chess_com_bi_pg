@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_openings_hierarchy
-    description: "Openings data with few calculated fields that can be directly derived w/o any join."
+    description: "Transforms opening reference rows into a hierarchical structure that backfills parent-level names, so partial move sequences still resolve to meaningful opening labels."
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: source('openings', 'chess_openings')

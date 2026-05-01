@@ -6,7 +6,7 @@ import numpy as np
 import yaml
 from pathlib import Path
 from config import get_plot_config, get_section_config
-from data_processing    import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw
+from data_processing    import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw, MIN_BENCHMARK_GAMES
 from plot_benchmark     import render_legend, prepare_section_plot_data, render_plot_section
 from plot_header        import render_summary_header
 from plot_openers       import render_opening_sunburst
@@ -212,11 +212,15 @@ with st.container(border=True):
     df_filtered_benchmark = apply_filters(df_filtered_benchmark, all_selections)
 
     # Get the aggregated data for all players
-    df_player_agg = get_players_aggregates(df_filtered_benchmark, plot_config)
+    df_player_agg = get_players_aggregates(
+        df_filtered_benchmark,
+        plot_config,
+        min_games=MIN_BENCHMARK_GAMES
+    )
 
     # Add explanatory context text based on the filter selection 
     st.markdown(f"""
-    In this section, we compare the performance of **{selected_username}** with other similar players (n={len(df_player_agg)}), holding constant: 
+    In this section, we compare the performance of **{selected_username}** with other similar players having played at least **{MIN_BENCHMARK_GAMES}** games (n={len(df_player_agg)}), holding constant: 
     - Color played: **{branchmark_selections.get('playing_as', 'N/A')}**
     - Playing result: **{branchmark_selections.get('playing_result', 'N/A')}**
     - Time control: **{sidebar_selections.get('time_control', 'N/A')}**
@@ -229,7 +233,10 @@ with st.container(border=True):
     else:
         username_to_highlight = selected_username
         if username_to_highlight not in df_player_agg["username_global"].unique():
-            st.warning(f"'{username_to_highlight}' has fewer than 30 games for the selected filters and cannot be benchmarked. Please adjust the filters or select another player.")
+            st.warning(
+                f"'{username_to_highlight}' has fewer than {MIN_BENCHMARK_GAMES} games for the selected filters and cannot be benchmarked. "
+                "Please adjust the filters or select another player."
+            )
         else:
             # Render the legend
             render_legend(username=username_to_highlight, last_n_games=last_n_games)

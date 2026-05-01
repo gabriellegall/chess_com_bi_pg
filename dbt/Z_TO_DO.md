@@ -3,8 +3,8 @@ P1:
 
 P2:
 - Ensure the doc has Jinja placeholders
-- Review the model definitions
 - Delete the /n in the definitions
+- Review the model definitions
 
 Done:
 - [OK] Spacing in Jinja config blocks in SQL

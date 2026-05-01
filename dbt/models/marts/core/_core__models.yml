@@ -50,7 +50,7 @@ models:
       - name: time_control
         description: "{{ doc('time_control') }}"
       - name: end_time
-        description: "\n          {{ doc('end_time') }} \n          Expressed in the timezone {{ var('data_conversion')['utc_to_target_timezone'] }}\n          "
+        description: "{{ doc('end_time') }}"
       - name: rated
         description: "{{ doc('rated') }}"
       - name: tcn
@@ -416,7 +416,7 @@ models:
         description: "{{ doc('has_missed_opportunity_massive_blunder_playing_late') }}"
 
   - name: fct_game_moves
-    description: "\n      Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc.\n      "
+    description: "Games and games moves joined together, making it possible to calculate score variations, blunders, ELO ranges, game phases, etc."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -471,17 +471,17 @@ models:
       - name: variance_score_playing
         description: "{{ doc('variance_score_playing') }}"
       - name: miss_category_playing
-        description: "\n          {{ doc('miss_category_playing') }}.\n          A 'Massive Blunder' is any score variance decrease beyond {{ var('score_thresholds')['variance_score_massive_blunder'] }}.\n          A 'Blunder' is any score variance decrease between {{ var('score_thresholds')['variance_score_blunder'] }} and {{ var('score_thresholds')['variance_score_massive_blunder'] }}.\n          A 'Mistake' is any score variance decrease between {{ var('score_thresholds')['variance_score_mistake'] }} and {{ var('score_thresholds')['variance_score_blunder'] }}.\n          Remark:\n            miss_category for 'Massive Blunder' and 'Blunder' are defined only if they respect two conditions\n            (1) the previous disadvantage does not exceed -{{ var('score_thresholds')['score_balanced_limit'] }}, and \n            (2) the resulting position is below +{{ var('score_thresholds')['score_balanced_limit'] }}.\n          Otherwise, it means the situation was already massively imbalanced or remains favorable.\n          "
+        description: "{{ doc('miss_category_playing') }}"
       - name: miss_move_number_playing
         description: "{{ doc('miss_move_number_playing') }}"
       - name: massive_blunder_move_number_playing
         description: "{{ doc('massive_blunder_move_number_playing') }}"
       - name: miss_category_opponent
-        description: "\n          {{ doc('miss_category_opponent') }}.\n          A 'Massive Blunder' is any score variance decrease beyond {{ var('score_thresholds')['variance_score_massive_blunder'] }}.\n          A 'Blunder' is any score variance decrease between {{ var('score_thresholds')['variance_score_blunder'] }} and {{ var('score_thresholds')['variance_score_massive_blunder'] }}.\n          A 'Mistake' is any score variance decrease between {{ var('score_thresholds')['variance_score_mistake'] }} and {{ var('score_thresholds')['variance_score_blunder'] }}.\n          Remark:\n            miss_category for 'Massive Blunder' and 'Blunder' are defined only if they respect two conditions\n            (1) the previous disadvantage does not exceed -{{ var('score_thresholds')['score_balanced_limit'] }}, and \n            (2) the resulting position is below +{{ var('score_thresholds')['score_balanced_limit'] }}.\n          Otherwise, it means the situation was already massively imbalanced or remains favorable.\n          "
+        description: "{{ doc('miss_category_opponent') }}"
       - name: miss_move_number_opponent
         description: "{{ doc('miss_move_number_opponent') }}"
       - name: position_status_playing
-        description: "\n          {{ doc('position_status_playing') }}\n          An advantage/disadvantage is defined by a score of +/- {{ var('score_thresholds')['even_score_limit'] }}.\n          "
+        description: "{{ doc('position_status_playing') }}"
       - name: prev_position_status_playing
         description: "{{ doc('prev_position_status_playing') }}"
       - name: miss_context_playing

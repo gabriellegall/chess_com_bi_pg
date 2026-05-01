@@ -6,3 +6,6 @@ models:
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
           compare_model: source('openings', 'chess_openings')
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uci

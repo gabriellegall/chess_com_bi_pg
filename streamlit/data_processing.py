@@ -3,7 +3,7 @@ from data.loader import load_query
 import streamlit as st
 from typing import List 
 
-MIN_BENCHMARK_GAMES = 15
+min_benchmark_games = 15
 
 @st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
@@ -13,7 +13,7 @@ def get_raw_data() -> pd.DataFrame:
     return load_query("data/streamlit_games_stats_filtered.sql")
 
 @st.cache_data
-def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = MIN_BENCHMARK_GAMES, group_by_col: str = 'username_global') -> pd.DataFrame:
+def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = min_benchmark_games, group_by_col: str = 'username_global') -> pd.DataFrame:
     """
     Aggregates the data for each player based on the provided dictionary.
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').

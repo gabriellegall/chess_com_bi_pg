@@ -2,12 +2,12 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
-- Perform Streamlit integration testing
 - Update readme.md
     - Openings
     - Data modeling strategy
 
 Done:
+- [OK] Perform Streamlit integration testing
 - [OK] Review the model definitions
 - [OK] Ensure the doc has Jinja placeholders
 - [OK] Delete the /n in the definitions

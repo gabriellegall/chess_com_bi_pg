@@ -7,6 +7,7 @@ P2:
 - Delete the /n in the definitions
 
 Done:
+- [OK] Spacing in Jinja config blocks in SQL
 - [OK] Update the meta keys
 - [OK] Update the definitions
 - [OK] Update the Streamlit app with the new data model

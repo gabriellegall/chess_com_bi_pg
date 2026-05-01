@@ -1,6 +1,4 @@
-{{ config(
-    materialized = 'table'
-) }}
+{{ config(materialized = 'table') }}
 
 {# Required for dbt dependency inference because ref() is inside the conditional block. #}
 -- depends_on: {{ ref('stg_openings__chess_openings') }}

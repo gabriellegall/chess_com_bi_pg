@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'append',
-    post_hook=[
+    post_hook = [
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username_global ON {{ this }} (username_global)"
     ]
 ) }}

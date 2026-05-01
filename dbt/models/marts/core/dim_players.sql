@@ -1,6 +1,4 @@
-{{ config(
-    materialized = 'view'
-) }}
+{{ config(materialized = 'view') }}
 
 SELECT
     {{ dbt_utils.generate_surrogate_key(['pb.username']) }} AS players_sk,

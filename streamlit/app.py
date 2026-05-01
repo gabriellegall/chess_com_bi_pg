@@ -23,29 +23,33 @@ def load_dbt_project_config():
 
 def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
-    Sidebar filters:
-    - Categorical filters (selectbox)
-    - Range slider for numeric rating range
+    Renders sidebar filters in order. Each categorical selection narrows `current_data`,
+    so later filters (and slider defaults) are scoped to prior selections.
+    Field order in `filter_fields` therefore matters.
     """
     st.sidebar.header("Game Filters")
     selections = {}
+    current_data = dependent_data.copy()
 
     for field in filter_fields:
 
         # --- special case: rating range slider ---
         if field == "playing_rating_range":
 
-            # Build default values based on data
+            # Default range derived from current_data (respects prior filter selections).
             ratings = pd.concat([
-                dependent_data["playing_rating"].dropna(),
-                dependent_data["opponent_rating"].dropna()
+                current_data["playing_rating"].dropna(),
+                current_data["opponent_rating"].dropna()
             ])
 
-            default_min = int(ratings.min()) if not ratings.empty else 0
-            default_max = int(ratings.max()) if not ratings.empty else 3000
+            if ratings.empty:
+                default_min, default_max = 100, 2000
+            else:
+                default_min = max(100, int(ratings.min()))
+                default_max = min(2000, int(ratings.max()))
 
             rating_min, rating_max = st.sidebar.slider(
-                "Rating Range (applies to both players)",
+                "Rating Range (applies to both playing and opponent rating)",
                 min_value=100,
                 max_value=2000,
                 value=(default_min, default_max),
@@ -56,7 +60,7 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
             continue
 
         # --- normal categorical fields ---
-        options = sorted(dependent_data[field].dropna().unique())
+        options = sorted(current_data[field].dropna().unique())
 
         if not options:
             st.sidebar.warning(f"No '{field.replace('_', ' ')}' options available.")
@@ -68,6 +72,9 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
             options=options,
             key=f"sidebar_{field}"
         )
+
+        # Narrow data for subsequent dependent filters.
+        current_data = current_data[current_data[field] == selections[field]]
 
     return selections
 
@@ -217,8 +224,7 @@ with st.container(border=True):
         plot_config,
         min_games=min_benchmark_games
     )
-
-    # Add explanatory context text based on the filter selection 
+    # Add explanatory context text based on the filter selection
     st.markdown(f"""
     In this section, we compare the performance of **{selected_username}** with other similar players having played at least **{min_benchmark_games}** games (n={len(df_player_agg)}), holding constant: 
     - Color played: **{branchmark_selections.get('playing_as', 'N/A')}**
@@ -226,6 +232,16 @@ with st.container(border=True):
     - Time control: **{sidebar_selections.get('time_control', 'N/A')}**
     - Rating range: **{sidebar_selections.get('playing_rating_range', 'N/A')}**
     """)
+
+    if st.checkbox("Show player details", key="show_benchmark_players"):
+        player_counts = (
+            df_filtered_benchmark["username_global"]
+            .value_counts()
+            .rename_axis("username_global")
+            .reset_index(name="n_games")
+            .loc[lambda d: d["n_games"] >= min_benchmark_games]
+        )
+        st.dataframe(player_counts)
 
     # Render plots for each section
     if df_player_agg.empty:

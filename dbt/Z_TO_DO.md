@@ -2,9 +2,11 @@ P1:
 - [?] Solve the bug on incremental key end_time
 
 P2:
-- Review the model definitions
+- Perform Streamlit integration testing
+- Update readme.md
 
 Done:
+- [OK] Review the model definitions
 - [OK] Ensure the doc has Jinja placeholders
 - [OK] Delete the /n in the definitions
 - [OK] Spacing in Jinja config blocks in SQL

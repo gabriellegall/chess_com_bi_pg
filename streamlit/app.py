@@ -285,6 +285,7 @@ with st.container(border=True):
     list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games, list_dim=list_dim)
 
+    # Score progression charts
     render_score_progression(df_filtered_opener)
 
     # Apply additional filters only to the raw table

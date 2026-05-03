@@ -16,7 +16,10 @@ run_all_with_reset:
 	@cd dbt && python run_all_with_reset.py
 
 run_all:
-	@cd dbt && python run_all.py
+	@cd dbt && set SKIP_CHESS_COM_API=false&& set SLEEP_TIME=600&& python run_all.py
+
+run_all_no_api:
+	@cd dbt && set SKIP_CHESS_COM_API=true&& set SLEEP_TIME=0&& python run_all.py
 
 run_dbt_test:
 	@cd dbt && python run_dbt_test.py

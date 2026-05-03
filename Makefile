@@ -30,6 +30,12 @@ run_dbt_compile:
 run_dbt_doc:
 	@cd dbt && python run_dbt_doc.py
 
+sqlfluff_lint:
+	@cd dbt && sqlfluff lint models/ --dialect postgres
+
+sqlfluff_fix:
+	@cd dbt && sqlfluff fix models/ --dialect postgres
+
 test_dbt_doc:
 	@cd dbt && python scripts/test_doc.py
 

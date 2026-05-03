@@ -59,7 +59,7 @@ WITH games_scope AS (
             WHEN games.playing_as = 'Black' THEN games_moves.score_black
             ELSE NULL
         END AS score_playing,
-        current_timestamp AS log_timestamp
+        CURRENT_TIMESTAMP AS log_timestamp
     FROM games_scope AS games
     INNER JOIN {{ ref('int_game_moves_base') }} AS games_moves
         ON games_moves.uuid = games.uuid

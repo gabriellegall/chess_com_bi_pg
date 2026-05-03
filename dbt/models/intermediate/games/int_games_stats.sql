@@ -21,7 +21,7 @@ WITH agg_definitions AS (
                 ARRAY_AGG(games.score_playing ORDER BY games.move_number DESC)
                 FILTER (
                     WHERE games.move_number <= {{ snapshot_turn }}
-                        AND games.score_playing IS NOT NULL
+                    AND games.score_playing IS NOT NULL
                 )
             )[1] AS score_playing_turn_{{ snapshot_turn }},
         {% endfor %}

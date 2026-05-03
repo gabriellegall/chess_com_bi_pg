@@ -54,7 +54,17 @@ SELECT
     games_stats.first_blunder_massive_blunder_playing_prct_time_remaining,
     games_stats.first_massive_blunder_playing_prct_time_remaining,
     games_stats.first_missed_opp_massive_blunder_playing_prct_time_remaining,
-    games_stats.first_throw_massive_blunder_playing_prct_time_remaining
+    games_stats.first_throw_massive_blunder_playing_prct_time_remaining,
+    games_stats.score_playing_turn_5,
+    games_stats.score_playing_turn_10,
+    games_stats.score_playing_turn_15,
+    games_stats.score_playing_turn_20,
+    games_stats.score_playing_turn_25,
+    games_stats.score_playing_turn_30,
+    games_stats.score_playing_turn_35,
+    games_stats.score_playing_turn_40,
+    games_stats.score_playing_turn_45,
+    games_stats.score_playing_turn_50
 FROM {{ ref('fct_games_stats') }} games_stats
 LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
     ON games_openings.games_sk = games_stats.games_sk

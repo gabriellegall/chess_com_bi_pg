@@ -9,7 +9,7 @@ from config import get_plot_config, get_section_config
 from data_processing    import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw, min_benchmark_games
 from plot_benchmark     import render_legend, prepare_section_plot_data, render_plot_section
 from plot_header        import render_summary_header
-from plot_openers       import render_opening_sunburst
+from plot_openers       import render_opening_sunburst, render_score_progression
 
 st.set_page_config(layout="wide")
 
@@ -285,6 +285,8 @@ with st.container(border=True):
     list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
     render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games, list_dim=list_dim)
 
+    render_score_progression(df_filtered_opener)
+
     # Apply additional filters only to the raw table
     st.subheader("Raw data")
 
@@ -298,3 +300,4 @@ with st.container(border=True):
     df_filtered_opener_raw = apply_filters(df_filtered_opener_raw, all_selections)
 
     st.dataframe(df_filtered_opener_raw)
+

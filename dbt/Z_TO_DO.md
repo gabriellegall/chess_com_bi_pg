@@ -6,6 +6,7 @@ P2:
 - Streamlit: Ability to win when reaching a decisive advantage
 
 - Streamlit: Opening advantage stability score
+    - Forward fill when the games end too soon
 
 - Streamlit: Endgame Collapse Detector: Focus on games reaching late/very-late phases with near-equal eval and compute loss/blunder rates there. 
 

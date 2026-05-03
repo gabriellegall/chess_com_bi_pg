@@ -663,6 +663,10 @@ Total number of 'Massive Blunder' throws that username has made in the game.
 Concatenation of the first X moves in the game.
 {% enddocs %}
 
+{% docs score_playing_turn_x %}
+Stockfish evaluation from the username perspective at turn X.
+{% enddocs %}
+
 {% docs time_remaining %}
 Raw string timestamp describing the time remaining at the end of the move.
 {% enddocs %}

@@ -44,5 +44,15 @@ SELECT
     first_blunder_massive_blunder_playing_prct_time_remaining,
     first_massive_blunder_playing_prct_time_remaining,
     first_missed_opp_massive_blunder_playing_prct_time_remaining,
-    first_throw_massive_blunder_playing_prct_time_remaining
+    first_throw_massive_blunder_playing_prct_time_remaining,
+    score_playing_turn_5,
+    score_playing_turn_10,
+    score_playing_turn_15,
+    score_playing_turn_20,
+    score_playing_turn_25,
+    score_playing_turn_30,
+    score_playing_turn_35,
+    score_playing_turn_40,
+    score_playing_turn_45,
+    score_playing_turn_50
 FROM marts.obt_games_stats_filtered

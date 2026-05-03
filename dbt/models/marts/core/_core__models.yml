@@ -237,6 +237,26 @@ models:
           {{ doc('nb_moves_above_decisive_advantage') }} 
           Any score above {{ var('should_win_range')['mid'] }} is considered a decisive advantage.
           "
+      - name: score_playing_turn_5
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_10
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_15
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_20
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_25
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_30
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_35
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_40
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_45
+        description: "{{ doc('score_playing_turn_x') }}"
+      - name: score_playing_turn_50
+        description: "{{ doc('score_playing_turn_x') }}"
       - name: massive_blunder_move_number_playing
         description: "{{ doc('massive_blunder_move_number_playing') }}"
       - name: nb_throw_playing

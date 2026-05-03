@@ -94,7 +94,7 @@ vars:
     model_types: ['staging', 'intermediate', 'marts', 'other']
     marts_prefixes: ['obt_', 'dim_', 'fct_']
     test_coverage_target: 25 # No need to have as many tests as models. We value quality over quantity.
-
+  move_stats_snapshots: [5,10,15,20,25,30,35,40,45,50]
   elo_range: [400,600,800,1000,1200,1400,1600,1800]
   score_thresholds:
     variance_score_massive_blunder: 600

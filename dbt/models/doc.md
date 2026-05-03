@@ -664,7 +664,7 @@ Concatenation of the first X moves in the game.
 {% enddocs %}
 
 {% docs score_playing_turn_x %}
-Stockfish evaluation from the username perspective at turn X.
+Stockfish evaluation from the username perspective at turn X, with forward-fill behavior: if no move exists exactly at turn X (for example when a game ended earlier), the value is the latest non-null score observed at or before turn X.
 {% enddocs %}
 
 {% docs time_remaining %}

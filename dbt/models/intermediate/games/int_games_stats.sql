@@ -17,7 +17,13 @@ WITH agg_definitions AS (
         COUNT(*) FILTER (WHERE games.miss_category_playing = 'Massive Blunder') AS nb_massive_blunder_playing,
         COUNT(*) FILTER (WHERE games.score_playing > {{ var('should_win_range')['mid'] }}) AS nb_moves_above_decisive_advantage,
         {% for snapshot_turn in var('move_stats_snapshots', []) %}
-            MAX(CASE WHEN games.move_number = {{ snapshot_turn }} THEN games.score_playing END) AS score_playing_turn_{{ snapshot_turn }},
+            (
+                ARRAY_AGG(games.score_playing ORDER BY games.move_number DESC)
+                FILTER (
+                    WHERE games.move_number <= {{ snapshot_turn }}
+                        AND games.score_playing IS NOT NULL
+                )
+            )[1] AS score_playing_turn_{{ snapshot_turn }},
         {% endfor %}
         STRING_AGG(massive_blunder_move_number_playing::text, ', ') AS massive_blunder_move_number_playing,
         {% set player_prefixes = ['playing', 'opponent'] %}

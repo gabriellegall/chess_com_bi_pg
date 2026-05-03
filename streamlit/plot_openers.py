@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-from data_processing import get_player_opening_statistics, get_score_progression_by_opening, min_benchmark_games
+from data_processing import get_player_opening_statistics, get_score_distribution_by_opening, min_benchmark_games
 from typing import List
 
 def render_opening_sunburst(
@@ -66,58 +65,87 @@ def render_score_progression(df: pd.DataFrame) -> None:
     """
     st.subheader("Score distribution over moves")
     st.markdown(
-        f"Mean score (± 90/10 CI) per move. Only openings with at least **{min_benchmark_games}** games are shown."
+        f"Distribution at each move (minimal boxplot), by opening. Only openings with at least **{min_benchmark_games}** games are shown."
     )
 
     if df.empty:
         st.warning("No data available for the selected filters.")
         return
 
-    df_progression = get_score_progression_by_opening(
+    df_distribution = get_score_distribution_by_opening(
         df, opening_col="uci_hierarchy_level_7_name", min_games=min_benchmark_games
     )
 
-    if df_progression.empty:
+    if df_distribution.empty:
         st.warning(f"No openings with at least {min_benchmark_games} games found for the selected filters.")
         return
 
-    openings = df_progression.groupby('opening')['n_games'].first().sort_values(ascending=False).index.tolist()
-    color    = '#1f77b4'
-    cols     = st.columns(2)
+    openings = df_distribution.groupby("opening")["n_games"].first().sort_values(ascending=False).index.tolist()
+    turns = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    color = "#1f77b4"
+    median_color = "yellow"
+    cols = st.columns(2)
 
     for i, opening in enumerate(openings):
-        opening_data = df_progression[df_progression['opening'] == opening].sort_values('turn')
-        n_games      = opening_data['n_games'].iloc[0]
-        turns        = opening_data['turn'].tolist()
+        opening_data = df_distribution[df_distribution["opening"] == opening].copy()
+        n_games = opening_data["n_games"].iloc[0]
+        opening_data["turn_label"] = opening_data["turn"].astype(str)
 
-        fig = go.Figure()
+        fig = px.box(
+            opening_data,
+            x="turn_label",
+            y="score",
+            points=False,
+            category_orders={"turn_label": [str(t) for t in turns]},
+        )
 
-        fig.add_trace(go.Scatter(
-            x=turns + turns[::-1],
-            y=opening_data['score_upper'].tolist() + opening_data['score_lower'].tolist()[::-1],
-            fill='toself', fillcolor=color, opacity=0.15,
-            line=dict(color='rgba(255,255,255,0)'),
-            hoverinfo="skip", showlegend=False
-        ))
+        fig.update_traces(
+            line_color=color,
+            fillcolor="rgba(31,119,180,0.08)",
+            marker=dict(size=0),
+            width=0.55,
+            hovertemplate="Move: %{x}<br>Score: %{y:.3f}<extra></extra>",
+        )
 
-        fig.add_trace(go.Scatter(
-            x=opening_data['turn'],
-            y=opening_data['score_mean'],
-            mode='lines+markers',
-            line=dict(color=color, width=3, shape='spline'),
-            marker=dict(size=8, color=color, line=dict(color='white', width=2)),
+        median_by_turn = (
+            opening_data.groupby("turn_label", as_index=False)["score"]
+            .median()
+            .rename(columns={"score": "median_score"})
+        )
+        median_by_turn["turn_label"] = pd.Categorical(
+            median_by_turn["turn_label"],
+            categories=[str(t) for t in turns],
+            ordered=True,
+        )
+        median_by_turn = median_by_turn.sort_values("turn_label")
+
+        fig.add_scatter(
+            x=median_by_turn["turn_label"],
+            y=median_by_turn["median_score"],
+            mode="lines+markers",
+            line=dict(color=median_color, width=2.5, shape="spline", smoothing=0.8),
+            marker=dict(color=median_color, size=6, symbol="diamond"),
+            name="Median",
             showlegend=False,
-            hovertemplate='Turn: %{x}<br>Score: %{y:.3f}<extra></extra>'
-        ))
+            hovertemplate="Move: %{x}<br>Median: %{y:.3f}<extra></extra>",
+        )
 
         fig.update_layout(
             title=f"<b>{opening}</b> (n={n_games})",
-            xaxis_title="Move Number", yaxis_title="Position Score",
-            hovermode='x unified', height=400, template="plotly",
-            margin=dict(l=60, r=20, t=70, b=60), font=dict(size=9),
-            plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+            xaxis_title="Move Number",
+            yaxis_title="Position Score",
+            height=400,
+            template="plotly",
+            margin=dict(l=60, r=20, t=70, b=60),
+            font=dict(size=9),
+            showlegend=False,
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            boxgap=0.35,
+            boxgroupgap=0.15,
         )
-        fig.update_xaxes(showgrid=False, zeroline=False, tickfont=dict(size=9))
+
+        fig.update_xaxes(showgrid=False, zeroline=False, tickfont=dict(size=9), type="category")
         fig.update_yaxes(showgrid=False, zeroline=False, tickfont=dict(size=9))
         fig.add_hline(y=0, line_dash="solid", line_color="rgba(100,100,100,0.3)", line_width=1.5)
         fig.add_annotation(

@@ -227,3 +227,60 @@ def get_score_progression_by_opening(
     
     return pd.DataFrame(result_rows)
 
+
+def get_score_distribution_by_opening(
+    data: pd.DataFrame,
+    opening_col: str = "uci_hierarchy_level_7_name",
+    min_games: int = min_benchmark_games
+) -> pd.DataFrame:
+    """
+    Returns long-format score distributions by opening and move number.
+    Only openings with at least `min_games` games are kept.
+
+    Output columns:
+    - opening
+    - turn
+    - score
+    - n_games
+    """
+    if data.empty:
+        return pd.DataFrame()
+
+    score_cols = [
+        "score_playing_turn_5",
+        "score_playing_turn_10",
+        "score_playing_turn_15",
+        "score_playing_turn_20",
+        "score_playing_turn_25",
+        "score_playing_turn_30",
+        "score_playing_turn_35",
+        "score_playing_turn_40",
+        "score_playing_turn_45",
+        "score_playing_turn_50",
+    ]
+
+    opening_counts = data[opening_col].value_counts()
+    valid_openings = opening_counts[opening_counts >= min_games]
+
+    if valid_openings.empty:
+        return pd.DataFrame()
+
+    filtered_data = data[data[opening_col].isin(valid_openings.index)].copy()
+
+    melted = filtered_data.melt(
+        id_vars=[opening_col],
+        value_vars=score_cols,
+        var_name="score_turn",
+        value_name="score",
+    )
+
+    melted = melted.dropna(subset=["score"]).copy()
+    if melted.empty:
+        return pd.DataFrame()
+
+    melted["turn"] = melted["score_turn"].str.extract(r"(\d+)$").astype(int)
+    melted["opening"] = melted[opening_col]
+    melted["n_games"] = melted["opening"].map(valid_openings.to_dict())
+
+    return melted[["opening", "turn", "score", "n_games"]]
+

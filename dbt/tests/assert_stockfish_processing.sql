@@ -1,11 +1,11 @@
-{{ config(warn_if = '>1', error_if = '>50') }}
+{{ config(warn_if = '>1', error_if = '>50', enabled = true) }}
 
 WITH agg_game AS (
   SELECT 
     username,
     uuid,
     MIN(pgn) AS pgn
-  FROM {{ ref ('int_games') }}
+  FROM {{ ref ('int_games_filtered') }}
   GROUP BY username, uuid
 )
 
@@ -13,7 +13,7 @@ WITH agg_game AS (
   SELECT
     uuid,
     COUNT(*) AS nb_moves
-  FROM {{ ref ('int_games_moves') }}
+  FROM {{ ref ('int_game_moves_base') }}
   GROUP BY uuid
 )
 

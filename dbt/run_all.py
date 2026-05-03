@@ -9,7 +9,12 @@ def run_pipeline_forever():
     load_dotenv()
 
     URL = os.getenv("HEALTHCHECK_URL")
-    URL_DBT_TEST = os.getenv("HEALTHCHECK_URL_DBT_TEST") 
+    URL_DBT_TEST = os.getenv("HEALTHCHECK_URL_DBT_TEST")
+    
+    # Configuration options
+    SKIP_CHESS_COM_API = os.getenv("SKIP_CHESS_COM_API", "false").lower() == "true"
+    SLEEP_TIME = int(os.getenv("SLEEP_TIME", "600")) # Default: 600 seconds (10 minutes)
+    
     execution_count = 0
 
     # openings
@@ -21,12 +26,13 @@ def run_pipeline_forever():
 
     while True:
         try:
-            # chess.com API
-            subprocess.run(
-                [sys.executable, "chess_games_pipeline.py"],
-                check=True,
-                cwd="scripts/chess_com_api"
-            )
+            # chess.com API (conditional)
+            if not SKIP_CHESS_COM_API:
+                subprocess.run(
+                    [sys.executable, "chess_games_pipeline.py"],
+                    check=True,
+                    cwd="scripts/chess_com_api"
+                )
 
             # chess games times
             subprocess.run(
@@ -66,7 +72,7 @@ def run_pipeline_forever():
                     requests.get(URL_DBT_TEST + "/fail", timeout=5)
 
             # Sleep
-            time.sleep(600) # Sleep for 10 minutes
+            time.sleep(SLEEP_TIME)
 
         except Exception as e:
             requests.get(URL + "/fail", timeout=5)

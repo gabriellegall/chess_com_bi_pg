@@ -2,6 +2,7 @@ P1:
 - [?] Solve the bug on incremental key end_time
 - Optimize the Streamlit app (critical cleanup)
 - Optimize makefile
+- Test again the dockerized model
 - Update readme.md
     - Openings
     - Data modeling strategy

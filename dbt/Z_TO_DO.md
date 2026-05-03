@@ -1,20 +1,19 @@
 P1:
 - [?] Solve the bug on incremental key end_time
-
-P2:
-- Streamlit: Opponent Error Conversion Rate: P(Win|opponent made ≥ 1 massive throw)
-- Streamlit: Ability to win when reaching a decisive advantage
-
-- Streamlit: Opening advantage stability score
-    - Forward fill when the games end too soon
-
-- Streamlit: Endgame Collapse Detector: Focus on games reaching late/very-late phases with near-equal eval and compute loss/blunder rates there. 
-
+- Optimize the Streamlit app (critical cleanup)
 - Update readme.md
     - Openings
     - Data modeling strategy
 
+P2:
+- Streamlit Error Conversion:
+    - Streamlit: Opponent Error Conversion Rate: P(Win|opponent made ≥ 1 massive throw)
+    - Streamlit: Ability to win when reaching a decisive advantage
+- Streamlit: Endgame Collapse Detector: Focus on games reaching late/very-late phases with near-equal eval and compute loss/blunder rates there. 
+
 Done:
+- [OK] Streamlit: Opening advantage stability score
+    - [OK] Forward fill when the games end too soon  
 - [OK] Perform Streamlit integration testing
 - [OK] Review the model definitions
 - [OK] Ensure the doc has Jinja placeholders

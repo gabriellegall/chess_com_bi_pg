@@ -7,6 +7,7 @@ P1:
     - Openings
     - Data modeling strategy
     - Best practices applied
+    - dbt project evaluator
 
 P2:
 - Streamlit Error Conversion:

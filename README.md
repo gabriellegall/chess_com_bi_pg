@@ -10,11 +10,7 @@ The key questions answered are:
 - "What are the games I should review to address the most important issues I have ?"
 - "Do I make big mistakes when I am under time pressure ?"
 
-Here are some previews of the **Metabase** dashboard:
-![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_1.png)
-![Illustration 3](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/metabase_page_3.png)
-
-Here are some previews of the **Streamlit** dashboard (designed specifically for players' benchmarking):
+Here are some previews of the **Streamlit** dashboard:
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_1.PNG)
 ![Illustration 2](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/streamlit_page_2.PNG)
 
@@ -22,9 +18,10 @@ Here are some previews of the **Streamlit** dashboard (designed specifically for
 This repository contains all the scripts aiming to: 
 1. Set up a Postgres database.
 2. Extract the games played data from the chess.com API and load it in Postgres.
-3. Extract the individual moves for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
-4. Construct a data model using DBT to define metrics and dimensions (blunders, game phases, ELO ranges, etc.).
-5. Deploy dashboards via Streamlit and Metabase.
+3. Extract the individual moves and clock-times for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
+4. Extract the chess openings database from Hugging Face and load it in Postgres. 
+5. Construct a full data model using dbt to validate and transform data - defining metrics and dimensions (blunders, game phases, ELO ranges, etc.).
+6. Deploy dashboards via Streamlit and Metabase.
 
 # 🛠️ Technical overview
 
@@ -42,7 +39,7 @@ graph LR;
         B["API fetch<br>(Python/DLT)"]
         n1["Data pre-processing<br>(Python)"]
         n2["Stockfish processing<br>(Python)"]
-        D["DBT models"]
+        D["dbt models"]
     end
 
     %% Storage
@@ -84,12 +81,12 @@ graph LR;
 
 ## Tools
 - Data extraction (API): **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
-- Data pre-processing (regex parsing): **Python**
+- Data pre-processing (regex parsing, ches openings ingestion): **Python**
 - Chess evaluation: **Stockfish engine** (with Python)
 - Data storage & compute: **Postgres**
-- Data transformation: **DBT** (on Docker)
-- Data visualization: **Metabase & Streamlit** (on Docker)
-- Documentation: **DBT Docs**
+- Data transformation: **dbt** (on Docker)
+- Data visualization: **Streamlit** (on Docker)
+- Documentation: **dbt Docs**
 - Deployment: **from Docker Hub**, with **Docker Compose** including [**Watchtower**](https://github.com/containrrr/watchtower)
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
@@ -108,17 +105,14 @@ This project is fully dockerized and can be executed locally or deployed on a se
 You can also choose to install the `requirements.txt` in virtual environment and run the commands against the dockerized Postgres DB:
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
 - `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
-- `make run_dbt_full_refresh`: run DBT full-refresh once.
-- `make run_dbt_test`: run DBT tests once.
-- `make run_dbt_compile`: run DBT compile once.
-- `make run_dbt_doc`: run DBT docs generate & docs serve once.
-- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the DBT YAML files and the `doc.md`file centralizing definitions.
+- `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the dbt YAML files and the `doc.md` file centralizing definitions.
+- `make sqlfluff_fix`: run sqlfluff to verify (and fix) all dbt models and ensure that the SQL complies with the enforced rules.
 
 ### Server deployment (VPS)
 1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
 2. copy the `.env` file to a project repository on your server.
 3. copy the `docker-compose.yml` to the same project repository on your server.
-4. run the command `docker-compose up -d`.
+4. run the command `docker-compose up -d`. This will start all applications and execute `run_all.py`.
 
 # 📂 Project
 
@@ -127,47 +121,60 @@ The script `chess_games_pipeline.py` gets the data from the chess.com API using 
 It uses the `config.yml` to define usernames and history depth to be queried, as well as Postgres project information with table names to be used.
 
 ### Incremental strategy
-The chess.com games information is partitioned by username and month on the API requests. 
-Therefore, the `__init__.py` script in the `chess`package has been modified to query only the partitions that are greater than or equal to the latest partitions integrated in Postgres for each username. Before this custom development, the `chess` package only supported full loads or simply did not update the partitions for the current month. 
+The chess.com games data is partitioned by username and month on the API requests. 
+Therefore, the `__init__.py` script in the `chess` package has been modified to query only the partitions that are greater than or equal to the latest partitions integrated in Postgres for each username. Before this custom development, the `chess` package only supported full loads or simply did not update the partitions for the current month. 
 
 ## Stockfish evaluation
 The script `chess_games_moves_pipeline.py` reads the integrated chess.com data and parses the `[pgn]` field to extract the individual game moves and evaluate a score using the Stockfish engine.
-It uses the `config.yml` to define the Postgres project information with table names to be used.
+It uses the `config.yml` to define the Postgres project information with table names to be used and the index to be created.
 
 ### Incremental strategy 
 Only games not yet processed are processed by the Stockfish engine. To identify those games, a query is executed in Postgres, comparing the games loaded with the games loaded for which game moves have been already evaluated. This query is templated under the `helper.py` file.
 
 ## Python pre-processing
 The script `chess_games_times_pipeline.py` reads the integrated chess.com data and parses the `[pgn]` field to extract the individual game clock times using regex.
-It uses the `config.yml` to define the Postgres project information with table names to be used. 
+It uses the `config.yml` to define the Postgres project information with table names to be used and the index to be created. 
 
 ### Incremental strategy 
 Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
 
-## DBT
+## Chess openings
+The script `chess_openings_pipeline.py` reads ands loads the database of all chess openings from Hugging Face.
+It uses the `config.yml` to define the Postgres project information with table names to be used.
+
+### Incremental strategy
+The pipeline `chess_openings_pipeline.py` is only executed once in the script `run_all.py`. 
+Indeed, this data source is mostly static and does not need to be updated frequently.
+
+## dbt
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/dbt_page_1.PNG)
 
 #### Layers
 The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:
-- **'staging'**: raw data extracted from chess.com and evaluated using the stockfish engine. This layer contains a .csv DBT seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times.
-- **'intermediate'**: cleansed layer on top of the staging layer, aiming to cast data types and derive calculated fields. Tables in the intermediate layer share a 1:1 relationship with tables in the staging layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed). Basic data consistency checks are performed on this layer to catch errors as early as possible.
-- **'datawarehouse'**: verified reporting-ready tables used in Metabase/Streamlit. Those models merge intermediate tables together to derive business metrics & dimensions, based on rules and parameters. Those tables are exhaustive as they contain all the necessary information in a denormalized structure (One-Big-Table approach). `dwh_games_with_moves.sql` is the main table containing all the information at the most granular level. Other tables like `dwh_agg_games_with_moves.sql` and `dwh_recent_games_moves.sql` build on top of this table to derive different metrics or definitions at different aggregation levels. Technically, I could have created a dimension model with `fact_games`, `dim_games`, `fact_games_moves`, etc. but this would have resulted in more complexity and joins since metrics are dimensions are deeply intertwined in this project. There are just too few entities to split apart (essentially 3: games, games moves and players).
+- **'raw'**: raw data extracted from chess.com and evaluated using the stockfish engine. This layer contains a .csv dbt seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
+- **'staging'**: virtual layer on top of the raw layer, aiming to cast data types and derive very simple and static calculated fields. Tables in the staging layer share a 1:1 relationship with tables in the raw layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed).
+- **'intermediate'**: [GH Copilot: fill this section based on my project logic]
+- **'datawarehouse'**: verified reporting-ready tables built from the intermediate layer. [GH Copilot: fill this section based on my project logic]
 
 #### Materialization strategy
-As much as possible, models use the incremental DBT materialization strategy. The incremental key is the indexed [uuid] column which represents the game ID. Two alternative candidate keys were considered but ultimately not selected:
-- Game end date ([end_time]): using this key would make it impossible to integrate new players with their history without having to perform a full refresh.
-- Load date in staging ([log_timestamp]): DLT overwrites the monthly partitions for each player, so this [log_timestamp] would update on every API call, making the pipeline process and overwrite already ingested games data every run. A custom solution could have been developed to modify DLT's default behavior; however, my objective was to leverage the standard, out-of-the-box functionality for data ingestion.
+As much as possible, models use the incremental dbt materialization strategy based on timestamps and append-only inserts: 
+- For processed data (via `chess_games_moves_pipeline.py` and `chess_games_times_pipeline.py`), I use the [log_timestamp] which corresponds to the datetime at which the individual games have been processed.
+- For chess.com API data, I use the chess game [end_time]. After running some tests, this key has proven to be reliable since chess.com is providing updated games in a consistent and linear manner. I cannot use the [log_timestamp] because DLT overwrites the monthly partitions for each player, so this [log_timestamp] would update on every API call, making the pipeline process and overwrite already ingested games data every run. A custom solution could have been developed to modify DLT's default behavior; however, my objective was to leverage the standard, out-of-the-box functionality for data ingestion. The only downside of using [end_time] is that integrating a new player with its historical games requires to perform a full-refresh.
+- In case I need to join (1) chess.com API data with (2) processed data from Python scripts, I use an incremental key on the game [uuid] using `WHERE NOT EXISTS` in SQL (see model `int_game_moves_enriched.sql`).
 
-The only table not materialized as incremental is `dwh_agg_games_benchmark.sql` which aggregates the entire history at the player level. Therefore, the DBT materialized_view materialization was used for performance reasons on both the DWH and BI sides.
+Overall, this materialization strategy coupled with postgres indexes has proven to be the most efficient and reliable. 
+
+In an earlier version of this project I had designed incremental loads using the indexed [uuid] field with `WHERE NOT EXISTS` condition on all models to avoid having to full-refresh whenever a new player's historical data needed to be imported.
+However, this solution did not scale well because ... 
 
 ### Data quality and testing 
-DBT tests have been developed to monitor data quality:
-- Generic DBT tests 'not_null' or 'unique_combination_of_columns' on key fields.
-- Custom DBT tests on the Stockfish games evaluation and clock-time extractions, to ensure that all games are processed as expected and all moves are evaluated.
+dbt tests have been developed to monitor data quality:
+- Generic dbt tests 'not_null' or 'unique_combination_of_columns' on key fields.
+- Custom dbt tests on the Stockfish games evaluation and clock-time extractions, to ensure that all games are processed as expected and all moves are evaluated.
 Those tests are automatically executed via the script `run_all.py` (more information below).
 
 ### Documentation
-All models are documented in DBT via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
+All models are documented in dbt via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
@@ -183,14 +190,12 @@ Each cycle performs the following steps:
 ### Metabase
 Metabase is used to construct the dashboards and analysis. I hosted Metabase in a VPS, on Hetzner, using the public Metabase docker image.
 
-The folder `metabase.db` is a backup of all the Metabase developments, and it can be used if any re-deployment is needed. In such a scenario, we should simply replace the existing folder `metabase.db` inside the Docker container with the backup.
-
 ### Streamlit
 As explained, Streamlit was also deployed to complement Metabase's limits and solve more advanced analytical use cases. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
 
 Pytests (under `test_data_processing.py`) were added to the project, mostly to verify that the data transformation functions were working as expected.
 
-It is also important to note that the Streamlit application has a dependency with DBT as it uses the `dbt_project.yml` file to show the metrics definitions and business rules dynamically. We can actually see those definitions under the `config.py`.
+It is also important to note that the Streamlit application has a dependency with dbt as it uses the `dbt_project.yml` file to show the metrics definitions and business rules dynamically. We can actually see those definitions under the `config.py`.
 
 # ⚙️ CI/CD
 The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 
@@ -205,7 +210,7 @@ Here are the main changes:
 
 - **Improved data freshness**:
     - **Problem:** Users expect live data in their dashboard (playing a game and then directly checking the results). BigQuery and GitHub Actions are fit for daily batch processing; however, for near real-time data integration (every 10-15 minutes), the free tiers quickly become a bottleneck.
-    - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and DBT jobs now execute incrementally every 10 min.
+    - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and dbt jobs now execute incrementally every 10 min.
 
 - **Extended analytics**:
     - **Problem:** Metabase is efficient for quick visualization, but less suitable for advanced analytics. For instance, it does not support basic box plots, which are essential to benchmark players' performance.
@@ -217,7 +222,7 @@ Here are the main changes:
 
 - **Use of Python for data pre-processing**:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
-    - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL DBT model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
+    - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL dbt model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
 # 🚀 Outlook
 
@@ -232,4 +237,4 @@ Here are the main changes:
 - the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
 
 ### Packages
-- Although the project is very small, it could have been beneficial to use [dbt_project_evaluator](https://hub.getdbt.com/dbt-labs/dbt_project_evaluator/latest/) to monitor the usage of DBT's best practices.
+- Although the project is very small, it could have been beneficial to use [dbt_project_evaluator](https://hub.getdbt.com/dbt-labs/dbt_project_evaluator/latest/) to monitor the usage of dbt's best practices.

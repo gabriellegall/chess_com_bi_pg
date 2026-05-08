@@ -149,23 +149,30 @@ Indeed, this data source is mostly static and does not need to be updated freque
 ## dbt
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/dbt_page_1.PNG)
 
-#### Layers
+### Layers
 The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:
 - **'raw'**: raw data extracted from chess.com and evaluated using the stockfish engine. This layer contains a .csv dbt seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
 - **'staging'**: virtual layer on top of the raw layer, aiming to cast data types and derive very simple and static calculated fields. Tables in the staging layer share a 1:1 relationship with tables in the raw layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed).
-- **'intermediate'**: [GH Copilot: fill this section based on my project logic]
-- **'datawarehouse'**: verified reporting-ready tables built from the intermediate layer. [GH Copilot: fill this section based on my project logic]
+- **'intermediate'**: transformation layer where the business logic is built. It enriches staging data, joins game, move, time and opening datasets together, and creates derived metrics such as move-level chess evaluations, miss classifications, game-phase flags, opening hierarchies and aggregated per-game stats.
+- **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style 2NF design: dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in 1NF as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
 
-#### Materialization strategy
-As much as possible, models use the incremental dbt materialization strategy based on timestamps and append-only inserts: 
-- For processed data (via `chess_games_moves_pipeline.py` and `chess_games_times_pipeline.py`), I use the [log_timestamp] which corresponds to the datetime at which the individual games have been processed.
-- For chess.com API data, I use the chess game [end_time]. After running some tests, this key has proven to be reliable since chess.com is providing updated games in a consistent and linear manner. I cannot use the [log_timestamp] because DLT overwrites the monthly partitions for each player, so this [log_timestamp] would update on every API call, making the pipeline process and overwrite already ingested games data every run. A custom solution could have been developed to modify DLT's default behavior; however, my objective was to leverage the standard, out-of-the-box functionality for data ingestion. The only downside of using [end_time] is that integrating a new player with its historical games requires to perform a full-refresh.
-- In case I need to join (1) chess.com API data with (2) processed data from Python scripts, I use an incremental key on the game [uuid] using `WHERE NOT EXISTS` in SQL (see model `int_game_moves_enriched.sql`).
+### Materialization strategy
 
-Overall, this materialization strategy coupled with postgres indexes has proven to be the most efficient and reliable. 
+**Staging (`stg`):** All staging models are materialized as views. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
 
-In an earlier version of this project I had designed incremental loads using the indexed [uuid] field with `WHERE NOT EXISTS` condition on all models to avoid having to full-refresh whenever a new player's historical data needed to be imported.
-However, this solution did not scale well because ... 
+**Intermediate (`int`):** Most intermediate models are incremental with append-only inserts. The incremental key varies by data source:
+- Models built on chess.com API data filter incrementally on `end_time` (game end datetime). `log_timestamp` cannot be used here because DLT re-fetches the latest monthly archive on every run to catch newly played games, and sets `log_timestamp` at fetch time for all games in that partition — including ones already integrated. Using `log_timestamp` as the incremental key would therefore re-process the entire current month's games on every run, not just the new ones. `end_time` is stable per game and avoids this problem.
+- Models built on Python-processed data (Stockfish moves and clock times) filter incrementally on `log_timestamp`, which represents when each batch of games was processed.
+- `int_game_moves_enriched` sits at the boundary of both sources. Since it joins API game data with Python-processed moves and times, it uses a `uuid` anti-join (`WHERE NOT EXISTS`) to detect and insert only games not yet present in the model. The model sets `run_timestamp = CURRENT_TIMESTAMP` at insert time instead of reusing source timestamps. Downstream models increment on `run_timestamp`, which reflects dbt run time (not Python processing time).
+- `int_openings_hierarchy` is materialized as a plain `table` but uses a custom self-select pattern: on regular runs it simply returns `SELECT * FROM {{ this }}`, skipping recomputation entirely. A full rebuild only happens on `--full-refresh`, which is acceptable since the underlying openings data is mostly static.
+
+**Marts (`core` and `analytics`):** Mart models follow the same incremental key as their upstream intermediate source — `end_time` for API-sourced game models, `log_timestamp` for Python-processed models, and `run_timestamp` for models derived from `int_game_moves_enriched` (`fct_game_moves`, `fct_games_stats`, `dim_games_openings`, `obt_games_stats_filtered`). All incremental models are backed by a Postgres index on their respective incremental key.
+
+#### Design trade-offs
+
+The main downside of using `end_time` as the incremental key is that onboarding a new player with a historical backlog requires a full refresh to backfill old games.
+
+To avoid that, I previously tested a fully UUID-driven approach applying `WHERE NOT EXISTS` across all models. It worked correctly but did not scale well: anti-join subqueries became increasingly expensive as table sizes grew, making it impractical on large models.
 
 ### Data quality and testing 
 dbt tests have been developed to monitor data quality:

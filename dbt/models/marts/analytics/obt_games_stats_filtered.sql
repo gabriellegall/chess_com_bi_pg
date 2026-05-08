@@ -11,7 +11,7 @@ SELECT
     games_stats.games_sk,
     players.username_global,
     games_stats.uuid,
-    games_stats.log_timestamp,
+    games_stats.run_timestamp,
     -- Game info
     games_info.url,
     games_info.eco,
@@ -76,8 +76,8 @@ WHERE
     TRUE
     AND games_info.playing_result IN ('Win', 'Lose')
     {% if is_incremental() %}
-        AND games_stats.log_timestamp > (
-            SELECT MAX(i.log_timestamp)
+        AND games_stats.run_timestamp > (
+            SELECT MAX(i.run_timestamp)
             FROM {{ this }} i
         )
     {% endif %}

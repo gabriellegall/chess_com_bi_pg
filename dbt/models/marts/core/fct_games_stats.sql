@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)"
     ]
 ) }}
 
@@ -11,7 +11,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(['gs.uuid', 'gs.username']) }} AS games_sk,
     gs.username,
     gs.uuid,
-    gs.log_timestamp,
+    gs.run_timestamp,
     gs.nb_moves,
     gs.nb_blunder_massive_blunder_playing,
     gs.nb_massive_blunder_playing,
@@ -118,8 +118,8 @@ SELECT
     gs.has_missed_opportunity_massive_blunder_playing_late
 FROM {{ ref('int_games_stats') }} gs
 {% if is_incremental() %}
-    WHERE gs.log_timestamp > (
-        SELECT MAX(i.log_timestamp)
+    WHERE gs.run_timestamp > (
+        SELECT MAX(i.run_timestamp)
         FROM {{ this }} i
     )
 {% endif %}

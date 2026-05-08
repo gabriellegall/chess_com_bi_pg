@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)"
     ]
 ) }}
 
@@ -10,7 +10,7 @@ WITH agg_definitions AS (
     SELECT
         games.username,
         games.uuid,
-        MAX(log_timestamp) AS log_timestamp,
+        MAX(run_timestamp) AS run_timestamp,
 
         COUNT(games.move_number) AS nb_moves,
         COUNT(*) FILTER (WHERE games.miss_category_playing IN ('Blunder', 'Massive Blunder')) AS nb_blunder_massive_blunder_playing,
@@ -75,8 +75,8 @@ WITH agg_definitions AS (
         END AS max_score_playing_type
     FROM {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
-        WHERE games.log_timestamp > (
-            SELECT MAX(i.log_timestamp)
+        WHERE games.run_timestamp > (
+            SELECT MAX(i.run_timestamp)
             FROM {{ this }} i
         )
     {% endif %}

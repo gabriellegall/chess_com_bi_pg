@@ -192,8 +192,8 @@ models:
         description: "{{ doc('opener_x_moves') }}"
       - name: uci_hierarchy_level_10_name
         description: "{{ doc('uci_hierarchy_level_x_name') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"
+        - name: run_timestamp
+          description: "{{ doc('run_timestamp') }}"
 
   - name: fct_games_stats
     description: "Publishes the game-level statistics fact with aggregated quality, error, and timing indicators used for performance analysis and trend reporting."
@@ -224,8 +224,8 @@ models:
         description: "{{ doc('username') }}"
       - name: uuid
         description: "{{ doc('uuid') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"
+        - name: run_timestamp
+          description: "{{ doc('run_timestamp') }}"
       - name: nb_moves
         description: "{{ doc('nb_moves') }}"
       - name: nb_blunder_massive_blunder_playing
@@ -496,8 +496,8 @@ models:
         description: "{{ doc('playing_turn_name') }}"
       - name: score_playing
         description: "{{ doc('score_playing') }}"
-      - name: log_timestamp
-        description: "{{ doc('log_timestamp') }}"
+      - name: run_timestamp
+        description: "{{ doc('run_timestamp') }}"
       - name: prev_score_playing
         description: "{{ doc('prev_score_playing') }}"
       - name: variance_score_playing

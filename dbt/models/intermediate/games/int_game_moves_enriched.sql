@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)",
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)",
         "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_uuid ON {{ this }} (uuid)",
     ]
 ) }}
@@ -10,7 +10,7 @@
 {# 
     ### Update strategy explanation:
     - Incremental appends are UUID-driven: on incremental runs, only games whose UUID does not already exist in this model are considered. Rows are inserted only when the INNER JOIN with moves and time tables returns matching move rows.
-    - log_timestamp is set to current_timestamp at load time (not inherited from source log_timestamp values), and this load timestamp is intended to drive incremental updates in downstream models.
+    - run_timestamp is set to current_timestamp at load time. Unlike log_timestamp (which tracks Python processing time in upstream models), run_timestamp reflects when dbt inserted this row, and drives incremental updates in all downstream models.
 #}
 
 WITH games_scope AS (
@@ -59,7 +59,7 @@ WITH games_scope AS (
             WHEN games.playing_as = 'Black' THEN games_moves.score_black
             ELSE NULL
         END AS score_playing,
-        CURRENT_TIMESTAMP AS log_timestamp
+        CURRENT_TIMESTAMP AS run_timestamp
     FROM games_scope AS games
     INNER JOIN {{ ref('int_game_moves_base') }} AS games_moves
         ON games_moves.uuid = games.uuid

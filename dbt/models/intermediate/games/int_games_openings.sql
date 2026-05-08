@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)"
     ]
 ) }}
 
@@ -12,14 +12,14 @@ WITH aggregate_fields AS (
     SELECT
         games.username,
         games.uuid,
-        MAX(games.log_timestamp) AS log_timestamp,
+        MAX(games.run_timestamp) AS run_timestamp,
         {% for n in range(1, openings_depth) %}
             STRING_AGG(CASE WHEN games.move_number <= {{ n }} THEN games.move ELSE NULL END, ' ' ORDER BY games.move_number ASC) AS opener_{{ n }}_moves{% if not loop.last %},{% endif %}
         {% endfor %}
     FROM {{ ref('int_game_moves_enriched') }} games
     {% if is_incremental() %}
-        WHERE games.log_timestamp > (
-            SELECT MAX(i.log_timestamp)
+        WHERE games.run_timestamp > (
+            SELECT MAX(i.run_timestamp)
             FROM {{ this }} i
         )
     {% endif %}

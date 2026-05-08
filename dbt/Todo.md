@@ -3,6 +3,7 @@ P1:
 - Optimize the Streamlit app (critical cleanup)
 - Optimize makefile
 - Test again the dockerized model
+- Test the changes on run_timestamp field
 - Update readme.md
     - Openings
     - Data modeling strategy

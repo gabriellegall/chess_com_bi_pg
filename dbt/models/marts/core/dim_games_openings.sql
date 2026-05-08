@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)"
     ]
 ) }}
 
@@ -17,11 +17,11 @@ SELECT
         gop.opener_{{ n }}_moves,
         gop.uci_hierarchy_level_{{ n }}_name,
     {% endfor %}
-    gop.log_timestamp
+    gop.run_timestamp
 FROM {{ ref('int_games_openings') }} gop
 {% if is_incremental() %}
-    WHERE gop.log_timestamp > (
-        SELECT MAX(i.log_timestamp)
+    WHERE gop.run_timestamp > (
+        SELECT MAX(i.run_timestamp)
         FROM {{ this }} i
     )
 {% endif %}

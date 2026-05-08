@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'append',
     post_hook = [
-        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_log_timestamp ON {{ this }} (log_timestamp)"
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_run_timestamp ON {{ this }} (run_timestamp)"
     ]
 ) }}
 
@@ -21,7 +21,7 @@ SELECT
     gm.is_playing_turn,
     gm.playing_turn_name,
     gm.score_playing,
-    gm.log_timestamp,
+    gm.run_timestamp,
     gm.prev_score_playing,
     gm.variance_score_playing,
     gm.miss_category_playing,
@@ -37,8 +37,8 @@ SELECT
     gm.miss_context_opponent
 FROM {{ ref('int_game_moves_enriched') }} gm
 {% if is_incremental() %}
-    WHERE gm.log_timestamp > (
-        SELECT MAX(i.log_timestamp)
+    WHERE gm.run_timestamp > (
+        SELECT MAX(i.run_timestamp)
         FROM {{ this }} i
     )
 {% endif %}

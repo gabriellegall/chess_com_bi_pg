@@ -158,19 +158,19 @@ The datawarehouse is structured through several layers in order to ensure (1) pe
 
 ### Materialization strategy
 
-**Staging (`stg`):** All staging models are materialized as views. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
+**Staging (`stg`):** All staging models are materialized as **views**. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
 
-**Intermediate (`int`):** Most intermediate models are incremental with append-only inserts. The incremental key varies by data source:
-- Models built on chess.com API data filter incrementally on `end_time` (game end datetime). `log_timestamp` cannot be used here because DLT re-fetches the latest monthly archive on every run to catch newly played games, and sets `log_timestamp` at fetch time for all games in that partition — including ones already integrated. Using `log_timestamp` as the incremental key would therefore re-process the entire current month's games on every run, not just the new ones. `end_time` is stable per game and avoids this problem.
-- Models built on Python-processed data (Stockfish moves and clock times) filter incrementally on `log_timestamp`, which represents when each batch of games was processed.
-- `int_game_moves_enriched` sits at the boundary of both sources. Since it joins API game data with Python-processed moves and times, it uses a `uuid` anti-join (`WHERE NOT EXISTS`) to detect and insert only games not yet present in the model. The model sets `run_timestamp = CURRENT_TIMESTAMP` at insert time instead of reusing source timestamps. Downstream models increment on `run_timestamp`, which reflects dbt run time (not Python processing time).
+**Intermediate (`int`):** Most intermediate models are **incremental with append-only inserts**. The incremental key varies by data source:
+- Models built on chess.com API data filter incrementally on [`end_time`] (game end datetime). [`log_timestamp`] cannot be used here because DLT re-fetches the latest monthly archive on every run to catch newly played games, and sets [`log_timestamp`] at fetch time for all games in that partition — including ones already integrated. Using [`log_timestamp`] as the incremental key would therefore re-process the entire current month's games on every run, not just the new ones. [`end_time`] is stable per game and avoids this problem.
+- Models built on Python-processed data (Stockfish moves and clock times) filter incrementally on [`log_timestamp`], which represents when each batch of games was processed.
+- `int_game_moves_enriched` sits at the boundary of both sources. Since it joins API game data with Python-processed moves and times, it uses a [`uuid`] anti-join (`WHERE NOT EXISTS`) to detect and insert only games not yet present in the model. The model sets [`run_timestamp`] = `CURRENT_TIMESTAMP` at insert time instead of reusing source timestamps. Downstream models increment on [`run_timestamp`], which reflects dbt run time (not Python processing time).
 - `int_openings_hierarchy` is materialized as a plain `table` but uses a custom self-select pattern: on regular runs it simply returns `SELECT * FROM {{ this }}`, skipping recomputation entirely. A full rebuild only happens on `--full-refresh`, which is acceptable since the underlying openings data is mostly static.
 
-**Marts (`core` and `analytics`):** Mart models follow the same incremental key as their upstream intermediate source — `end_time` for API-sourced game models, `log_timestamp` for Python-processed models, and `run_timestamp` for models derived from `int_game_moves_enriched` (`fct_game_moves`, `fct_games_stats`, `dim_games_openings`, `obt_games_stats_filtered`). All incremental models are backed by a Postgres index on their respective incremental key.
+**Marts (`core` and `analytics`):** Mart models follow the same incremental key as their upstream intermediate source — [`end_time`] for API-sourced game models and [`run_timestamp`] for models derived from `int_game_moves_enriched`. All incremental models are backed by a Postgres index on their respective incremental key.
 
 #### Design trade-offs
 
-The main downside of using `end_time` as the incremental key is that onboarding a new player with a historical backlog requires a full refresh to backfill old games.
+The main downside of using [`end_time`] as the incremental key for chess.com data is that onboarding a new player with a historical backlog requires a full refresh to backfill old games.
 
 To avoid that, I previously tested a fully UUID-driven approach applying `WHERE NOT EXISTS` across all models. It worked correctly but did not scale well: anti-join subqueries became increasingly expensive as table sizes grew, making it impractical on large models.
 

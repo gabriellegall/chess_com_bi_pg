@@ -191,12 +191,18 @@ All models are documented in dbt via YAML files. All parameters are centralized 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
 ## Orchestration
-The `run_all.py` script is the primary orchestrator for the data pipeline, operating in a continuous loop with a specified delay between each run.
-Each cycle performs the following steps:
-1. Executes the source table scripts (API, Stockfish, etc.).
-2. Initiates a dbt run command to execute the models.
-3. Sends a health check signal (success or failure) to a dedicated endpoint on Healthcheck.io.
-4. Additionally, every 100th cycle, the script runs dbt test to perform data quality checks. The result of this test is reported to a separate Healthcheck.io endpoint. A failure in this stage is treated as a "soft fail," meaning it is logged and monitored but does not halt the main pipeline's execution.
+The `run_all.py` script is the primary orchestrator for the data pipeline.
+
+It first executes `chess_openings_pipeline.py` once, then enters a continuous loop with a configurable delay between runs.
+
+Each loop performs the following steps:
+1. Executes `chess_games_pipeline.py`.
+2. Executes `chess_games_times_pipeline.py` and `chess_games_moves_pipeline.py`.
+3. Runs dbt transformation steps with `dbt seed` and `dbt build --exclude dbt_project_evaluator`.
+4. Sends a success healthcheck ping to the main Healthcheck.io endpoint.
+5. Every 100th loop, runs `dbt test --exclude dbt_project_evaluator` and reports the result to a dedicated dbt-test Healthcheck.io endpoint. If a dbt-test run fails on the 100th loop, it is treated as a soft fail and the main loop continues.
+
+If any pipeline/build step raises an exception, the script sends a failure ping to the main healthcheck endpoint and exits.
 
 ## Data visualization
 ### Metabase

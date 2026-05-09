@@ -205,15 +205,16 @@ Each loop performs the following steps:
 If any pipeline/build step raises an exception, the script sends a failure ping to the main healthcheck endpoint and exits.
 
 ## Data visualization
-### Metabase
-Metabase is used to construct the dashboards and analysis. I hosted Metabase in a VPS, on Hetzner, using the public Metabase docker image.
-
 ### Streamlit
-As explained, Streamlit was also deployed to complement Metabase's limits and solve more advanced analytical use cases. To avoid having 2 separate data visualization tools, we could imagine to migrate the most insightful Metabase graphs to Streamlit.
+Streamlit is the main data visualization tool used in this project.
 
-Pytests (under `test_data_processing.py`) were added to the project, mostly to verify that the data transformation functions were working as expected.
+I chose Streamlit because it is the most flexible free tool I found for building advanced, custom visualizations.
+While I would have preferred to use Tableau for this highly analytical use case, Tableau Public does not allow free connectivity to a database.
 
-It is also important to note that the Streamlit application has a dependency with dbt as it uses the `dbt_project.yml` file to show the metrics definitions and business rules dynamically. We can actually see those definitions under the `config.py`.
+It is also important to note that the Streamlit application has a dependency on dbt, since it uses the `dbt_project.yml` file to display metrics definitions and business rules dynamically. Those definitions are exposed in `config.py`.
+
+### Metabase
+If needed a Metabase app is also made available in `docker-compose` for self-service analytics.
 
 # ⚙️ CI/CD
 The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 

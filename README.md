@@ -232,8 +232,8 @@ Here are the main changes:
     - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and dbt jobs now execute incrementally every 10 min.
 
 - **Extended analytics**:
-    - **Problem:** Metabase is efficient for quick visualization, but less suitable for advanced analytics. For instance, it does not support basic box plots, which are essential to benchmark players' performance.
-    - **Solution:** A Streamlit application was developed to complement Metabase and produce insightful benchmarks. 
+    - **Problem:** Metabase is efficient for quick visualization, but less suitable for advanced analytics. For instance, as of March 2025, it does not support basic box plots, which are essential to benchmark players' performance.
+    - **Solution:** Using Streamlit instead of Metabase enabled more advanced visualizations (e.g. sunburst charts for opening analysis) at the cost of some extra development effort.
 
 - **Simplified data ingestion with DLT**:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
@@ -243,12 +243,19 @@ Here are the main changes:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
     - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL dbt model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
+- **Adopted a classic dbt layer design**:
+    - **Problem:** The previous layering was well suited to BigQuery cost optimization, but less suited to real-time analytics and scalability on Postgres.
+    - **Solution:** I introduced the classic `stg` / `int` / `marts` structure recommended by dbt Labs, with standard naming conventions (`stg_*`, `int_*`, `dim_*`, `fct_*`).
+
+- **Added automated dbt quality guardrails**:
+    - **Problem:** As the project grows, keeping model quality consistent becomes harder without automated checks.
+    - **Solution:** I integrated `dbt_project_evaluator` to continuously enforce dbt best practices across structure, DAG design, governance, performance, testing, and documentation.
+
 # 🚀 Outlook
 
 ## Possible improvements
 
 ### Data analytics
-- Migration of the Metabase questions to Streamlit (to centralize everything under a single solution).
 - Integration of more metrics in the benchmark (like % of time remaining on the 1st massive blunder, etc.)
 - Analysis on the performance by opening (win rate by opening, breakdown by opponent vs playing user opening, etc.)
 

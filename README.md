@@ -176,9 +176,14 @@ To avoid that, I previously tested a fully UUID-driven approach applying `WHERE 
 
 ### Data quality and testing 
 dbt tests have been developed to monitor data quality:
-- Generic dbt tests 'not_null' or 'unique_combination_of_columns' on key fields.
-- Custom dbt tests on the Stockfish games evaluation and clock-time extractions, to ensure that all games are processed as expected and all moves are evaluated.
-Those tests are automatically executed via the script `run_all.py` (more information below).
+- Generic tests on key fields in staging, intermediate, and marts layers include `not_null` and `unique`.
+- `dbt_utils.unique_combination_of_columns` is used to validate composite primary keys.
+- `relationships` is used in the marts layer to ensure relational integrity.
+- dbt_expectations comparison test `expect_table_row_count_to_equal_other_table` is used to validate reliable incremental loads by ensuring row counts are preserved across models and layers.
+- Custom dbt tests on Stockfish and clock-time processing:
+    - `assert_move_number_consistency.sql`: validates consistency between move counts extracted from clock-time parsing and Stockfish move extraction.
+    - `assert_stockfish_processing.sql`: validates that PGN-derived expected moves match evaluated moves loaded by the Stockfish pipeline.
+All tests are automatically executed via the script `run_all.py` (more information below).
 
 ### Documentation
 All models are documented in dbt via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
@@ -186,9 +191,9 @@ All models are documented in dbt via YAML files. All parameters are centralized 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
 ## Orchestration
-The `run_all.py` script is the primary orchestrator for the data pipeline, operating in a continuous loop with a 10-minute delay between each run.
+The `run_all.py` script is the primary orchestrator for the data pipeline, operating in a continuous loop with a specified delay between each run.
 Each cycle performs the following steps:
-1. Executes the staging table scripts (API, Stockfish, etc.).
+1. Executes the source table scripts (API, Stockfish, etc.).
 2. Initiates a dbt run command to execute the models.
 3. Sends a health check signal (success or failure) to a dedicated endpoint on Healthcheck.io.
 4. Additionally, every 100th cycle, the script runs dbt test to perform data quality checks. The result of this test is reported to a separate Healthcheck.io endpoint. A failure in this stage is treated as a "soft fail," meaning it is logged and monitored but does not halt the main pipeline's execution.

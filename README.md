@@ -158,15 +158,15 @@ The datawarehouse is structured through several layers in order to ensure (1) pe
 
 ### Materialization strategy
 
-**Staging (`stg`):** All staging models are materialized as **views**. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
+- **Staging (`stg`):** All staging models are materialized as **views**. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
 
-**Intermediate (`int`):** Most intermediate models are **incremental with append-only inserts**. The incremental key varies by data source:
-- Models built on chess.com API data filter incrementally on [`end_time`] (game end datetime). [`log_timestamp`] cannot be used here because DLT re-fetches the latest monthly archive on every run to catch newly played games, and sets [`log_timestamp`] at fetch time for all games in that partition — including ones already integrated. Using [`log_timestamp`] as the incremental key would therefore re-process the entire current month's games on every run, not just the new ones. [`end_time`] is stable per game and avoids this problem.
-- Models built on Python-processed data (Stockfish moves and clock times) filter incrementally on [`log_timestamp`], which represents when each batch of games was processed.
-- `int_game_moves_enriched` sits at the boundary of both sources. Since it joins API game data with Python-processed moves and times, it uses a [`uuid`] anti-join (`WHERE NOT EXISTS`) to detect and insert only games not yet present in the model. The model sets [`run_timestamp`] = `CURRENT_TIMESTAMP` at insert time instead of reusing source timestamps. Downstream models increment on [`run_timestamp`].
-- `int_openings_hierarchy` is materialized as a plain `table` but uses a custom self-select pattern: on regular runs it simply returns `SELECT * FROM {{ this }}`, skipping recomputation entirely. A full rebuild only happens on `--full-refresh`, which is acceptable since the underlying openings data is mostly static.
+- **Intermediate (`int`):** Most intermediate models are **incremental with append-only inserts**. The incremental key varies by data source:
+    - Models built on chess.com API data filter incrementally on [`end_time`] (game end datetime). [`log_timestamp`] cannot be used here because DLT re-fetches the latest monthly archive on every run to catch newly played games, and sets [`log_timestamp`] at fetch time for all games in that partition — including ones already integrated. Using [`log_timestamp`] as the incremental key would therefore re-process the entire current month's games on every run, not just the new ones. [`end_time`] is stable per game and avoids this problem.
+    - Models built on Python-processed data (Stockfish moves and clock times) filter incrementally on [`log_timestamp`], which represents when each batch of games was processed.
+    - `int_game_moves_enriched` sits at the boundary of both sources. Since it joins API game data with Python-processed moves and times, it uses a [`uuid`] anti-join (`WHERE NOT EXISTS`) to detect and insert only games not yet present in the model. The model sets [`run_timestamp`] = `CURRENT_TIMESTAMP` at insert time instead of reusing source timestamps. Downstream models increment on [`run_timestamp`].
+    - `int_openings_hierarchy` is materialized as a plain `table` but uses a custom self-select pattern: on regular runs it simply returns `SELECT * FROM {{ this }}`, skipping recomputation entirely. A full rebuild only happens on `--full-refresh`, which is acceptable since the underlying openings data is mostly static.
 
-**Marts (`core` and `analytics`):** Mart models follow the same incremental key as their upstream intermediate source — [`end_time`] for API-sourced game models and [`run_timestamp`] for models derived from `int_game_moves_enriched`. All incremental models are backed by a Postgres index on their respective incremental key.
+- **Marts (`core` and `analytics`):** Mart models follow the same incremental key as their upstream intermediate source — [`end_time`] for API-sourced game models and [`run_timestamp`] for models derived from `int_game_moves_enriched`. All incremental models are backed by a Postgres index on their respective incremental key.
 
 #### Design trade-offs
 
@@ -239,7 +239,7 @@ Here are the main changes:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall ingestion code is considerably simpler.
 
-- **Use of Python for data pre-processing**:
+- **Used Python for data pre-processing**:
     - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
     - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL dbt model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
 
@@ -250,6 +250,59 @@ Here are the main changes:
 - **Added automated dbt quality guardrails**:
     - **Problem:** As the project grows, keeping model quality consistent becomes harder without automated checks.
     - **Solution:** I integrated `dbt_project_evaluator` to continuously enforce dbt best practices across structure, DAG design, governance, performance, testing, and documentation.
+
+# ✅ Best practices implemented
+This section summarizes the dbt best practices that are already implemented in this project.
+
+- Layering and folder organization:
+    - Clear layered architecture with `staging` / `intermediate` / `marts` separation.
+    - Staging folders are source-oriented (`chess_com`, `stockfish`, `times`, `openings`, etc.)
+    - Intermediate folders are business-domain oriented (`games`, `openings`, `players`).
+    - Marts are separated by consumption purpose (`core` conformed dimensions/facts and `analytics` wide consumption model).
+
+- Staging practices:
+    - Staging model naming follows `stg_[source]__[entity]` patterns.
+    - Staging models keep a 1:1 source-conformed behavior and preserve source grain.
+    - Staging applies basic transformations only: filtering, renaming/derivation, casting, and simple calculated fields.
+    - Staging models are materialized as views by default.
+    - Source definitions are declared and versioned in per-folder source YAML files.
+
+- Intermediate practices:
+    - Intermediate naming consistently uses `int_` prefixes.
+    - Intermediate models are split into functional transformation steps using descriptive CTEs.
+    - Complex logic is isolated in intermediate models instead of pushing complexity directly to marts.
+    - Business transformations are implemented in intermediate models (joins, aggregations, window logic).
+    - Incremental strategies are explicitly defined with dedicated incremental keys and supporting indexes.
+
+- Mart practices:
+    - Core marts are entity-oriented and modularized into dimensions and facts (`dim_*`, `fct_*`).
+    - Clear model grain is enforced (game-level and move-level facts).
+    - Surrogate keys are used consistently to stabilize joins.
+    - Marts are materialized as tables/incremental models for query performance.
+    - A denormalized OBT model is provided for BI/dashboard consumption.
+
+- YAML, configs, and docs:
+    - YAML is organized per folder with leading underscore naming (`_[directory]__models.yml`, `_[directory]__sources.yml`).
+    - Config is cascaded through folders in `dbt_project.yml` (schema/materialization defaults).
+    - Folder-based structure is used as the primary grouping/selection mechanism (no tag sprawl).
+    - Shared field definitions are centralized in `models/doc.md` and reused through `{{ doc('...') }}` references.
+    - A dedicated consistency check (`test_doc.py`) validates doc/YAML alignment.
+
+- Seeds and tests:
+    - Seed files are used for static lookup/mapping data (`username_mapping`).
+    - The `tests` folder contains custom singular multi-model assertions.
+    - Generic tests are broadly implemented (`not_null`, `unique`, `relationships`).
+    - Composite key integrity is enforced with `dbt_utils.unique_combination_of_columns`.
+    - Cross-model count consistency checks are implemented with `dbt_expectations`.
+
+- SQL style and governance:
+    - SQLFluff is configured and enforced (`.sqlfluff` + `.sqlfluffignore`).
+    - Reusable package ecosystem is used for governance and testing (`dbt_utils`, `dbt_expectations`, `dbt_project_evaluator`).
+    - A broad set of dbt_project_evaluator domains is enabled (structure, performance, DAG, documentation, governance, tests).
+
+- Release management and operations:
+    - CI/CD updates Docker images on push to main and deploys via Watchtower.
+    - Continuous orchestration includes health checks and periodic dbt test runs.
 
 # 🚀 Outlook
 
@@ -262,5 +315,4 @@ Here are the main changes:
 ### Code
 - the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
 
-### Packages
-- Although the project is very small, it could have been beneficial to use [dbt_project_evaluator](https://hub.getdbt.com/dbt-labs/dbt_project_evaluator/latest/) to monitor the usage of dbt's best practices.
+!!!!!!!!!!!!!!! To do: link the best practices to dbt Labs

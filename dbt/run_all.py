@@ -1,9 +1,20 @@
+"""Run the chess data pipelines in a continuous loop.
+
+Flow per iteration:
+- Run source pipelines (chess.com API optionally, game times, stockfish moves)
+- Run dbt seed
+- Run dbt build with --full-refresh once per day, otherwise regular dbt build
+- Ping healthcheck URLs and run dbt tests every 100 iterations
+- Sleep for SLEEP_TIME seconds, then repeat
+"""
+
 import subprocess
 import sys
 import time
 import requests
 from dotenv import load_dotenv
 import os
+from datetime import date
 
 def run_pipeline_forever():
     load_dotenv()
@@ -12,10 +23,11 @@ def run_pipeline_forever():
     URL_DBT_TEST = os.getenv("HEALTHCHECK_URL_DBT_TEST")
     
     # Configuration options
-    SKIP_CHESS_COM_API = os.getenv("SKIP_CHESS_COM_API", "false").lower() == "true"
+    SKIP_CHESS_COM_API = os.getenv("SKIP_CHESS_COM_API", "false").lower() == "true" # Default: False
     SLEEP_TIME = int(os.getenv("SLEEP_TIME", "600")) # Default: 600 seconds (10 minutes)
     
     execution_count = 0
+    last_full_refresh_date = None
 
     # openings
     subprocess.run(
@@ -50,7 +62,18 @@ def run_pipeline_forever():
 
             # DBT
             subprocess.run(["dbt", "seed"], check=True)
-            subprocess.run(["dbt", "build", "--exclude", "dbt_project_evaluator"], check=True)
+            today = date.today()
+            # Run a full-refresh only once per calendar day. All other loop iterations use a regular incremental build.
+            if last_full_refresh_date != today:
+                print("Running daily dbt full-refresh build")
+                subprocess.run(
+                    ["dbt", "build", "--full-refresh", "--exclude", "dbt_project_evaluator"],
+                    check=True,
+                )
+                last_full_refresh_date = today
+            else:
+                print("Running regular dbt build (daily full-refresh already completed)")
+                subprocess.run(["dbt", "build", "--exclude", "dbt_project_evaluator"], check=True)
 
             # Healthcheck
             requests.get(URL, timeout=5)

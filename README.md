@@ -338,5 +338,3 @@ This section summarizes the dbt best practices that are already implemented in t
 
 ### Code
 - the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
-
--- Add the periodic full refresh

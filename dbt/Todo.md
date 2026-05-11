@@ -1,14 +1,14 @@
-P1:
-- [?] Solve the bug on incremental key end_time
-- Optimize the Streamlit app (critical cleanup)
-- Optimize makefile
+P0:
 - Test again the dockerized model
 - Test the changes on run_timestamp field
+- Test the periodic full-refresh
+
+P1:
+- Optimize the Streamlit app (code cleanup)
+- Optimize makefile
 - Update readme.md
-    - Openings
-    - Data modeling strategy
-    - Best practices applied
-    - dbt project evaluator
+    - Finalize: "Layering and folder organization" best practices
+    - Add more best practices
 
 P2:
 - Streamlit Error Conversion:

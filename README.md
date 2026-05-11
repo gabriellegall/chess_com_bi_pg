@@ -342,8 +342,10 @@ This section summarizes the dbt best practices that are already implemented in t
 ## Possible improvements
 
 ### Data analytics
-- Integration of more metrics in the benchmark (like % of time remaining on the 1st massive blunder, etc.)
-- Analysis on the performance by opening (win rate by opening, breakdown by opponent vs playing user opening, etc.)
+- the Streamlit app could be enriched with more analysis, focusing on key areas of improvement:
+    - The ability to convert opponent's error into a win: P(Win | [`nb_throw_massive_blunder_opponent`] > 0), or P(Win | [`max_score_playing`] > 500).
+    - The ability to convert a late-game advantage into a win: P(Win | [`score_playing_turn_50`] > 500).
+    - The ability to withstand near-equal late-game positions: P(Win | [`score_playing_turn_50`] BETWEEN 0 AND 500).
 
 ### Code
 - the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.

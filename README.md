@@ -267,42 +267,66 @@ This section summarizes the dbt best practices that are already implemented in t
     - Staging models are materialized as views by default.
     - Source definitions are declared and versioned in per-folder source YAML files.
 
+    source: [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/2-staging?version=1.11)
+
 - Intermediate practices:
-    - Intermediate naming consistently uses `int_` prefixes.
+    - Intermediate naming consistently uses `int_` prefixes and descriptive verbs when needed (e.g. "filtered", "enriched").
     - Intermediate models are split into functional transformation steps using descriptive CTEs.
     - Complex logic is isolated in intermediate models instead of pushing complexity directly to marts.
     - Business transformations are implemented in intermediate models (joins, aggregations, window logic).
-    - Incremental strategies are explicitly defined with dedicated incremental keys and supporting indexes.
+
+    source: [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
 
 - Mart practices:
     - Core marts are entity-oriented and modularized into dimensions and facts (`dim_*`, `fct_*`).
     - Clear model grain is enforced (game-level and move-level facts).
-    - Surrogate keys are used consistently to stabilize joins.
     - Marts are materialized as tables/incremental models for query performance.
-    - A denormalized OBT model is provided for BI/dashboard consumption.
+    - In the absence of a Semantic Layer, wide OBT-style marts are provided and heavily denormalized to optimize for compute and end-user consumption.
+    - Surrogate keys are used consistently to stabilize joins.
+
+    sources: 
+    - [dbt_project_evaluator naming convention](https://dbt-labs.github.io/dbt-project-evaluator/0.8/rules/structure/#model-naming-conventions)
+    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/4-marts?version=1.11)
+    - [dbt Labs surrogate keys](https://www.getdbt.com/blog/guide-to-surrogate-key)
 
 - YAML, configs, and docs:
     - YAML is organized per folder with leading underscore naming (`_[directory]__models.yml`, `_[directory]__sources.yml`).
     - Config is cascaded through folders in `dbt_project.yml` (schema/materialization defaults).
     - Folder-based structure is used as the primary grouping/selection mechanism (no tag sprawl).
     - Shared field definitions are centralized in `models/doc.md` and reused through `{{ doc('...') }}` references.
-    - A dedicated consistency check (`test_doc.py`) validates doc/YAML alignment.
+
+    source:
+    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/5-the-rest-of-the-project?version=1.11)
+    - [dbt Labs doc.md](https://docs.getdbt.com/reference/dbt-jinja-functions/doc?version=1.11)
 
 - Seeds and tests:
     - Seed files are used for static lookup/mapping data (`username_mapping`).
     - The `tests` folder contains custom singular multi-model assertions.
     - Generic tests are broadly implemented (`not_null`, `unique`, `relationships`).
-    - Composite key integrity is enforced with `dbt_utils.unique_combination_of_columns`.
+    - Composite primary key integrity is enforced with `dbt_utils.unique_combination_of_columns`.
     - Cross-model count consistency checks are implemented with `dbt_expectations`.
+    
+    source:
+    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/5-th[dbt-rest-of-the-project?version=1.11)
+    - [dbt_project_evaluator primary key testing](https://dbt-labs.github.io/dbt-project-evaluator/latest/rules/testing/#missing-primary-key-tests)
 
-- SQL style and governance:
-    - SQLFluff is configured and enforced (`.sqlfluff` + `.sqlfluffignore`).
-    - Reusable package ecosystem is used for governance and testing (`dbt_utils`, `dbt_expectations`, `dbt_project_evaluator`).
+- SQL style:
+    - SQLFluff is configured and enforced (`dbt/.sqlfluff` + `dbt/.sqlfluffignore`).
+    - Trailing commas are used across multi-line `SELECT` lists.
+    - Four-space indentation is used consistently in model SQL.
+    - Join types are explicit (`LEFT JOIN`, `INNER JOIN`) instead of implicit `JOIN`.
+    - In multi-table joins, selected fields are qualified with table aliases to avoid ambiguity.
+    - CTEs are split into clear functional steps with descriptive names (`games_scope`, `score_definition`, `agg_definitions`, etc.).
+    - ... more best practices are enforced and listed in `dbt/.sqlfluff`. 
+
+    source:
+    - [dbt Lab sqlfluff](https://docs.getdbt.com/best-practices/how-we-style/2-how-we-style-our-sql?version=1.11)
+
+- Governance
     - A broad set of dbt_project_evaluator domains is enabled (structure, performance, DAG, documentation, governance, tests).
 
-- Release management and operations:
-    - CI/CD updates Docker images on push to main and deploys via Watchtower.
-    - Continuous orchestration includes health checks and periodic dbt test runs.
+    source:
+    - [dbt Labs project_evaluator](https://docs.getdbt.com/best-practices/how-we-style/6-how-we-style-conclusion?version=1.11#dbt-project-evaluator)
 
 # 🚀 Outlook
 
@@ -315,4 +339,4 @@ This section summarizes the dbt best practices that are already implemented in t
 ### Code
 - the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
 
-!!!!!!!!!!!!!!! To do: link the best practices to dbt Labs
+-- Add the periodic full refresh

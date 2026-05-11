@@ -170,9 +170,15 @@ The datawarehouse is structured through several layers in order to ensure (1) pe
 
 #### Design trade-offs
 
-The main downside of using [`end_time`] as the incremental key for chess.com API data is that onboarding a new player with a historical backlog requires a full refresh to backfill old games.
+Using [`end_time`] as the incremental key for chess.com API data scales well for continuous incremental runs, but it has one limitation: when a new player is added with a historical backlog, older games require a full refresh to be backfilled.
 
-To avoid that, I previously tested a fully UUID-driven approach applying `WHERE NOT EXISTS` across all models. It worked correctly but did not scale well: anti-join subqueries became increasingly expensive as table sizes grew, making it impractical on large models.
+For that reason, a periodic full refresh is intentionally kept in orchestration. It also serves as a safety net to:
+- Limit any data drift risk in long-running incremental pipelines.
+- Automatically re-sync full history after business-rule or metric-definition updates.
+- Automatically backfill historical games when new players are added.
+- Rebuild `int_openings_hierarchy` (which intentionally skips recomputation on regular runs for efficiency).
+
+I also tested a fully UUID-driven strategy using `WHERE NOT EXISTS` across all models to avoid periodic full refreshes. While functionally correct, it did not scale well: anti-join subqueries became increasingly expensive as tables grew, making this approach impractical on large models.
 
 ### Data quality and testing 
 dbt tests have been developed to monitor data quality:
@@ -198,7 +204,10 @@ It first executes `chess_openings_pipeline.py` once, then enters a continuous lo
 Each loop performs the following steps:
 1. Executes `chess_games_pipeline.py`.
 2. Executes `chess_games_times_pipeline.py` and `chess_games_moves_pipeline.py`.
-3. Runs dbt transformation steps with `dbt seed` and `dbt build --exclude dbt_project_evaluator`.
+3. Runs dbt transformation steps with `dbt seed`, then:
+    - `dbt build --full-refresh --exclude dbt_project_evaluator` once per calendar day.
+    - `dbt build --exclude dbt_project_evaluator` on all other loop iterations.
+   See dbt > Materialization strategy > Design trade-offs for the rationale.
 4. Sends a success healthcheck ping to the main Healthcheck.io endpoint.
 5. Every 100th loop, runs `dbt test --exclude dbt_project_evaluator` and reports the result to a dedicated dbt-test Healthcheck.io endpoint. If a dbt-test run fails on the 100th loop, it is treated as a soft fail and the main loop continues.
 
@@ -214,7 +223,7 @@ While I would have preferred to use Tableau for this highly analytical use case,
 It is also important to note that the Streamlit application has a dependency on dbt, since it uses the `dbt_project.yml` file to display metrics definitions and business rules dynamically. Those definitions are exposed in `config.py`.
 
 ### Metabase
-If needed a Metabase app is also made available in `docker-compose` for self-service analytics.
+If needed a Metabase app is also made available in `docker-compose.yml` for self-service analytics.
 
 # ⚙️ CI/CD
 The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 

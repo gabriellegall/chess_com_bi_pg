@@ -19,9 +19,10 @@ This repository contains all the scripts aiming to:
 1. Set up a Postgres database.
 2. Extract the games played data from the chess.com API and load it in Postgres.
 3. Extract the individual moves and clock-times for each game played, evaluate the position using the Stockfish engine, and load it in Postgres.
-4. Extract the chess openings database from Hugging Face and load it in Postgres. 
+4. Extract the [chess openings database from Hugging Face](https://huggingface.co/datasets/Lichess/chess-openings) and load it in Postgres. 
 5. Construct a full data model using dbt to validate and transform data - defining metrics and dimensions (blunders, game phases, ELO ranges, etc.).
-6. Deploy dashboards via Streamlit and Metabase.
+6. Deploy a Streamlit dashboard containing the key analytical visualizations.
+7. Deploy a Metabase instance for self-service analytics (if ever needed).
 
 # 🛠️ Technical overview
 
@@ -105,6 +106,8 @@ This project is fully dockerized and can be executed locally or deployed on a se
 You can also choose to install the `requirements.txt` in virtual environment and run the commands against the dockerized Postgres DB:
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
 - `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
+
+Data quality commands:
 - `make test_dbt_doc`: run a Python test to ensure that the documentation is consistent between the dbt YAML files and the `doc.md` file centralizing definitions.
 - `make sqlfluff_fix`: run sqlfluff to verify (and fix) all dbt models and ensure that the SQL complies with the enforced rules.
 
@@ -139,7 +142,7 @@ It uses the `config.yml` to define the Postgres project information with table n
 Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
 
 ## Chess openings
-The script `chess_openings_pipeline.py` reads ands loads the database of all chess openings from Hugging Face.
+The script `chess_openings_pipeline.py` reads ands loads the [database of all chess openings from Hugging Face](https://huggingface.co/datasets/Lichess/chess-openings).
 It uses the `config.yml` to define the Postgres project information with table names to be used.
 
 ### Incremental strategy
@@ -151,10 +154,10 @@ Indeed, this data source is mostly static and does not need to be updated freque
 
 ### Layers
 The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:
-- **'raw'**: raw data extracted from chess.com and evaluated using the stockfish engine. This layer contains a .csv dbt seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
+- **'raw'**: raw data extracted from chess.com and evaluated using the stockfish engine (`chess_games_moves_pipeline.py`). This layer contains a .csv dbt seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
 - **'staging'**: virtual layer on top of the raw layer, aiming to cast data types and derive very simple and static calculated fields. Tables in the staging layer share a 1:1 relationship with tables in the raw layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed).
 - **'intermediate'**: transformation layer where the business logic is built. It enriches staging data, joins game, move, time and opening datasets together, and creates derived metrics such as move-level chess evaluations, miss classifications, game-phase flags, opening hierarchies and aggregated per-game stats.
-- **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style 2NF design: dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in 1NF as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
+- **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style [2NF design](https://en.wikipedia.org/wiki/Second_normal_form): dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in [1NF](https://en.wikipedia.org/wiki/First_normal_form) as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
 
 ### Materialization strategy
 
@@ -238,7 +241,7 @@ Here are the main changes:
 
 - **Improved data freshness**:
     - **Problem:** Users expect live data in their dashboard (playing a game and then directly checking the results). BigQuery and GitHub Actions are fit for daily batch processing; however, for near real-time data integration (every 10-15 minutes), the free tiers quickly become a bottleneck.
-    - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and dbt jobs now execute incrementally every 10 min.
+    - **Solution:** Using Postgres and a continuously running integration script, we can essentially construct a near real-time BI solution. API calls, Stockfish processing and dbt jobs now execute incrementally and frequently.
 
 - **Extended analytics**:
     - **Problem:** Metabase is efficient for quick visualization, but less suitable for advanced analytics. For instance, as of March 2025, it does not support basic box plots, which are essential to benchmark players' performance.
@@ -248,12 +251,8 @@ Here are the main changes:
     - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall ingestion code is considerably simpler.
 
-- **Used Python for data pre-processing**:
-    - **Problem:** Unlike BigQuery, Postgres lacks simple native support for complex analytical transformations, such as regex-based array generation.
-    - **Solution:** Due to Postgres’ complexity and performance limits, Python was employed for preprocessing tasks such as extracting timestamps from text. [This used to be a BigQuery SQL dbt model in the original project](https://github.com/gabriellegall/chess_com_bi/blob/main/models/intermediate/games_times.sql).
-
 - **Adopted a classic dbt layer design**:
-    - **Problem:** The previous layering was well suited to BigQuery cost optimization, but less suited to real-time analytics and scalability on Postgres.
+    - **Problem:** The previous layering was well suited to BigQuery cost optimization, but less suited to real-time analytics, modularity and scalability on Postgres.
     - **Solution:** I introduced the classic `stg` / `int` / `marts` structure recommended by dbt Labs, with standard naming conventions (`stg_*`, `int_*`, `dim_*`, `fct_*`).
 
 - **Added automated dbt quality guardrails**:
@@ -261,51 +260,50 @@ Here are the main changes:
     - **Solution:** I integrated `dbt_project_evaluator` to continuously enforce dbt best practices across structure, DAG design, governance, performance, testing, and documentation.
 
 # ✅ Best practices implemented
-This section summarizes the dbt best practices that are already implemented in this project.
-
-- Layering and folder organization:
-    - Clear layered architecture with `staging` / `intermediate` / `marts` separation.
-    - Staging folders are source-oriented (`chess_com`, `stockfish`, `times`, `openings`, etc.)
-    - Intermediate folders are business-domain oriented (`games`, `openings`, `players`).
-    - Marts are separated by consumption purpose (`core` conformed dimensions/facts and `analytics` wide consumption model).
+This section summarizes the dbt best practices that are implemented in this project.
 
 - Staging practices:
     - Staging model naming follows `stg_[source]__[entity]` patterns.
     - Staging models keep a 1:1 source-conformed behavior and preserve source grain.
     - Staging applies basic transformations only: filtering, renaming/derivation, casting, and simple calculated fields.
     - Staging models are materialized as views by default.
+    - Source() macro is used in staging models only.
     - Source definitions are declared and versioned in per-folder source YAML files.
-
-    source: [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/2-staging?version=1.11)
+    
+    source: [dbt Labs best practices - staging](https://docs.getdbt.com/best-practices/how-we-structure/2-staging?version=1.11)
 
 - Intermediate practices:
     - Intermediate naming consistently uses `int_` prefixes and descriptive verbs when needed (e.g. "filtered", "enriched").
     - Intermediate models are split into functional transformation steps using descriptive CTEs.
-    - Complex logic is isolated in intermediate models instead of pushing complexity directly to marts.
-    - Business transformations are implemented in intermediate models (joins, aggregations, window logic).
+    - Intermediate folders are business-domain oriented (`games`, `openings`, `players`).
+    - Business transformations are implemented in intermediate models (joins, aggregations, window calculations).
+    - DRY via Jinja is actively used inside intermediate models to avoid repetitive SQL blocks.
 
-    source: [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
+    source: [dbt Labs best practices - intermediae](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
 
 - Mart practices:
     - Core marts are entity-oriented and modularized into dimensions and facts (`dim_*`, `fct_*`).
-    - Clear model grain is enforced (game-level and move-level facts).
+    - Building a mart from other marts is used thoughtfully, instead of recomputing everything from upstream logic.
+    - Clear model grain is declared and enforced.
     - Marts are materialized as tables/incremental models for query performance.
     - In the absence of a Semantic Layer, wide OBT-style marts are provided and heavily denormalized to optimize for compute and end-user consumption.
     - Surrogate keys are used consistently to stabilize joins.
 
     sources: 
     - [dbt_project_evaluator naming convention](https://dbt-labs.github.io/dbt-project-evaluator/0.8/rules/structure/#model-naming-conventions)
-    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/4-marts?version=1.11)
+    - [dbt Labs best practices - marts](https://docs.getdbt.com/best-practices/how-we-structure/4-marts?version=1.11)
     - [dbt Labs surrogate keys](https://www.getdbt.com/blog/guide-to-surrogate-key)
 
-- YAML, configs, and docs:
+- Folders, YAML, configs, and docs:
+    - Layers are structured around clear `staging` / `intermediate` / `marts` folder separation.
     - YAML is organized per folder with leading underscore naming (`_[directory]__models.yml`, `_[directory]__sources.yml`).
     - Config is cascaded through folders in `dbt_project.yml` (schema/materialization defaults).
     - Folder-based structure is used as the primary grouping/selection mechanism (no tag sprawl).
     - Shared field definitions are centralized in `models/doc.md` and reused through `{{ doc('...') }}` references.
 
     source:
-    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/5-the-rest-of-the-project?version=1.11)
+    - [dbt Labs best practices - overview](https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview?version=1.11)
+    - [dbt Labs best practices - other](https://docs.getdbt.com/best-practices/how-we-structure/5-the-rest-of-the-project?version=1.11)
     - [dbt Labs doc.md](https://docs.getdbt.com/reference/dbt-jinja-functions/doc?version=1.11)
 
 - Seeds and tests:
@@ -316,7 +314,7 @@ This section summarizes the dbt best practices that are already implemented in t
     - Cross-model count consistency checks are implemented with `dbt_expectations`.
     
     source:
-    - [dbt Labs best practices](https://docs.getdbt.com/best-practices/how-we-structure/5-th[dbt-rest-of-the-project?version=1.11)
+    - [dbt Labs best practices - other](https://docs.getdbt.com/best-practices/how-we-structure/5-th[dbt-rest-of-the-project?version=1.11)
     - [dbt_project_evaluator primary key testing](https://dbt-labs.github.io/dbt-project-evaluator/latest/rules/testing/#missing-primary-key-tests)
 
 - SQL style:
@@ -329,13 +327,13 @@ This section summarizes the dbt best practices that are already implemented in t
     - ... more best practices are enforced and listed in `dbt/.sqlfluff`. 
 
     source:
-    - [dbt Lab sqlfluff](https://docs.getdbt.com/best-practices/how-we-style/2-how-we-style-our-sql?version=1.11)
+    - [dbt Lab best practices - sql](https://docs.getdbt.com/best-practices/how-we-style/2-how-we-style-our-sql?version=1.11)
 
 - Governance
     - A broad set of dbt_project_evaluator domains is enabled (structure, performance, DAG, documentation, governance, tests).
 
     source:
-    - [dbt Labs project_evaluator](https://docs.getdbt.com/best-practices/how-we-style/6-how-we-style-conclusion?version=1.11#dbt-project-evaluator)
+    - [dbt Labs best practices - style guide](https://docs.getdbt.com/best-practices/how-we-style/6-how-we-style-conclusion?version=1.11#dbt-project-evaluator)
 
 # 🚀 Outlook
 
@@ -343,9 +341,9 @@ This section summarizes the dbt best practices that are already implemented in t
 
 ### Data analytics
 - the Streamlit app could be enriched with more analysis, focusing on key areas of improvement:
-    - The ability to convert opponent's error into a win: ```P(Win|[nb_throw_massive_blunder_opponent] > 0)```, or ```P(Win|[max_score_playing] > 500)```.
-    - The ability to convert a late-game advantage into a win: ```P(Win|score_playing_late_phase > 500)```.
-    - The ability to withstand near-equal late-game positions: ```P(Win|score_playing_late_phase BETWEEN 0 AND 500)```.
+    - The ability to convert opponent's error into a win: ```P(Win|[nb_throw_massive_blunder_opponent] > 0)```, or ```P(Win|[max_score_playing] > X)```.
+    - The ability to convert a late-game advantage into a win: ```P(Win|score_playing_late_phase > X)```.
+    - The ability to withstand near-equal late-game positions: ```P(Win|score_playing_late_phase BETWEEN 0 AND X)```.
 
 ### Code
-- the Python scripts integrating data in the staging layer could be complemented with more unit tests, using pytest.
+- the Python scripts integrating data in the raw layer could be complemented with more unit tests, using pytest.

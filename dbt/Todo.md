@@ -1,20 +1,15 @@
-P0:
+Pre-requisite:
 - Test again the dockerized model
 - Test the changes on [run_timestamp] field
 - Test the periodic full-refresh
+- Use uv instead of Pip
 
 P1:
 - Optimize the Streamlit app (code cleanup)
 - Optimize makefile
 - Update readme.md
-    - Finalize: "Layering and folder organization" best practices
-    - Add more best practices (linking the dbt doc)
-
-P2:
-- Streamlit Error Conversion:
-    - Streamlit: Opponent Error Conversion Rate: P(Win|opponent made ≥ 1 massive throw)
-    - Streamlit: Ability to win when reaching a decisive advantage
-- Streamlit: Endgame Collapse Detector: Focus on games reaching late/very-late phases with near-equal eval and compute loss/blunder rates there. 
+    - Update the Mermaid graph
+    - Update the PNG images
 
 Done:
 - [OK] Streamlit: Opening advantage stability score

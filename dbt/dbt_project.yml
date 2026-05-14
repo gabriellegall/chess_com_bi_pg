@@ -56,7 +56,7 @@ models:
           +enabled: true
           fct_sources_without_freshness: # Expects all sources to have freshness tests - not needed for now since freshness is managed via heathchecks.
             +enabled: false
-          fct_missing_primary_key_tests: # Expects all models to have primary key tests - not needed for all models, already done for the riskiest ones.
+          fct_missing_primary_key_tests: # Expects all models to have primary key tests - not needed for all models, already done implicitly through other tests (e.g. row count consistency tests).
             +enabled: false
 
 seeds:
@@ -76,8 +76,14 @@ dispatch:
     search_order: ['dbt_project_evaluator', 'dbt']
 
 vars:
-  data_conversion:
-    utc_to_target_timezone: "'Europe/Paris'"
+  processable_games_condition: |
+    game.rules = 'chess'
+    AND LENGTH(game.pgn) > 0
+    AND strpos(game.pgn, '[%clk ') > 0
+    AND (
+        LENGTH(game.initial_setup) = 0
+        OR game.initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    )
   game_phases:
       early:
         end_game_move: 15

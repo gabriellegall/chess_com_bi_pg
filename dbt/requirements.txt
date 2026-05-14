@@ -1,4 +1,5 @@
-dbt-postgres
+dbt-core==1.11.2
+dbt-postgres==1.10.0
 dlt[postgres]
 pandas
 sqlalchemy

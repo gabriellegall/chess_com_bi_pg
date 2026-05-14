@@ -67,13 +67,13 @@ def run_pipeline_forever():
             if last_full_refresh_date != today:
                 print("Running daily dbt full-refresh build")
                 subprocess.run(
-                    ["dbt", "build", "--full-refresh", "--exclude", "dbt_project_evaluator"],
+                    ["dbt", "run", "--full-refresh", "--exclude", "dbt_project_evaluator"],
                     check=True,
                 )
                 last_full_refresh_date = today
             else:
                 print("Running regular dbt build (daily full-refresh already completed)")
-                subprocess.run(["dbt", "build", "--exclude", "dbt_project_evaluator"], check=True)
+                subprocess.run(["dbt", "run", "--exclude", "dbt_project_evaluator"], check=True)
 
             # Healthcheck
             requests.get(URL, timeout=5)

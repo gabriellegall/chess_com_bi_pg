@@ -92,7 +92,7 @@ graph LR;
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
 ## Requirements
-- Python
+- [uv](https://docs.astral.sh/uv/)
 - Docker
 - Makefile
 
@@ -106,7 +106,16 @@ This project is fully dockerized and can be executed locally or deployed on a se
 2. Using Docker Desktop, run `docker-compose up -d`
 
 #### Non-Dockerized Python execution
-You can also install the `requirements.txt` in a virtual environment and run the pipeline commands directly against the dockerized Postgres DB. This requires two additional prerequisites:
+You can also run the pipeline commands directly against the dockerized Postgres DB using a local virtual environment managed by `uv`.
+
+Environment setup:
+1. Install `uv` (Windows + Chocolatey): `choco install uv -y`
+2. Install Python 3.13 through `uv`: `uv python install 3.13`
+3. Create a virtual environment in the project root: `uv venv --python 3.13 .venv`
+4. Activate it (PowerShell): `.\\.venv\\Scripts\\Activate.ps1`
+5. Install dependencies: `uv pip install --python .\\.venv\\Scripts\\python.exe -r .\\dbt\\requirements.txt`
+
+Additional prerequisites:
 - Install [Stockfish](https://stockfishchess.org/download/) and make it available in PATH (e.g. `choco install stockfish -y` on Windows), or set the [`STOCKFISH_PATH`] environment variable to the executable path.
 - Run `dbt deps` inside the `dbt/` folder.
 
@@ -205,6 +214,8 @@ All tests are automatically executed via the script `run_all.py` (more informati
 All models are documented in dbt via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
+
+The shared game-filter SQL used by both Python (`helper.py`) and dbt (`stg_chess_com__players_games.sql`) is centralized in `dbt_project.yml` under [`processable_games_condition`]. This SQL snippet assumes the source table alias is always `game`.
 
 ## Orchestration
 The `run_all.py` script is the primary orchestrator for the data pipeline.

@@ -13,6 +13,7 @@ P1:
     - Review the consistency (e.g. ``) and quality of the readme
 
 Done:
+- [OK] DRY on processable games
 - [OK] Streamlit: Opening advantage stability score
     - [OK] Forward fill when the games end too soon  
 - [OK] Perform Streamlit integration testing

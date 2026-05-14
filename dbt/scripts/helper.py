@@ -27,6 +27,19 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
+def load_dbt_project() -> dict:
+    project_path = os.path.join(os.path.dirname(__file__), '..', 'dbt_project.yml')
+    with open(project_path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def get_processable_games_condition() -> str:
+    condition = load_dbt_project().get("vars", {}).get("processable_games_condition")
+    if not condition:
+        raise ValueError("Missing vars.processable_games_condition in dbt_project.yml")
+    return condition.strip()
+
+
 def get_table_settings(config: dict, source_key: str) -> tuple[str, str | None]:
     table_config = config["postgres"]["tables"][source_key]
 
@@ -85,8 +98,9 @@ def table_with_prefix_exists(engine: Engine, schema_name: str, table_prefix: str
     
     return any(t.startswith(table_prefix) for t in tables)
 
-def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) -> str:
+def games_to_process(engine: Engine, schema: str, table: str, limit: int = 10) -> str:
     config = load_config()
+    processable_games_condition = get_processable_games_condition().replace("%", "%%")
 
     schema_games = config["postgres"]["schemas"]["chess_com_api"]
     table_games  = "players_games" # DLT built-in table name (cannot be changed)
@@ -98,7 +112,7 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
         SELECT
             game.uuid,
             MAX(game.pgn) AS pgn,
-            MAX(end_time) AS end_time
+            MAX(game.end_time) AS end_time
         FROM {schema_games}.{table_games} game
         LEFT JOIN (
             SELECT DISTINCT uuid FROM {schema}.{table}
@@ -106,9 +120,7 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
         ON game.uuid = target_table.uuid
         WHERE 
             target_table.uuid IS NULL
-            AND LENGTH(game.pgn) > 0
-            AND game.rules = 'chess'
-            AND game.pgn ~ E'\\\\d+\\\\. ' -- find at least 1 move, i.e. digit followed by at dot (PGSQL: game.pgn ~ E'\\d+\\. ')
+            AND {processable_games_condition}
         GROUP BY game.uuid
         ORDER BY end_time DESC -- Process the fresh games first
         LIMIT {limit}
@@ -116,14 +128,12 @@ def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) 
     else:
         query = f"""
         SELECT 
-            uuid, 
-            MAX(pgn) AS pgn 
-        FROM {schema_games}.{table_games} 
+            game.uuid,
+            MAX(game.pgn) AS pgn 
+        FROM {schema_games}.{table_games} game
         WHERE TRUE
-            AND LENGTH(pgn) > 0
-            AND rules = 'chess'
-            AND pgn ~ E'\\d+\\. ' -- find at least 1 move, i.e. digit followed by at dot
-        GROUP BY 1 
+            AND {processable_games_condition}
+        GROUP BY 1
         LIMIT {limit}
     """
 

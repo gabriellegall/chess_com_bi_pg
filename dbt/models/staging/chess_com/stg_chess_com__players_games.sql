@@ -7,16 +7,10 @@ WITH source_data AS (
 
 , filter_table AS (
     SELECT *
-    FROM source_data
+    FROM source_data game
     WHERE
         TRUE
-        AND rules = 'chess'
-        AND (
-            LENGTH(initial_setup) = 0
-            OR initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-        )
-        AND LENGTH(pgn) > 0
-        AND pgn ~ E'\\d+\\. '
+        AND {{ var('processable_games_condition') }}
 )
 
 , cast_types AS (

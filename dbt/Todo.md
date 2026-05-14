@@ -2,7 +2,8 @@ Pre-requisite:
 - Test again the dockerized model
 - Test the changes on [run_timestamp] field
 - Test the periodic full-refresh
-- Use uv instead of Pip
+- Use uv instead of Pip (inside Docker too)
+- Align all versions
 
 P1:
 - Optimize the Streamlit app (code cleanup)

@@ -5,7 +5,8 @@ models:
     description: "Publishes the conformed player dimension with stable surrogate keys and identity rollup, so all downstream facts and analytics join to one player entity definition."
     data_tests:
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_players_base')
+          arguments:
+            compare_model: ref('int_players_base')
     columns:
       - name: players_sk
         description: "{{ doc('players_sk') }}"
@@ -25,7 +26,8 @@ models:
             - uuid
             - username
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_games_filtered')
+          arguments:
+            compare_model: ref('int_games_filtered')
     columns:
       - name: players_sk
         description: "{{ doc('players_sk') }}"
@@ -132,7 +134,8 @@ models:
             - uuid
             - username
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_games_openings')
+          arguments:
+            compare_model: ref('int_games_openings')
     columns:
       - name: players_sk
         description: "{{ doc('players_sk') }}"

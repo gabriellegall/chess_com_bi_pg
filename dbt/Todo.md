@@ -1,6 +1,6 @@
 Pre-requisite:
-- Test again the dockerized model
-- Test the changes on [run_timestamp] field
+- [OK] Test again the dockerized model
+- [OK] Test the changes on [run_timestamp] field
 - Test the periodic full-refresh
 - Use uv instead of Pip (inside Docker too)
 - Align all versions

@@ -3,7 +3,7 @@
 Flow per iteration:
 - Run source pipelines (chess.com API optionally, game times, stockfish moves)
 - Run dbt seed
-- Run dbt build with --full-refresh once per day, otherwise regular dbt build
+- Run dbt run with --full-refresh once per day, otherwise regular dbt run
 - Ping healthcheck URLs and run dbt tests every 100 iterations
 - Sleep for SLEEP_TIME seconds, then repeat
 """

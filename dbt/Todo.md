@@ -4,6 +4,7 @@ Pre-requisite:
 - Test the periodic full-refresh
 - Use uv instead of Pip (inside Docker too)
 - Align all versions
+- Consistency in Python func naming
 
 P1:
 - Optimize the Streamlit app (code cleanup)

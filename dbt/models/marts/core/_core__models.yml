@@ -206,7 +206,8 @@ models:
             - uuid
             - username
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_games_stats')
+          arguments:
+            compare_model: ref('int_games_stats')
     columns:
       - name: players_sk
         description: "{{ doc('players_sk') }}"
@@ -459,7 +460,8 @@ models:
             - username
             - move_number
       - dbt_expectations.expect_table_row_count_to_equal_other_table:
-          compare_model: ref('int_game_moves_enriched')
+          arguments:
+            compare_model: ref('int_game_moves_enriched')
     columns:
       - name: players_sk
         description: "{{ doc('players_sk') }}"

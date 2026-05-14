@@ -98,7 +98,7 @@ def table_with_prefix_exists(engine: Engine, schema_name: str, table_prefix: str
     
     return any(t.startswith(table_prefix) for t in tables)
 
-def games_to_process(engine: Engine, schema: str, table: str, limit: int = 10) -> str:
+def games_to_process(engine: Engine, schema: str, table: str, limit: int = 100) -> str:
     config = load_config()
     processable_games_condition = get_processable_games_condition().replace("%", "%%")
 

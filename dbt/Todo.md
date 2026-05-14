@@ -10,6 +10,7 @@ P1:
 - Update readme.md
     - Update the Mermaid graph
     - Update the PNG images
+    - Review the consistency (e.g. ``) and quality of the readme
 
 Done:
 - [OK] Streamlit: Opening advantage stability score

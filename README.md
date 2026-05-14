@@ -100,10 +100,17 @@ graph LR;
 This project is fully dockerized and can be executed locally or deployed on a server.
 
 ### Local execution
+
+#### Dockerized (recommended)
 1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
 2. Using Docker Desktop, run `docker-compose up -d`
 
-You can also choose to install the `requirements.txt` in virtual environment and run the commands against the dockerized Postgres DB:
+#### Non-Dockerized Python execution
+You can also install the `requirements.txt` in a virtual environment and run the pipeline commands directly against the dockerized Postgres DB. This requires two additional prerequisites:
+- Install [Stockfish](https://stockfishchess.org/download/) and make it available in PATH (e.g. `choco install stockfish -y` on Windows), or set the [`STOCKFISH_PATH`] environment variable to the executable path.
+- Run `dbt deps` inside the `dbt/` folder.
+
+Pipeline commands:
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
 - `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
 

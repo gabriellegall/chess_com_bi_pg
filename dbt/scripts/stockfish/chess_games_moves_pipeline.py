@@ -7,13 +7,31 @@ from sqlalchemy.types import DateTime
 import chess.pgn
 import chess.engine
 import io
-import asyncio
 import platform
+import shutil
+import glob
+from pathlib import Path
 
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process, load_config, get_table_settings, create_index_if_not_exists
 
 print("Starting games moves processing")
+
+
+def _extract_stockfish_version(path_str: str) -> tuple:
+    path = Path(path_str)
+    # Expected folder shape: .../stockfish_<version>/stockfish*.exe
+    parent_name = path.parent.name
+    if parent_name.startswith("stockfish_"):
+        raw = parent_name.replace("stockfish_", "")
+        parts = []
+        for p in raw.split("."):
+            if p.isdigit():
+                parts.append(int(p))
+            else:
+                parts.append(0)
+        return tuple(parts)
+    return tuple()
 
 def analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
     # Load the PGN
@@ -73,11 +91,54 @@ def analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFram
     return pd.concat(game_dfs, ignore_index=True)
 
 def get_stockfish_path():
+    """Resolve a usable Stockfish executable path across env, PATH and OS defaults.
+
+    Resolution order:
+    1) [`STOCKFISH_PATH`] environment variable
+    2) `stockfish` available in system PATH
+    3) Common install locations (including Chocolatey versioned folders on Windows)
+    """
+    candidates = []
+
+    env_path = os.getenv("STOCKFISH_PATH")
+    if env_path:
+        candidates.append(env_path)
+
+    stockfish_in_path = shutil.which("stockfish")
+    if stockfish_in_path:
+        candidates.append(stockfish_in_path)
+
     if platform.system() == "Windows":
-        if hasattr(asyncio, 'WindowsProactorEventLoopPolicy'):
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-        return "C:/Program Files/ChessEngines/stockfish_16/stockfish-windows-x86-64-avx2.exe"
-    return "/usr/games/stockfish"
+        program_files = os.environ.get("ProgramFiles", "C:/Program Files")
+        choco_globs = [
+            os.path.join(program_files, "ChessEngines", "stockfish_*", "stockfish-windows-x86-64-avx2.exe"),
+            os.path.join(program_files, "ChessEngines", "stockfish_*", "stockfish-windows-x86-64.exe"),
+            os.path.join(program_files, "ChessEngines", "stockfish_*", "stockfish*.exe"),
+        ]
+        discovered = []
+        for pattern in choco_globs:
+            discovered.extend(glob.glob(pattern))
+        candidates.extend(sorted(set(discovered), key=_extract_stockfish_version, reverse=True))
+
+        candidates.extend([
+            "C:/Program Files/Stockfish/stockfish.exe",
+            "C:/Program Files/stockfish/stockfish.exe",
+        ])
+    else:
+        candidates.extend([
+            "/usr/games/stockfish",
+            "/usr/bin/stockfish",
+        ])
+
+    for candidate in candidates:
+        resolved = os.path.expandvars(os.path.expanduser(candidate))
+        if os.path.isfile(resolved):
+            return resolved
+
+    raise FileNotFoundError(
+        "Stockfish executable not found. Set STOCKFISH_PATH to your stockfish binary "
+        "or install stockfish so it is available in PATH."
+    )
 
 # Import the data to process
 config = load_config()

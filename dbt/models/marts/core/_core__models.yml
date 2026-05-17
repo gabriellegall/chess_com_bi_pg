@@ -128,7 +128,7 @@ models:
 
   - name: dim_games_openings
     description: "Publishes the game-opening dimension that attaches hierarchical opening labels to each game, enabling consistent slicing of facts by opening context."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid
@@ -200,7 +200,7 @@ models:
 
   - name: fct_games_stats
     description: "Publishes the game-level statistics fact with aggregated quality, error, and timing indicators used for performance analysis and trend reporting."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid
@@ -453,7 +453,7 @@ models:
 
   - name: fct_game_moves
     description: "Publishes the move-level fact that captures evaluation variance, phase context, and mistake classification for detailed move-by-move analysis."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid

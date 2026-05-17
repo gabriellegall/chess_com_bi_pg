@@ -3,7 +3,7 @@ version: 2
 models:
   - name: obt_games_stats_filtered
     description: "Delivers a dashboard-ready analytical table that combines conformed game, opening, player, and performance metrics."
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - uuid

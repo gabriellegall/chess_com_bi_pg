@@ -172,7 +172,7 @@ The pipeline `chess_openings_pipeline.py` is only executed once in the script `r
 Indeed, this data source is mostly static and does not need to be updated frequently.
 
 ## dbt
-![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/main/images/dbt_page_1.PNG)
+![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/feat/revamp_incremental_strategy_revamp/images/dbt_page_1.PNG)
 
 ### Layers
 The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:

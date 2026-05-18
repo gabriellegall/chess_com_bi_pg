@@ -7,12 +7,12 @@ Pre-requisite:
 P1:
 - Optimize the Streamlit app (code cleanup)
 - Optimize makefile
-- Update readme.md
-    - Update the Mermaid graph
-    - Update the PNG images
-    - Review the consistency (e.g. ``) and quality of the readme
 
 Done:
+- Update readme.md
+    - [OK] Update the Mermaid graph
+    - [OK] Update the PNG images
+    - Review the consistency (e.g. ``) and quality of the readme
 - [OK] Test again the dockerized model
 - [OK] Test the changes on [run_timestamp] field
 - [OK] DRY on processable games

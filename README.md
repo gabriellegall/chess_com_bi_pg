@@ -33,12 +33,14 @@ graph LR;
     %% Data Source
     subgraph DS ["Data Source"]
         A[Chess.com API]
+        G[Hugging Face Openings DB]
     end
 
     %% Processing
     subgraph Processing ["Data Pipeline"]
         B["API fetch<br>(Python/DLT)"]
-        n1["Data pre-processing<br>(Python)"]
+        n1["Openings integration<br>(Python)"]
+        n3["Regex parsing<br>(Python)"]
         n2["Stockfish processing<br>(Python)"]
         D["dbt models"]
     end
@@ -56,8 +58,10 @@ graph LR;
 
     %% Data flow
     A -->|"Fetches game data"| B
+    G -->|"Fetches openings data"| n1
     B -->|"Loads"| C
-    n1 -->|"Reads & loads"| C
+    n1 -->|"Loads"| C
+    n3 -->|"Reads & loads"| C
     n2 -->|"Reads & loads"| C
     D -->|"Executes models"| C
     C -->|"Queries"| E
@@ -71,8 +75,10 @@ graph LR;
 
     %% Node styling
     style A fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
+    style G fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
     style B fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style n1 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
+    style n3 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style n2 fill:#3c8dbc,stroke:#367fa9,stroke-width:2px,color:white
     style D fill:#f39c12,stroke:#e08e0b,stroke-width:2px,color:white
     style C fill:#1B4F72,stroke:#154360,stroke-width:2px,color:white

@@ -1,6 +1,4 @@
 Pre-requisite:
-- [OK] Test again the dockerized model
-- [OK] Test the changes on [run_timestamp] field
 - Test the periodic full-refresh
 - Use uv instead of Pip (inside Docker too)
 - Align all versions
@@ -15,6 +13,8 @@ P1:
     - Review the consistency (e.g. ``) and quality of the readme
 
 Done:
+- [OK] Test again the dockerized model
+- [OK] Test the changes on [run_timestamp] field
 - [OK] DRY on processable games
 - [OK] Streamlit: Opening advantage stability score
     - [OK] Forward fill when the games end too soon  

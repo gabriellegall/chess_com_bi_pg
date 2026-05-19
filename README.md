@@ -3,7 +3,7 @@
 ## Purpose
 This project is an end-to-end data solution aiming to extract information from chess.com and construct insightful analysis on the player's performance.
 The key questions answered are:
-- "Do I manage to beat stronger players and improve ?"
+- "Do I manage to beat stronger players and improve?"
 - "Am I weaker at specific game phases on average ?"
 - "Do I manage to reduce the frequency at which I make blunders in my games ?"
 - "Do I make more or less blunders compared to other similar players ? Is it true for all game phases ?"
@@ -88,7 +88,7 @@ graph LR;
 
 ## Tools
 - Data extraction (API): **Python** (with [DLT - Data Load Tool library](https://dlthub.com/docs/dlt-ecosystem/verified-sources/chess))
-- Data pre-processing (regex parsing, ches openings ingestion): **Python**
+- Data pre-processing (regex parsing, chess openings ingestion): **Python**
 - Chess evaluation: **Stockfish engine** (with Python)
 - Data storage & compute: **Postgres**
 - Data transformation: **dbt** (on Docker)
@@ -164,7 +164,7 @@ It uses the `config.yml` to define the Postgres project information with table n
 Only games not yet processed are processed. `chess_games_times_pipeline.py` uses the same SQL query `helper.py` to identify games to be processed incrementally.
 
 ## Chess openings
-The script `chess_openings_pipeline.py` reads ands loads the [database of all chess openings from Hugging Face](https://huggingface.co/datasets/Lichess/chess-openings).
+The script `chess_openings_pipeline.py` reads and loads the [database of all chess openings from Hugging Face](https://huggingface.co/datasets/Lichess/chess-openings).
 It uses the `config.yml` to define the Postgres project information with table names to be used.
 
 ### Incremental strategy
@@ -175,8 +175,8 @@ Indeed, this data source is mostly static and does not need to be updated freque
 ![Illustration 1](https://github.com/gabriellegall/chess_com_bi_pg/blob/feat/revamp_incremental_strategy_revamp/images/dbt_page_1.PNG)
 
 ### Layers
-The datawarehouse is structured through several layers in order to ensure (1) performance (2) clarity and (3) modularity:
-- **'raw'**: raw data extracted from chess.com and evaluated using the stockfish engine (`chess_games_moves_pipeline.py`). This layer contains a .csv dbt seed used as a hard coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
+The data warehouse is structured through several layers in order to ensure (1) performance, (2) clarity, and (3) modularity:
+- **'raw'**: raw data extracted from chess.com and evaluated using the Stockfish engine (`chess_games_moves_pipeline.py`). This layer contains a `.csv` dbt seed used as a hard-coded mapping table for some users owning several accounts. It also contains the results of the `chess_games_times_pipeline.py` script extracting raw clock times, as well as the openings data from `chess_openings_pipeline.py`.
 - **'staging'**: virtual layer on top of the raw layer, aiming to cast data types and derive very simple and static calculated fields. Tables in the staging layer share a 1:1 relationship with tables in the raw layer and preserve the same granularity (i.e. no join or aggregation/duplication is performed).
 - **'intermediate'**: transformation layer where the business logic is built. It enriches staging data, joins game, move, time and opening datasets together, and creates derived metrics such as move-level chess evaluations, miss classifications, game-phase flags, opening hierarchies and aggregated per-game stats.
 - **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style [2NF design](https://en.wikipedia.org/wiki/Second_normal_form): dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in [1NF](https://en.wikipedia.org/wiki/First_normal_form) as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
@@ -253,7 +253,7 @@ It is also important to note that the Streamlit application has a dependency on 
 If needed a Metabase app is also made available in `docker-compose.yml` for self-service analytics.
 
 # ⚙️ CI/CD
-The GitHub workflow `dbt_dockerhub_update` runs everytime there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS. 
+The GitHub workflow `dbt_dockerhub_update` runs every time there is a push on the main branch and updates the Docker images on DockerHub. Then, Watchtower updates the running containers directly in the VPS.
 
 # ⏳ Project history
 This project is a refactoring of an original GitHub project called [chess_com_bi](https://github.com/gabriellegall/chess_com_bi) developed on BigQuery and orchestrated using GitHub Runners. 
@@ -272,7 +272,7 @@ Here are the main changes:
     - **Solution:** Using Streamlit instead of Metabase enabled more advanced visualizations (e.g. sunburst charts for opening analysis) at the cost of some extra development effort.
 
 - **Simplified data ingestion with DLT**:
-    - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT) which has native connectors to chess.com.
+    - **Problem:** In the original project, [the code](https://github.com/gabriellegall/chess_com_bi/blob/main/scripts/bq_load_player_games.py) to ingest data from chess.com was custom and did not leverage existing tools like the Python library Data Load Tool (DLT), which has native connectors to chess.com.
     - **Solution:** Leveraging DLT significantly simplified the data ingestion pipeline from chess.com, enhancing code maintenance and readability. While some customization was necessary to implement incremental integration within DLT’s `chess` package, the overall ingestion code is considerably simpler.
 
 - **Adopted a classic dbt layer design**:
@@ -291,7 +291,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - Staging models keep a 1:1 source-conformed behavior and preserve source grain.
     - Staging applies basic transformations only: filtering, renaming/derivation, casting, and simple calculated fields.
     - Staging models are materialized as views by default.
-    - Source() macro is used in staging models only.
+    - `source()` macro is used in staging models only.
     - Source definitions are declared and versioned in per-folder source YAML files.
     
     source: [dbt Labs best practices - staging](https://docs.getdbt.com/best-practices/how-we-structure/2-staging?version=1.11)
@@ -303,7 +303,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - Business transformations are implemented in intermediate models (joins, aggregations, window calculations).
     - DRY via Jinja is actively used inside intermediate models to avoid repetitive SQL blocks.
 
-    source: [dbt Labs best practices - intermediae](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
+    source: [dbt Labs best practices - intermediate](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
 
 - Mart practices:
     - Core marts are entity-oriented and modularized into dimensions and facts (`dim_*`, `fct_*`).
@@ -338,7 +338,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - Cross-model count consistency checks are implemented with `dbt_expectations`.
     
     source:
-    - [dbt Labs best practices - other](https://docs.getdbt.com/best-practices/how-we-structure/5-th[dbt-rest-of-the-project?version=1.11)
+    - [dbt Labs best practices - other](https://docs.getdbt.com/best-practices/how-we-structure/5-the-rest-of-the-project?version=1.11)
     - [dbt_project_evaluator primary key testing](https://dbt-labs.github.io/dbt-project-evaluator/latest/rules/testing/#missing-primary-key-tests)
 
 - SQL style:
@@ -351,7 +351,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - ... more best practices are enforced and listed in `dbt/.sqlfluff`. 
 
     source:
-    - [dbt Lab best practices - sql](https://docs.getdbt.com/best-practices/how-we-style/2-how-we-style-our-sql?version=1.11)
+    - [dbt Labs best practices - SQL](https://docs.getdbt.com/best-practices/how-we-style/2-how-we-style-our-sql?version=1.11)
 
 - Governance
     - A broad set of dbt_project_evaluator domains is enabled (structure, performance, DAG, documentation, governance, tests).

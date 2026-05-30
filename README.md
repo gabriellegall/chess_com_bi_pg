@@ -363,7 +363,7 @@ This section summarizes the dbt best practices that are implemented in this proj
 ## Possible improvements
 
 ### Data analytics
-- the Streamlit app could be enriched with more analysis, focusing on key areas of improvement:
+- The Streamlit app could be enriched with more analysis, focusing on key areas of improvement:
     - The ability to convert opponent's error into a win: ```P(Win|[nb_throw_massive_blunder_opponent] > 0)```, or ```P(Win|[max_score_playing] > X)```.
     - The ability to convert a late-game advantage into a win: ```P(Win|score_playing_late_phase > X)```.
     - The ability to withstand near-equal late-game positions: ```P(Win|score_playing_late_phase BETWEEN 0 AND X)```.
@@ -372,4 +372,4 @@ This section summarizes the dbt best practices that are implemented in this proj
 - A distinction between hard tests (typically heavy and not executed frequently) and soft tests (executed on every run to ensure perfect data integrity) should be implemented in dbt using tags and reflected in `run_all.py`.
 
 ### Code
-- the Python scripts integrating data in the raw layer could be complemented with more unit tests, using pytest.
+- The Python scripts integrating data in the raw layer could be complemented with more unit tests, using pytest.

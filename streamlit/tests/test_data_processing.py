@@ -3,14 +3,13 @@ import pytest
 from pandas.testing import assert_frame_equal
 import sys
 import os
-from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data_processing import get_players_aggregates, get_player_metric_values, get_summary_kpis
 
 def sample_data():
     """Fixture for creating a sample DataFrame for testing."""
     data = {
-        'username': ['user1', 'user1', 'user1', 'user2', 'user2', 'user3', 'user1', 'user1'],
+        'username_global': ['user1', 'user1', 'user1', 'user2', 'user2', 'user3', 'user1', 'user1'],
         'playing_as': ['White', 'Black', 'White', 'Black', 'White', 'White', 'Black', 'White'],
         'is_win': [1, 0, 1, 1, 0, 1, 1, 0],
         'elo': [1500, 1510, 1505, 1200, 1210, 1800, 1520, 1490],
@@ -33,7 +32,7 @@ def test_get_players_aggregates():
     # Test with min_games=3, user1 should be included, user2 and user3 should be excluded
     result = get_players_aggregates(df, agg_dict, min_games=3)
     expected = pd.DataFrame({
-        'username': ['user1'],
+        'username_global': ['user1'],
         'is_win': [0.6], # 3 wins / 5 games
         'elo': [1520]
     })
@@ -42,11 +41,11 @@ def test_get_players_aggregates():
     # Test with min_games=1, all users should be included
     result = get_players_aggregates(df, agg_dict, min_games=1)
     expected = pd.DataFrame({
-        'username': ['user1', 'user2', 'user3'],
+        'username_global': ['user1', 'user2', 'user3'],
         'is_win': [0.6, 0.5, 1.0],
         'elo': [1520, 1210, 1800]
-    }).sort_values('username').reset_index(drop=True)
-    assert_frame_equal(result.sort_values('username').reset_index(drop=True), expected)
+    }).sort_values('username_global').reset_index(drop=True)
+    assert_frame_equal(result.sort_values('username_global').reset_index(drop=True), expected)
 
     # Test with no users meeting min_games
     result = get_players_aggregates(df, agg_dict, min_games=10)
@@ -132,7 +131,7 @@ def test_get_summary_kpis():
     df = sample_data()
 
     # Scenario 1: Test with user1 and last_n_games=3
-    kpis = get_summary_kpis(df[df['username'] == 'user1'], 'user1', 3)
+    kpis = get_summary_kpis(df[df['username_global'] == 'user1'], 'user1', 3)
     
     # White stats for user1
     assert kpis['White']['total_games'] == 3
@@ -151,10 +150,10 @@ def test_get_summary_kpis():
     # Recent games df
     assert len(kpis['recent_games_df']) == 3
     expected_recent_usernames = ['user1', 'user1', 'user1']
-    assert kpis['recent_games_df']['username'].tolist() == expected_recent_usernames
+    assert kpis['recent_games_df']['username_global'].tolist() == expected_recent_usernames
 
     # Scenario 2: Test with user2 (fewer games than last_n_games)
-    kpis_user2 = get_summary_kpis(df[df['username'] == 'user2'], 'user2', 5)
+    kpis_user2 = get_summary_kpis(df[df['username_global'] == 'user2'], 'user2', 5)
 
     # White stats for user2
     assert kpis_user2['White']['total_games'] == 1
@@ -174,7 +173,7 @@ def test_get_summary_kpis():
     assert len(kpis_user2['recent_games_df']) == 2
 
     # Scenario 3: Test with user3 (only played as White)
-    kpis_user3 = get_summary_kpis(df[df['username'] == 'user3'], 'user3', 5)
+    kpis_user3 = get_summary_kpis(df[df['username_global'] == 'user3'], 'user3', 5)
 
     # White stats for user3
     assert kpis_user3['White']['total_games'] == 1

@@ -1,6 +1,14 @@
 .DEFAULT_GOAL := help
 
 PYTHON ?= python
+ifeq ($(OS),Windows_NT)
+VENV_PYTHON := $(abspath venv/Scripts/python.exe)
+else
+VENV_PYTHON := $(abspath venv/bin/python)
+endif
+ifneq ("$(wildcard $(VENV_PYTHON))","")
+PYTHON := $(VENV_PYTHON)
+endif
 DBT_DIR := dbt
 STREAMLIT_DIR := streamlit
 DBT_MODELS_DIR := models/
@@ -82,7 +90,7 @@ test_dbt_doc:
 
 # Local execution : streamlit
 streamlit_test:
-	@cd $(STREAMLIT_DIR)/tests && pytest
+	@cd $(STREAMLIT_DIR)/tests && $(PYTHON) -m pytest
 
 streamlit_run:
 	@cd $(STREAMLIT_DIR) && streamlit run app.py --server.port $(STREAMLIT_PORT)

@@ -1,10 +1,5 @@
-Pre-requisite:
-- Test the periodic full-refresh
-
-P1:
-- Optimize the Streamlit app (code cleanup)
-
 Done:
+- [OK] Optimize the Streamlit app (code cleanup)
 - [OK] Optimize makefile
 - [OK] Consistency in Python func naming
 - [OK] Update readme.md

@@ -6,12 +6,13 @@ import numpy as np
 import yaml
 from pathlib import Path
 from config import get_plot_config, get_section_config
-from data_processing    import get_raw_data, get_players_aggregates, get_summary_kpis, calculate_win_loss_draw, min_benchmark_games
-from plot_benchmark     import render_legend, prepare_section_plot_data, render_plot_section
+from data_processing    import get_raw_data, get_summary_kpis, calculate_win_loss_draw, min_benchmark_games
 from plot_header        import render_summary_header
-from plot_openers       import render_opening_sunburst, render_score_progression
+from page_sections      import render_benchmark_section, render_opening_analysis_section
+from ui_filters         import render_sidebar_filters, render_page_filters, apply_filters
 
 st.set_page_config(layout="wide")
+
 
 @st.cache_data
 def _load_dbt_project_config():
@@ -20,129 +21,6 @@ def _load_dbt_project_config():
     config_path = project_root / "dbt" / "dbt_project.yml"
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
-
-def _render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
-    """
-    Renders sidebar filters in order. Each categorical selection narrows `current_data`,
-    so later filters (and slider defaults) are scoped to prior selections.
-    Field order in `filter_fields` therefore matters.
-    """
-    st.sidebar.header("Game Filters")
-    selections = {}
-    current_data = dependent_data.copy()
-
-    for field in filter_fields:
-
-        # --- special case: rating range slider ---
-        if field == "playing_rating_range":
-
-            # Default range derived from current_data (respects prior filter selections).
-            ratings = pd.concat([
-                current_data["playing_rating"].dropna(),
-                current_data["opponent_rating"].dropna()
-            ])
-
-            if ratings.empty:
-                default_min, default_max = 100, 2000
-            else:
-                default_min = max(100, int(ratings.min()))
-                default_max = min(2000, int(ratings.max()))
-
-            rating_min, rating_max = st.sidebar.slider(
-                "Rating Range (applies to both playing and opponent rating)",
-                min_value=100,
-                max_value=2000,
-                value=(default_min, default_max),
-                step=10
-            )
-
-            selections[field] = (rating_min, rating_max)
-            continue
-
-        # --- normal categorical fields ---
-        options = sorted(current_data[field].dropna().unique())
-
-        if not options:
-            st.sidebar.warning(f"No '{field.replace('_', ' ')}' options available.")
-            selections[field] = None
-            continue
-
-        selections[field] = st.sidebar.selectbox(
-            field.replace("_", " ").title(),
-            options=options,
-            key=f"sidebar_{field}"
-        )
-
-        # Narrow data for subsequent dependent filters.
-        current_data = current_data[current_data[field] == selections[field]]
-
-    return selections
-
-def _render_page_filters(
-    dependent_data: pd.DataFrame,
-    filter_fields: list,
-    context: str,
-    *,
-    style: str = "radio",
-    horizontal: bool = True,
-    add_all: bool = False
-) -> dict:
-    """
-    Creates select boxes in the main content area for each field in `filter_fields`, arranging them in columns.
-    Only shows the values relevant based on the `dependent_data`.
-    Returns the user's selections as a dictionary.
-
-    style   = "radio"   → horizontal radio buttons
-    style   = "dropdown"→ searchable drop-down (selectbox)
-    add_all = True      → adds an 'All' option that applies no filter
-    """
-    selections = {}
-    cols = st.columns(len(filter_fields))
-
-    for col, field in zip(cols, filter_fields):
-        with col:
-            raw_options = sorted(list(dependent_data[field].dropna().unique()))
-            if not raw_options:
-                st.warning(f"No '{field.replace('_', ' ')}' options.")
-                continue
-
-            # Add "All" only if requested
-            options = ["All"] + raw_options if add_all else raw_options
-
-            label = field.replace("_", " ").title()
-            key   = f"{context}_{field}"
-
-            if style == "dropdown":
-                # Default to "All" when present
-                index = 0 if add_all else 0
-                selections[field] = st.selectbox(label, options, key=key, index=index)
-            else:
-                selections[field] = st.radio(
-                    label,
-                    options,
-                    horizontal=horizontal,
-                    label_visibility="collapsed" if horizontal else "visible",
-                    key=key,
-                    index=0 if add_all else 0
-                )
-    return selections
-
-def _apply_filters(df: pd.DataFrame, selections: dict) -> pd.DataFrame:
-    """
-    Apply sidebar/all selections to the given dataframe.
-    Handles both rating range tuples and categorical filters.
-    """
-    df_filtered = df.copy()
-    for field, value in selections.items():
-        if isinstance(value, tuple):  # rating range
-            min_val, max_val = value
-            df_filtered = df_filtered[
-                df_filtered["playing_rating"].between(min_val, max_val) &
-                df_filtered["opponent_rating"].between(min_val, max_val)
-            ]
-        elif value and value != "All":  # categorical filter
-            df_filtered = df_filtered[df_filtered[field] == value]
-    return df_filtered
 
 ### --- Main Application ---
 
@@ -159,11 +37,14 @@ st.title("Chess.com Player Performance Benchmark")
 ### --- Sidebar selection ---
 all_usernames = sorted(raw_data["username_global"].unique())
 default_user = "Zundorn" if "Zundorn" in all_usernames else all_usernames[0]
+selected_username_default = st.session_state.get("selected_username", default_user)
+if selected_username_default not in all_usernames:
+    selected_username_default = default_user
 
 selected_username = st.sidebar.selectbox(
     "Select a Player to Analyze",
     options=all_usernames,
-    index=all_usernames.index(st.session_state.get("selected_username", default_user)),
+    index=all_usernames.index(selected_username_default),
     key="selected_username"
 )
 
@@ -185,13 +66,13 @@ fields_benchmark_filter = ["playing_as", "playing_result"]
 fields_opener_filter    = ["playing_as"]
 
 # Render and get sidebar filters
-sidebar_selections = _render_sidebar_filters(user_specific_data, fields_sidebar_filter)
+sidebar_selections = render_sidebar_filters(user_specific_data, fields_sidebar_filter)
 
 ### --- Summary KPIs header --- 
 
 # Apply filters
 df_sidebar_filtered = user_specific_data.copy()
-df_sidebar_filtered = _apply_filters(df_sidebar_filtered, sidebar_selections)
+df_sidebar_filtered = apply_filters(df_sidebar_filtered, sidebar_selections)
 
 if df_sidebar_filtered.empty:
     st.warning("No data available for the selected filters.")
@@ -205,100 +86,27 @@ else:
         render_summary_header(summary_kpis, last_n_games)
 
 ### --- Benchmark --- 
-with st.container(border=True):
-    st.header(f"How does {selected_username} compare to other similar players?")
-
-    # Render and get benchmark filters
-    branchmark_selections = _render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark", add_all=True)
-
-    # Combine all selections into a single dictionary
-    all_selections = {**sidebar_selections, **branchmark_selections}
-
-    # Apply the combined filters to the entire dataset
-    df_filtered_benchmark = raw_data.copy()
-    df_filtered_benchmark = _apply_filters(df_filtered_benchmark, all_selections)
-
-    # Get the aggregated data for all players
-    df_player_agg = get_players_aggregates(
-        df_filtered_benchmark,
-        plot_config,
-        min_games=min_benchmark_games
-    )
-    # Add explanatory context text based on the filter selection
-    st.markdown(f"""
-    In this section, we compare the performance of **{selected_username}** with other similar players having played at least **{min_benchmark_games}** games (n={len(df_player_agg)}), holding constant: 
-    - Color played: **{branchmark_selections.get('playing_as', 'N/A')}**
-    - Playing result: **{branchmark_selections.get('playing_result', 'N/A')}**
-    - Time control: **{sidebar_selections.get('time_control', 'N/A')}**
-    - Rating range: **{sidebar_selections.get('playing_rating_range', 'N/A')}**
-    """)
-
-    if st.checkbox("Show player details", key="show_benchmark_players"):
-        player_counts = (
-            df_filtered_benchmark["username_global"]
-            .value_counts()
-            .rename_axis("username_global")
-            .reset_index(name="n_games")
-            .loc[lambda d: d["n_games"] >= min_benchmark_games]
-        )
-        st.dataframe(player_counts)
-
-    # Render plots for each section
-    if df_player_agg.empty:
-        st.warning("No player data available for the selected filters. Please adjust your selections.")
-    else:
-        username_to_highlight = selected_username
-        if username_to_highlight not in df_player_agg["username_global"].unique():
-            st.warning(
-                f"'{username_to_highlight}' has fewer than {min_benchmark_games} games for the selected filters and cannot be benchmarked. "
-                "Please adjust the filters or select another player."
-            )
-        else:
-            # Render the legend
-            render_legend(username=username_to_highlight, last_n_games=last_n_games)
-
-            # Import the data for each section and each plot
-            all_section_plot_data = prepare_section_plot_data(
-                section_config, plot_config, df_filtered_benchmark, username_to_highlight, last_n_games
-            )
-
-            # For each section, render the plots
-            for prepared_section_data in all_section_plot_data:
-                with st.container(border=True):
-                    render_plot_section(prepared_section_data, df_player_agg, last_n_games)
+benchmark_selections = render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark", add_all=True)
+render_benchmark_section(
+    raw_data=raw_data,
+    selected_username=selected_username,
+    last_n_games=last_n_games,
+    sidebar_selections=sidebar_selections,
+    benchmark_selections=benchmark_selections,
+    section_config=section_config,
+    plot_config=plot_config,
+    min_benchmark_games=min_benchmark_games,
+)
 
 ### --- Opening Move Analysis ---
-with st.container(border=True):
-    st.header(f"How does {selected_username} perform on the various openers?")
-    st.markdown("In this section, we explore the win rate on the various openings played:")
-
-    # Standard opener filters (affect sunburst only)
-    opener_selections = _render_page_filters(user_specific_data, fields_opener_filter, context="opener")
-
-    # Apply standard opener filters for the sunburst
-    all_selections = {**sidebar_selections, **opener_selections}
-
-    df_filtered_opener = user_specific_data.copy()
-    df_filtered_opener = _apply_filters(df_filtered_opener, all_selections)
-
-    # Sunburst charts
-    list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
-    render_opening_sunburst(df_filtered_opener, last_n_games=last_n_games, list_dim=list_dim)
-
-    # Score progression charts
-    render_score_progression(df_filtered_opener)
-
-    # Apply additional filters only to the raw table
-    st.subheader("Raw data")
-
-    opener_raw_selections = _render_page_filters(
-        user_specific_data, list_dim, context="opener_raw", style="dropdown", add_all=True
-    )
-
-    all_selections = {**sidebar_selections, **opener_selections, **opener_raw_selections}
-
-    df_filtered_opener_raw = user_specific_data.copy()
-    df_filtered_opener_raw = _apply_filters(df_filtered_opener_raw, all_selections)
-
-    st.dataframe(df_filtered_opener_raw)
+opener_selections = render_page_filters(user_specific_data, fields_opener_filter, context="opener")
+list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
+render_opening_analysis_section(
+    user_specific_data=user_specific_data,
+    selected_username=selected_username,
+    last_n_games=last_n_games,
+    sidebar_selections=sidebar_selections,
+    opener_selections=opener_selections,
+    list_dim=list_dim,
+)
 

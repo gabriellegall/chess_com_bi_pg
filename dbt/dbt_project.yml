@@ -15,16 +15,27 @@ clean-targets:
 
 models:
   chess_com_bi_pg:
+    +meta:
+      doc_info: "Column-level documentation is maintained only for the staging (stg) and core marts (dim/fct) layers. For any column definition, refer to those models as the source of truth."
+    staging:
+      +schema: stg
+      +materialized: view
+      +docs:
+        node_color: '#498D1C' # Darker green than seeds
     intermediate:
       +schema: int
       +materialized: table
       +docs:
         node_color: '#696969' # Silver
-    datawarehouse:
-      +schema: dwh
+    marts:
+      +schema: marts
       +materialized: table
-      +docs:
-        node_color: '#C5A939' # Gold
+      analytics:
+        +docs:
+          node_color: '#C57B39' # Darker gold
+      core:
+        +docs:
+          node_color: '#C5A939' # Gold
   dbt_project_evaluator:
       +schema: eval
       marts:
@@ -33,14 +44,10 @@ models:
           +enabled: true
         structure:
           +enabled: true
-          fct_source_directories: # Expects 1 .yaml per 1 source - too constraining.
-            +enabled: false
         performance:
           +enabled: true
         dag:
           +enabled: true 
-          fct_marts_or_intermediate_dependent_on_source: # Expects no direct dependency on source - overkill for this project size.
-            +enabled: false
         documentation:
           +enabled: true
         governance:
@@ -49,12 +56,12 @@ models:
           +enabled: true
           fct_sources_without_freshness: # Expects all sources to have freshness tests - not needed for now since freshness is managed via heathchecks.
             +enabled: false
-          fct_missing_primary_key_tests: # Expects all models to have primary key tests - not needed for all models, already done for the riskiest ones.
+          fct_missing_primary_key_tests: # Expects all models to have primary key tests - not needed for all models, already done implicitly through other tests (e.g. row count consistency tests).
             +enabled: false
 
 seeds:
   chess_com_bi_pg:
-    +schema: stg_seeds
+    +schema: raw_seeds
     +docs:
       node_color: '#5fb825' # Light Green (like DBT sources)
 tests:
@@ -69,8 +76,14 @@ dispatch:
     search_order: ['dbt_project_evaluator', 'dbt']
 
 vars:
-  data_conversion:
-    utc_to_target_timezone: "'Europe/Paris'"
+  processable_games_condition: |
+    game.rules = 'chess'
+    AND LENGTH(game.pgn) > 0
+    AND strpos(game.pgn, '[%clk ') > 0
+    AND (
+        LENGTH(game.initial_setup) = 0
+        OR game.initial_setup = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    )
   game_phases:
       early:
         end_game_move: 15
@@ -84,15 +97,10 @@ vars:
       very_late:
         name: "'4-Very Late Game'"
   dbt_project_evaluator:
-    # # Exclude path
-    # exclude_paths_from_project: ["models/datawarehouse/"]
-    # Add extra naming convention
-    model_types: ['staging', 'intermediate', 'marts', 'datawarehouse', 'other']
-    datawarehouse_folder_name: 'datawarehouse'
-    datawarehouse_prefixes: ['dwh_']
-    # Test coverage
+    model_types: ['staging', 'intermediate', 'marts', 'other']
+    marts_prefixes: ['obt_', 'dim_', 'fct_']
     test_coverage_target: 25 # No need to have as many tests as models. We value quality over quantity.
-
+  move_stats_snapshots: [5,10,15,20,25,30,35,40,45,50]
   elo_range: [400,600,800,1000,1200,1400,1600,1800]
   score_thresholds:
     variance_score_massive_blunder: 600
@@ -106,7 +114,5 @@ vars:
   data_scope:
     month_history_depth: 12
     time_class: ['blitz', 'rapid', 'bullet']
-  datamart:
-    min_games_played: 20
   openings:
     hierarchy_depth: 10

@@ -49,4 +49,4 @@ def render_summary_header(kpis: dict, last_n_games: int):
 
     # Add a checkbox at the bottom to show the raw data for recent games
     if st.checkbox(f"Show data for last {last_n_games} games"):
-        st.dataframe(kpis['recent_games_df'], use_container_width=True)
+        st.dataframe(kpis['recent_games_df'], width="stretch")

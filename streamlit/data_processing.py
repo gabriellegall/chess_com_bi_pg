@@ -1,17 +1,20 @@
 import pandas as pd
 from data.loader import load_query
 import streamlit as st
-from typing import List 
+from typing import List
+import numpy as np
+
+min_benchmark_games = 10
 
 @st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
     """
     Loads the raw game data from the specified SQL query.
     """
-    return load_query("data/agg_games_with_moves__games.sql")
+    return load_query("data/streamlit_games_stats_filtered.sql")
 
 @st.cache_data
-def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = 15, group_by_col: str = 'username') -> pd.DataFrame:
+def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = min_benchmark_games, group_by_col: str = 'username_global') -> pd.DataFrame:
     """
     Aggregates the data for each player based on the provided dictionary.
     The dictionary should contain the metric names as keys and a the 'agg' key with the aggregation function (e.g., 'mean', 'median').
@@ -44,7 +47,7 @@ def get_player_metric_values(data: pd.DataFrame, metric: str, username: str, agg
     If `aggregation_dimension` is provided, it returns two DataFrames, one for all games and one for recent games,
     with the metric aggregated by the specified dimension.
     """
-    user_data = data[data['username'] == username]
+    user_data = data[data['username_global'] == username]
     if user_data.empty:
         return (None, None) if not aggregation_dimension else (pd.DataFrame(), pd.DataFrame())
 
@@ -152,3 +155,132 @@ def get_player_opening_statistics(data: pd.DataFrame, list_dim: List[str], last_
     agg["winrate"] = agg["wins"] / agg["total_games"]
     
     return agg
+
+
+def get_score_progression_by_opening(
+    data: pd.DataFrame, 
+    opening_col: str = "uci_hierarchy_level_7_name",
+    min_games: int = min_benchmark_games
+) -> pd.DataFrame:
+    """
+    Calculates score progression (mean and 90/10 confidence interval) for each opening.
+    Only includes openings with at least `min_games` games.
+    
+    Returns a long-format DataFrame with columns:
+    - opening: opening name
+    - turn: turn number (5, 10, 15, ..., 50)
+    - score_mean: mean score at this turn
+    - score_lower: 10th percentile
+    - score_upper: 90th percentile
+    - n_games: number of games for this opening
+    """
+    if data.empty:
+        return pd.DataFrame()
+    
+    # Score columns to analyze
+    score_cols = [
+        "score_playing_turn_5",
+        "score_playing_turn_10",
+        "score_playing_turn_15",
+        "score_playing_turn_20",
+        "score_playing_turn_25",
+        "score_playing_turn_30",
+        "score_playing_turn_35",
+        "score_playing_turn_40",
+        "score_playing_turn_45",
+        "score_playing_turn_50"
+    ]
+    
+    # Filter to only include valid openings (at least min_games)
+    opening_counts = data[opening_col].value_counts()
+    valid_openings = opening_counts[opening_counts >= min_games].index
+    
+    if len(valid_openings) == 0:
+        return pd.DataFrame()
+    
+    filtered_data = data[data[opening_col].isin(valid_openings)].copy()
+    
+    # Group by opening
+    result_rows = []
+    for opening in valid_openings:
+        opening_data = filtered_data[filtered_data[opening_col] == opening]
+        n_games = len(opening_data)
+        
+        # For each score column, calculate mean and confidence intervals
+        for i, score_col in enumerate(score_cols, start=1):
+            turn = i * 5
+            scores = opening_data[score_col].dropna()
+            
+            if len(scores) > 0:
+                mean_score = scores.mean()
+                lower_ci = np.percentile(scores, 10)
+                upper_ci = np.percentile(scores, 90)
+                
+                result_rows.append({
+                    'opening': opening,
+                    'turn': turn,
+                    'score_mean': mean_score,
+                    'score_lower': lower_ci,
+                    'score_upper': upper_ci,
+                    'n_games': n_games
+                })
+    
+    return pd.DataFrame(result_rows)
+
+
+def get_score_distribution_by_opening(
+    data: pd.DataFrame,
+    opening_col: str = "uci_hierarchy_level_7_name",
+    min_games: int = min_benchmark_games
+) -> pd.DataFrame:
+    """
+    Returns long-format score distributions by opening and move number.
+    Only openings with at least `min_games` games are kept.
+
+    Output columns:
+    - opening
+    - turn
+    - score
+    - n_games
+    """
+    if data.empty:
+        return pd.DataFrame()
+
+    score_cols = [
+        "score_playing_turn_5",
+        "score_playing_turn_10",
+        "score_playing_turn_15",
+        "score_playing_turn_20",
+        "score_playing_turn_25",
+        "score_playing_turn_30",
+        "score_playing_turn_35",
+        "score_playing_turn_40",
+        "score_playing_turn_45",
+        "score_playing_turn_50",
+    ]
+
+    opening_counts = data[opening_col].value_counts()
+    valid_openings = opening_counts[opening_counts >= min_games]
+
+    if valid_openings.empty:
+        return pd.DataFrame()
+
+    filtered_data = data[data[opening_col].isin(valid_openings.index)].copy()
+
+    melted = filtered_data.melt(
+        id_vars=[opening_col],
+        value_vars=score_cols,
+        var_name="score_turn",
+        value_name="score",
+    )
+
+    melted = melted.dropna(subset=["score"]).copy()
+    if melted.empty:
+        return pd.DataFrame()
+
+    melted["turn"] = melted["score_turn"].str.extract(r"(\d+)$").astype(int)
+    melted["opening"] = melted[opening_col]
+    melted["n_games"] = melted["opening"].map(valid_openings.to_dict())
+
+    return melted[["opening", "turn", "score", "n_games"]]
+

@@ -14,7 +14,7 @@ api:
         - fluffy128li
         - d0niphan
         - djadja0327
-      start_month: "2010/01"
+      start_month: "2026/04"
     default_users:
       usernames:
         - aufhebungja
@@ -106,15 +106,24 @@ api:
         - dawid-26
         - getrektyousnail
         - angycaff
-      start_month: "2025/04"
+      start_month: "2026/04"
 
 postgres:
   schemas:
-    chess_com_api:  "stg_chess_com"
-    stockfish:      "stg_stockfish"
-    games_times:    "stg_times"
-    openings:       "stg_openings"
+    chess_com_api:  "raw_chess_com"
+    stockfish:      "raw_stockfish"
+    games_times:    "raw_times"
+    openings:       "raw_openings"
   tables:
-    stockfish:      "players_games_moves"
-    games_times:    "players_games_times"
-    openings:       "chess_openings"
+    chess_com_api:
+      name: # managed by dlt
+      index_field:  "end_time"
+    stockfish:
+      name:         "players_games_moves"
+      index_field:  "log_timestamp"
+    games_times:
+      name:         "players_games_times"
+      index_field:  "log_timestamp"
+    openings:
+      name:         "chess_openings"
+      index_field: # no index needed

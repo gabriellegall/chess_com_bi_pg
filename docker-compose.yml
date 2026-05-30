@@ -13,7 +13,7 @@ services:
       - "5433:5432"
 
   metabase:
-    image: metabase/metabase:v0.53.5
+    image: metabase/metabase:latest
     container_name: chess_metabase_container
     restart: always
     ports:
@@ -52,7 +52,7 @@ services:
       HEALTHCHECK_URL_DBT_TEST: ${HEALTHCHECK_URL_DBT_TEST}
 
   watchtower:
-    image: containrrr/watchtower
+    image: containrrr/watchtower:latest
     container_name: chess_watchtower_container
     restart: always
     volumes:

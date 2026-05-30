@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_players_base
+    description: "Defines the per-player intermediate base from scoped games."
+    columns:
+      - name: username
+        description: "Original player username from games data."
+        data_tests:
+          - not_null
+          - unique
+      - name: log_timestamp
+        description: "Latest log timestamp seen for the player in scoped games."
+        data_tests:
+          - not_null

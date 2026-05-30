@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_times__players_games_times
+    description: "Supplies source-aligned move clock so later models can combine evaluation and time-pressure signals at each move."
+    columns:
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+      - name: move_number
+        description: "{{ doc('move_number') }}"
+      - name: time_remaining_seconds
+        description: "{{ doc('time_remaining_seconds') }}"
+      - name: time_remaining
+        description: "{{ doc('time_remaining') }}"
+      - name: log_timestamp
+        description: "{{ doc('log_timestamp') }}"

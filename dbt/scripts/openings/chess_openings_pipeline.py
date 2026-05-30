@@ -3,20 +3,16 @@ import os
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import text, inspect
-import yaml
 
 sys.path.append(os.path.abspath('..'))
-from helper import get_engine 
+from helper import get_engine, load_config, get_table_settings, create_index_if_not_exists
 
 print("Starting chess openings data loading")
 
-# Load configuration from config.yml
-config_path = os.path.join(os.path.abspath('..'), 'config.yml')
-with open(config_path, "r") as f:
-    config = yaml.safe_load(f)
+config = load_config()
 
 target_schema   = config["postgres"]["schemas"]["openings"]
-target_table    = config["postgres"]["tables"]["openings"]
+target_table, target_index_field = get_table_settings(config, "openings")
 
 # Data Read
 try:
@@ -58,6 +54,8 @@ if not df.empty:
             sys.exit(1)
     else:
         print(f"Table {target_table} already exists. Moving on...")
+
+    create_index_if_not_exists(engine, target_schema, target_table, target_index_field)
 else:
     print("No rows were loaded from the Parquet file.")
 

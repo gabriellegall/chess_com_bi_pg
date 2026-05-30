@@ -20,7 +20,7 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
         y="category",
         labels={metric: metric.replace('_', ' ').title(), "category": ""},
         orientation='h',
-        hover_data=['username']
+        hover_data=["username_global"]
     )
 
     # Replace the default box plot with one that has jittered points and better colors for dark theme
@@ -72,7 +72,7 @@ def render_metric_boxplot(df: pd.DataFrame, metric: str, value_all: float, value
     fig.add_annotation(x=x_min, y=-0.4, text=left_annotation, showarrow=False, font=dict(color="white"))
     fig.add_annotation(x=x_max, y=-0.4, text=right_annotation, showarrow=False, font=dict(color="white"))
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 def render_legend(username, last_n_games):
     """

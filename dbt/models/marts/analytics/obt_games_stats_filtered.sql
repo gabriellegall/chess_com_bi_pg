@@ -1,0 +1,84 @@
+{{ config(
+    materialized = 'incremental',
+    incremental_strategy = 'append',
+    post_hook = [
+        "CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_username_global ON {{ this }} (username_global)"
+    ]
+) }}
+
+SELECT
+    games_stats.players_sk,
+    games_stats.games_sk,
+    players.username_global,
+    games_stats.uuid,
+    games_stats.run_timestamp,
+    -- Game info
+    games_info.url,
+    games_info.eco,
+    games_info.end_time,
+    games_info.time_class,
+    games_info.time_control,
+    games_info.playing_as,
+    games_info.playing_rating,
+    games_info.playing_rating_range,
+    games_info.opponent_rating,
+    games_info.opponent_rating_range,
+    games_info.playing_result,
+    -- Openings
+    games_openings.uci_hierarchy_level_1_name,
+    games_openings.uci_hierarchy_level_2_name,
+    games_openings.uci_hierarchy_level_7_name,
+    games_openings.opener_7_moves,
+    -- Stats
+    games_stats.nb_moves,
+    games_stats.prct_time_remaining_playing_early,
+    games_stats.prct_time_remaining_playing_mid,
+    games_stats.prct_time_remaining_playing_late,
+    games_stats.nb_massive_blunder_playing,
+    games_stats.has_throw_blunder_playing,
+    games_stats.has_throw_massive_blunder_playing,
+    games_stats.has_throw_massive_blunder_playing_early,
+    games_stats.has_throw_massive_blunder_playing_mid,
+    games_stats.has_throw_massive_blunder_playing_late,
+    games_stats.has_throw_blunder_playing_early,
+    games_stats.has_throw_blunder_playing_mid,
+    games_stats.has_throw_blunder_playing_late,
+    games_stats.has_missed_opportunity_blunder_playing,
+    games_stats.has_missed_opportunity_massive_blunder_playing,
+    games_stats.has_missed_opportunity_massive_blunder_playing_early,
+    games_stats.has_missed_opportunity_massive_blunder_playing_mid,
+    games_stats.has_missed_opportunity_massive_blunder_playing_late,
+    games_stats.has_missed_opportunity_blunder_playing_early,
+    games_stats.has_missed_opportunity_blunder_playing_mid,
+    games_stats.has_missed_opportunity_blunder_playing_late,
+    games_stats.first_blunder_massive_blunder_playing_prct_time_remaining,
+    games_stats.first_massive_blunder_playing_prct_time_remaining,
+    games_stats.first_missed_opp_massive_blunder_playing_prct_time_remaining,
+    games_stats.first_throw_massive_blunder_playing_prct_time_remaining,
+    games_stats.score_playing_turn_5,
+    games_stats.score_playing_turn_10,
+    games_stats.score_playing_turn_15,
+    games_stats.score_playing_turn_20,
+    games_stats.score_playing_turn_25,
+    games_stats.score_playing_turn_30,
+    games_stats.score_playing_turn_35,
+    games_stats.score_playing_turn_40,
+    games_stats.score_playing_turn_45,
+    games_stats.score_playing_turn_50
+FROM {{ ref('fct_games_stats') }} games_stats
+LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
+    ON games_openings.games_sk = games_stats.games_sk
+LEFT OUTER JOIN {{ ref('dim_games') }} games_info
+    ON games_info.games_sk = games_stats.games_sk
+LEFT OUTER JOIN {{ ref('dim_players') }} players
+    ON players.players_sk = games_stats.players_sk
+WHERE
+    TRUE
+    AND games_info.playing_result IN ('Win', 'Lose')
+    {% if is_incremental() %}
+        AND games_stats.run_timestamp > (
+            SELECT MAX(i.run_timestamp)
+            FROM {{ this }} i
+        )
+    {% endif %}
+ORDER BY games_info.end_time DESC

@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: int_games_base
+    description: "Builds the reusable per-game foundation by adding core analytical fields such as rating ranges and simplified outcomes without introducing table joins."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - username
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('stg_chess_com__players_games')
+    columns:
+      - name: username
+        data_tests:
+          - not_null
+      - name: uuid
+        data_tests:
+          - not_null
+      - name: playing_as
+        data_tests:
+          - not_null
+      - name: playing_result_detailed
+        data_tests:
+          - not_null
+      - name: playing_rating
+        data_tests:
+          - not_null
+      - name: opponent_rating
+        data_tests:
+          - not_null
+
+  - name: int_game_moves_base
+    description: "Builds the reusable per-game-move foundation without introducing table joins."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - move_number
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: source('stockfish', 'players_games_moves')
+    columns:
+      - name: uuid
+        data_tests:
+          - not_null
+      - name: move_number
+        data_tests:
+          - not_null
+      - name: score_white
+        data_tests:
+          - not_null
+
+  - name: int_games_filtered
+    description: "Applies the project data-scope policy to keep only analytically relevant games, making downstream tables consistent."
+    meta:
+      data_scope_filters:
+        - "rated games"
+        - "games played in the last {{ var('data_scope')['month_history_depth'] }} full months"
+        - "games having a time class among {{ var('data_scope')['time_class'] }}"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - username
+            - uuid
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_base')
+          compare_row_condition: "{{ games_scope_condition() }}"
+
+  - name: int_games_openings
+    description: "Maps observed early move sequences to opening hierarchy labels, enabling opening-based analysis at the game level."
+
+  - name: int_game_moves_enriched
+    description: "Integrates scoped games, engine evaluations, and clock data at move grain to derive game phases, score variance, and mistake context."
+
+  - name: int_games_stats
+    description: "Aggregates move-level events into one record per game and player, producing quantitative metrics."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: ref('int_games_openings')
+
+  - name: int_game_move_times_base
+    description: "Builds the reusable per-game-move time foundation without introducing table joins."
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - uuid
+            - move_number
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          compare_model: source('times', 'players_games_times')
+    columns:
+      - name: uuid
+        data_tests:
+          - not_null

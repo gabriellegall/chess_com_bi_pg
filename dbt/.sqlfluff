@@ -1,0 +1,58 @@
+[sqlfluff]
+templater = dbt
+dialect = postgres
+rules =
+    aliasing.expression,
+    aliasing.unique.table,
+    aliasing.unique.column,
+    aliasing.self_alias.column,
+    ambiguous.distinct,
+    ambiguous.union,
+    ambiguous.order_by,
+    ambiguous.join,
+    ambiguous.column_references,
+    ambiguous.set_columns,
+    ambiguous.join_condition,
+    convention.not_equal,
+    convention.coalesce,
+    convention.is_null,
+    convention.statement_brackets,
+    convention.left_join,
+    convention.casting_style,
+    references.qualification,
+    references.consistent,
+    references.keywords,
+    references.special_chars,
+    structure.unused_cte,
+    structure.nested_case,
+    structure.distinct,
+    structure.constant_expression,
+    structure.unused_join,
+
+    # cosmetic rules
+    capitalisation.keywords,
+    capitalisation.identifiers,
+    capitalisation.functions,
+    capitalisation.literals,
+    capitalisation.types,
+    layout.spacing,
+    layout.indent,
+
+[sqlfluff:templater:dbt]
+project_dir = ./
+profiles_dir = ./
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
+capitalisation_policy = upper

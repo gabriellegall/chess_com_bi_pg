@@ -1,3 +1,4 @@
+dbt-core
 dbt-postgres
 dlt[postgres]
 pandas
@@ -7,3 +8,5 @@ stockfish
 python-dotenv
 huggingface-hub
 pyarrow
+sqlfluff
+sqlfluff-templater-dbt

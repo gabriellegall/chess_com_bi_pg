@@ -234,9 +234,8 @@ Each loop performs the following steps:
     - `dbt run --full-refresh --exclude dbt_project_evaluator` once per calendar day.
     - `dbt run --exclude dbt_project_evaluator` on all other loop iterations.
    See dbt > Materialization strategy > Design trade-offs for the rationale.
-4. Runs lightweight smoke tests (`dbt test --select tag:smoke --exclude dbt_project_evaluator`) on each loop iteration to quickly catch key regressions (set `RUN_SMOKE_TESTS_EACH_LOOP=false` to disable).
-5. Sends a success healthcheck ping to the main Healthcheck.io endpoint.
-6. Every 100th loop, runs `dbt test --exclude dbt_project_evaluator` and reports the result to a dedicated dbt-test Healthcheck.io endpoint. If a dbt-test run fails on the 100th loop, it is treated as a soft fail and the main loop continues.
+4. Sends a success healthcheck ping to the main Healthcheck.io endpoint.
+5. Every 100th loop, runs `dbt test --exclude dbt_project_evaluator` and reports the result to a dedicated dbt-test Healthcheck.io endpoint. If a dbt-test run fails on the 100th loop, it is treated as a soft fail and the main loop continues. 
 
 If any pipeline/build step raises an exception, the script sends a failure ping to the main healthcheck endpoint and exits.
 

@@ -1,18 +1,15 @@
 Pre-requisite:
 - Test the periodic full-refresh
-- Use uv instead of Pip (inside Docker too)
-- Align all versions
-- Consistency in Python func naming
 
 P1:
 - Optimize the Streamlit app (code cleanup)
-- Optimize makefile
 
 Done:
-- Update readme.md
+- [OK] Optimize makefile
+- [OK] Consistency in Python func naming
+- [OK] Update readme.md
     - [OK] Update the Mermaid graph
     - [OK] Update the PNG images
-    - Review the consistency (e.g. ``) and quality of the readme
 - [OK] Test again the dockerized model
 - [OK] Test the changes on [run_timestamp] field
 - [OK] DRY on processable games

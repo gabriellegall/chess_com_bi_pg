@@ -15,7 +15,7 @@ from helper import (
 load_dotenv()
 config = load_config()
 
-def run_pipeline_for_group(pipeline, users, start_month):
+def _run_pipeline_for_group(pipeline, users, start_month):
     """Runs the DLT pipeline for a specific group of users."""
     data = source(
         users,
@@ -51,7 +51,7 @@ def run_pipeline():
         start_month = group_config.get("start_month")
         if users:
             print(f"Running pipeline for group: {group_name}")
-            run_pipeline_for_group(pipeline, users, start_month)
+            _run_pipeline_for_group(pipeline, users, start_month)
 
     schema_name = config["postgres"]["schemas"]["chess_com_api"]
     table_name, index_field = get_table_settings(config, "chess_com_api")

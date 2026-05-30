@@ -4,7 +4,7 @@ import sys
 from scripts.helper import get_engine
 from sqlalchemy import text
 
-def extract_schemas_from_dbt_project(dbt_config):
+def _extract_schemas_from_dbt_project(dbt_config):
     """Helper to extract schema names from dbt_project.yml config."""
     schemas = set()
     project_name = dbt_config.get("name")
@@ -24,7 +24,7 @@ def extract_schemas_from_dbt_project(dbt_config):
 
     return schemas
 
-def get_schemas_all_from_config():
+def _get_schemas_all_from_config():
     schemas = set()
     # Load config.yml
     with open("scripts/config.yml", "r") as f:
@@ -41,7 +41,7 @@ def get_schemas_all_from_config():
     # Load dbt_project.yml to get model and seed schemas
     with open("dbt_project.yml", "r") as f:
         dbt_config = yaml.safe_load(f)
-        schemas.update(extract_schemas_from_dbt_project(dbt_config))
+        schemas.update(_extract_schemas_from_dbt_project(dbt_config))
 
     return list(schemas)
 
@@ -50,7 +50,7 @@ def drop_schemas():
     This function will delete all staging schemas except Stockfish, as well as all DBT schemas.
     Finally, it executes the regular run_all.py script.
     """
-    schemas = get_schemas_all_from_config()
+    schemas = _get_schemas_all_from_config()
     print("The following schemas will be dropped:")
     for schema in schemas:
         print(f"- {schema}")

@@ -3,7 +3,7 @@ SELECT
     games_sk,
     username_global,
     uuid,
-    log_timestamp,
+    run_timestamp,
     -- Game info
     url,
     eco,

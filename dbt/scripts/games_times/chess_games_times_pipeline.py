@@ -11,7 +11,7 @@ from helper import get_engine, games_to_process, load_config, get_table_settings
 
 print("Starting games times processing")
 
-def extract_move_data(pgn):
+def _extract_move_data(pgn):
     clocks = re.findall(r'\[%clk (\d+):(\d{2}):(\d{2}(?:\.\d)?)\]', pgn)
     return [
         {
@@ -35,7 +35,7 @@ print(f"Query executed successfully — {len(games)} rows fetched.")
 
 if not games.empty:
     games = games[['uuid', 'pgn']]
-    games['move_data'] = games['pgn'].apply(extract_move_data)
+    games['move_data'] = games['pgn'].apply(_extract_move_data)
     
     games_expanded = games.explode('move_data', ignore_index=True)
     games_expanded[['move_number', 'time_remaining_seconds', 'time_remaining']] = pd.json_normalize(games_expanded['move_data'])

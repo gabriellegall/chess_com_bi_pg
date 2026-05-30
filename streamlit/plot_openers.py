@@ -39,7 +39,7 @@ def render_opening_sunburst(
             hover_data={"total_games": True, "winrate": ":.2%"}
         )
         fig_all.update_layout(width=800, height=800, coloraxis_showscale=False)
-        st.plotly_chart(fig_all, use_container_width=True, key=f"sunburst_all")
+        st.plotly_chart(fig_all, width="stretch", key=f"sunburst_all")
 
     # Last N games Sunburst
     with col_recent:
@@ -55,7 +55,7 @@ def render_opening_sunburst(
             hover_data={"total_games": True, "winrate": ":.2%"}
         )
         fig_recent.update_layout(width=800, height=800, coloraxis_showscale=False)
-        st.plotly_chart(fig_recent, use_container_width=True, key=f"sunburst_recent")
+        st.plotly_chart(fig_recent, width="stretch", key=f"sunburst_recent")
 
 
 def render_score_progression(df: pd.DataFrame) -> None:
@@ -154,4 +154,4 @@ def render_score_progression(df: pd.DataFrame) -> None:
         )
 
         with cols[i % 2]:
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")

@@ -98,7 +98,7 @@ graph LR;
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
 
 ## Requirements
-- [uv](https://docs.astral.sh/uv/)
+- Python 3.13
 - Docker
 - Makefile
 
@@ -112,20 +112,19 @@ This project is fully dockerized and can be executed locally or deployed on a se
 2. Using Docker Desktop, run `docker-compose up -d`
 
 #### Non-Dockerized Python execution
-You can also run the pipeline commands directly against the dockerized Postgres DB using a local virtual environment managed by `uv`.
+You can also run the pipeline commands directly against the dockerized Postgres DB using a local virtual environment.
 
 Environment setup:
-1. Install `uv` (Windows + Chocolatey): `choco install uv -y`
-2. Install Python 3.13 through `uv`: `uv python install 3.13`
-3. Create a virtual environment in the project root: `uv venv --python 3.13 .venv`
-4. Activate it (PowerShell): `.\\.venv\\Scripts\\Activate.ps1`
-5. Install dependencies: `uv pip install --python .\\.venv\\Scripts\\python.exe -r .\\dbt\\requirements.txt`
+1. Create a virtual environment in the project root: `python -m venv venv`
+2. Activate it (PowerShell): `.\venv\Scripts\Activate.ps1`
+3. Install dependencies: `pip install -r .\dbt\requirements.txt`
 
 Additional prerequisites:
 - Install [Stockfish](https://stockfishchess.org/download/) and make it available in PATH (e.g. `choco install stockfish -y` on Windows), or set the [`STOCKFISH_PATH`] environment variable to the executable path.
 - Run `dbt deps` inside the `dbt/` folder.
 
 Pipeline commands:
+- `make help`: list all available Make targets and the most useful runtime variables.
 - `make run_all`: run the continuous pipeline updating all tables. This is the most important command.
 - `make run_all_with_reset`: DROP all schemas (except Stockfish processed games) + run the continuous pipeline `run_all` (full refresh).
 

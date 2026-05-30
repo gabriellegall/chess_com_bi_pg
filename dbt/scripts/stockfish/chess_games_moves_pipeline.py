@@ -33,7 +33,7 @@ def _extract_stockfish_version(path_str: str) -> tuple:
         return tuple(parts)
     return tuple()
 
-def analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
+def _analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
     # Load the PGN
     game = chess.pgn.read_game(io.StringIO(pgn))
 
@@ -70,7 +70,7 @@ def analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
 
     return df
 
-def analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFrame:
+def _analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFrame:
     game_dfs = []
     processed_games = 0
 
@@ -80,7 +80,7 @@ def analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFram
         pgn = row['pgn']
 
         # Analyze the game and append the result to the list
-        game_df = analyze_chess_game(uuid, pgn, engine_path)
+        game_df = _analyze_chess_game(uuid, pgn, engine_path)
         game_dfs.append(game_df)
 
         # Increment and print the number of processed games
@@ -90,7 +90,7 @@ def analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFram
     # Concatenate all dataframes into one
     return pd.concat(game_dfs, ignore_index=True)
 
-def get_stockfish_path():
+def _get_stockfish_path():
     """Resolve a usable Stockfish executable path across env, PATH and OS defaults.
 
     Resolution order:
@@ -155,8 +155,8 @@ if not games.empty:
     games = games[['uuid', 'pgn']]
 
     # Calculate all games moves for all games
-    engine_path = get_stockfish_path()
-    games_moves = analyze_multiple_games(games, engine_path)
+    engine_path = _get_stockfish_path()
+    games_moves = _analyze_multiple_games(games, engine_path)
     games_moves["log_timestamp"] = datetime.now(tz=timezone.utc)
 
     with engine.begin() as conn:

@@ -14,14 +14,14 @@ from plot_openers       import render_opening_sunburst, render_score_progression
 st.set_page_config(layout="wide")
 
 @st.cache_data
-def load_dbt_project_config():
+def _load_dbt_project_config():
     """Loads the dbt_project.yml file."""
     project_root = Path.cwd().parent # The CWD is the 'streamlit' folder, so we go up one level to the project root.
     config_path = project_root / "dbt" / "dbt_project.yml"
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
-def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
+def _render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) -> dict:
     """
     Renders sidebar filters in order. Each categorical selection narrows `current_data`,
     so later filters (and slider defaults) are scoped to prior selections.
@@ -78,7 +78,7 @@ def render_sidebar_filters(dependent_data: pd.DataFrame, filter_fields: list) ->
 
     return selections
 
-def render_page_filters(
+def _render_page_filters(
     dependent_data: pd.DataFrame,
     filter_fields: list,
     context: str,
@@ -127,7 +127,7 @@ def render_page_filters(
                 )
     return selections
 
-def apply_filters(df: pd.DataFrame, selections: dict) -> pd.DataFrame:
+def _apply_filters(df: pd.DataFrame, selections: dict) -> pd.DataFrame:
     """
     Apply sidebar/all selections to the given dataframe.
     Handles both rating range tuples and categorical filters.
@@ -148,7 +148,7 @@ def apply_filters(df: pd.DataFrame, selections: dict) -> pd.DataFrame:
 
 # Load initial data
 raw_data                    = get_raw_data()
-dbt_config                  = load_dbt_project_config()
+dbt_config                  = _load_dbt_project_config()
 dbt_game_phases_config      = dbt_config.get("vars", {}).get("game_phases", {})
 dbt_score_thresholds_config = dbt_config.get("vars", {}).get("score_thresholds", {})
 plot_config                 = get_plot_config(dbt_game_phases_config, dbt_score_thresholds_config)
@@ -185,13 +185,13 @@ fields_benchmark_filter = ["playing_as", "playing_result"]
 fields_opener_filter    = ["playing_as"]
 
 # Render and get sidebar filters
-sidebar_selections = render_sidebar_filters(user_specific_data, fields_sidebar_filter)
+sidebar_selections = _render_sidebar_filters(user_specific_data, fields_sidebar_filter)
 
 ### --- Summary KPIs header --- 
 
 # Apply filters
 df_sidebar_filtered = user_specific_data.copy()
-df_sidebar_filtered = apply_filters(df_sidebar_filtered, sidebar_selections)
+df_sidebar_filtered = _apply_filters(df_sidebar_filtered, sidebar_selections)
 
 if df_sidebar_filtered.empty:
     st.warning("No data available for the selected filters.")
@@ -209,14 +209,14 @@ with st.container(border=True):
     st.header(f"How does {selected_username} compare to other similar players?")
 
     # Render and get benchmark filters
-    branchmark_selections = render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark", add_all=True)
+    branchmark_selections = _render_page_filters(user_specific_data, fields_benchmark_filter, context="benchmark", add_all=True)
 
     # Combine all selections into a single dictionary
     all_selections = {**sidebar_selections, **branchmark_selections}
 
     # Apply the combined filters to the entire dataset
     df_filtered_benchmark = raw_data.copy()
-    df_filtered_benchmark = apply_filters(df_filtered_benchmark, all_selections)
+    df_filtered_benchmark = _apply_filters(df_filtered_benchmark, all_selections)
 
     # Get the aggregated data for all players
     df_player_agg = get_players_aggregates(
@@ -273,13 +273,13 @@ with st.container(border=True):
     st.markdown("In this section, we explore the win rate on the various openings played:")
 
     # Standard opener filters (affect sunburst only)
-    opener_selections = render_page_filters(user_specific_data, fields_opener_filter, context="opener")
+    opener_selections = _render_page_filters(user_specific_data, fields_opener_filter, context="opener")
 
     # Apply standard opener filters for the sunburst
     all_selections = {**sidebar_selections, **opener_selections}
 
     df_filtered_opener = user_specific_data.copy()
-    df_filtered_opener = apply_filters(df_filtered_opener, all_selections)
+    df_filtered_opener = _apply_filters(df_filtered_opener, all_selections)
 
     # Sunburst charts
     list_dim = ["uci_hierarchy_level_1_name", "uci_hierarchy_level_2_name", "uci_hierarchy_level_7_name", "opener_7_moves"]
@@ -291,14 +291,14 @@ with st.container(border=True):
     # Apply additional filters only to the raw table
     st.subheader("Raw data")
 
-    opener_raw_selections = render_page_filters(
+    opener_raw_selections = _render_page_filters(
         user_specific_data, list_dim, context="opener_raw", style="dropdown", add_all=True
     )
 
     all_selections = {**sidebar_selections, **opener_selections, **opener_raw_selections}
 
     df_filtered_opener_raw = user_specific_data.copy()
-    df_filtered_opener_raw = apply_filters(df_filtered_opener_raw, all_selections)
+    df_filtered_opener_raw = _apply_filters(df_filtered_opener_raw, all_selections)
 
     st.dataframe(df_filtered_opener_raw)
 

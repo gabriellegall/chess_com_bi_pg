@@ -180,6 +180,13 @@ The data warehouse is structured through several layers in order to ensure (1) p
 - **'intermediate'**: transformation layer where the business logic is built. It enriches staging data, joins game, move, time and opening datasets together, and creates derived metrics such as move-level chess evaluations, miss classifications, game-phase flags, opening hierarchies and aggregated per-game stats.
 - **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style [2NF design](https://en.wikipedia.org/wiki/Second_normal_form): dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in [1NF](https://en.wikipedia.org/wiki/First_normal_form) as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
 
+### Business logic placement: intermediate vs. marts
+- Calculated fields, KPIs, and aggregations are implemented in `intermediate` only. `marts` models (`dim_*`, `fct_*`, `obt_*`) exclusively join, filter, and add surrogate keys — no `CASE`, aggregate, or window function.
+- **Rationale:** dbt Labs recommends isolating complex logic in intermediate models for easier refinement, troubleshooting, and testing. Given the volume of derivation required here (window functions, `FILTER` aggregates, percentiles), all business logic is isolated upstream rather than split case-by-case between layers.
+- **Trade-off:** metric definitions sit one layer upstream of the dbt Labs convention for simpler projects (business logic inline in marts). In exchange, the boundary becomes enforceable instead of a case-by-case judgment call: distinguishing "structural" from "business" logic is ambiguous in practice (e.g. a blunder count is both a re-grain and a metric), whereas requiring that a `marts` model's `SELECT` list contains only column references, join keys, filter predicates, or surrogate-key hashes is a rule that can be validated with a lint check.
+
+source: [dbt Labs best practices - intermediate](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)
+
 ### Materialization strategy
 
 - **Staging (`stg`):** All staging models are materialized as **views**. Since they are simple 1:1 projections on top of raw tables with no joins or aggregations, views avoid storing redundant data and ensure upstream changes are reflected immediately without a rerun.
@@ -299,7 +306,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - Intermediate naming consistently uses `int_` prefixes and descriptive verbs when needed (e.g. "filtered", "enriched").
     - Intermediate models are split into functional transformation steps using descriptive CTEs.
     - Intermediate folders are business-domain oriented (`games`, `openings`, `players`).
-    - Business transformations are implemented in intermediate models (joins, aggregations, window calculations).
+    - Business transformations are implemented in intermediate models (joins, aggregations, window calculations). See dbt > Layers > Business logic placement for the rationale.
     - DRY via Jinja is actively used inside intermediate models to avoid repetitive SQL blocks.
 
     source: [dbt Labs best practices - intermediate](https://docs.getdbt.com/best-practices/how-we-structure/3-intermediate?version=1.11)

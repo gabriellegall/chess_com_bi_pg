@@ -4,109 +4,109 @@ api:
       usernames:
         - piwi100
         - Zundorn
-        - leprechess
-        - bgdu33
-        - quentinusdesbois
-        - romainpct
-        - gokhvttttgxdddhjkig345
-        - yorek99
-        - ashutoshkhurana568
-        - fluffy128li
-        - d0niphan
-        - djadja0327
+        # - leprechess
+        # - bgdu33
+        # - quentinusdesbois
+        # - romainpct
+        # - gokhvttttgxdddhjkig345
+        # - yorek99
+        # - ashutoshkhurana568
+        # - fluffy128li
+        # - d0niphan
+        # - djadja0327
       start_month: "2026/04"
-    default_users:
-      usernames:
-        - aufhebungja
-        - slscharff
-        - itsdon3
-        - koli8
-        - tnvawls
-        - tandisco
-        - mr_nuke
-        - andrew_shapekin
-        - esasso
-        - arekusu22
-        - rjvrush
-        - constandean
-        - suleiman241081
-        - thewiltshirewarrior
-        - chesstickles09
-        - kekkaki42
-        - christrafer
-        - zupade
-        - rik1409
-        - girleidson
-        - chessman1ray
-        - orlandocrl
-        - hdawg94
-        - kirillolshansky
-        - jonathanhj
-        - eliaskaram84
-        - melnik63
-        - ap0lkmn
-        - pjm00
-        - ojatemate
-        - atak_66
-        - torpa1975
-        - bondpbond
-        - rc_dy
-        - justinmahi
-        - ana2
-        - thierry-l85
-        - barevner
-        - 1Kalinka
-        - AKASH6386
-        - flickjazz
-        - Bacon_and_Jaegs
-        - AsisIsisA
-        - aadam178
-        - Brewmaoster
-        - carlosfds
-        - ALMacugay
-        - CrazyProfAJ
-        - MOHIT_0620
-        - Karim30120
-        - kishoban
-        - AAgkoss
-        - alirezanorollahi
-        - xamxamsoun
-        - coffeeandchess4567
-        - nujoom90
-        - dmcam123
-        - dacruzthemagic
-        - basevicius
-        - mickigallo
-        - chessy-checking
-        - inex23
-        - wivifvbfutitujtjgky
-        - lffcc
-        - cheloniana
-        - zollgrooz
-        - philip_s
-        - sourav2005
-        - beachbum2209
-        - goldiefish2000
-        - nightfoufou
-        - lemo28203
-        - pettyboy123
-        - robertfisher84
-        - xenonide
-        - ru_shaikh
-        - lool540
-        - monkeyd-red
-        - hugoredondo
-        - noslayerr770
-        - erickrv7
-        - jejeboro
-        - mrwolf3
-        - shauryabharat
-        - blabla5484
-        - chefcaboose
-        - dawid-26
-        - getrektyousnail
-        - angycaff
-      start_month: "2026/04"
+    # default_users:
+    #   usernames:
+    #     - aufhebungja
+    #     - slscharff
+    #     - itsdon3
+    #     - koli8
+    #     - tnvawls
+    #     - tandisco
+    #     - mr_nuke
+    #     - andrew_shapekin
+    #     - esasso
+    #     - arekusu22
+    #     - rjvrush
+    #     - constandean
+    #     - suleiman241081
+    #     - thewiltshirewarrior
+    #     - chesstickles09
+    #     - kekkaki42
+    #     - christrafer
+    #     - zupade
+    #     - rik1409
+    #     - girleidson
+    #     - chessman1ray
+    #     - orlandocrl
+    #     - hdawg94
+    #     - kirillolshansky
+    #     - jonathanhj
+    #     - eliaskaram84
+    #     - melnik63
+    #     - ap0lkmn
+    #     - pjm00
+    #     - ojatemate
+    #     - atak_66
+    #     - torpa1975
+    #     - bondpbond
+    #     - rc_dy
+    #     - justinmahi
+    #     - ana2
+    #     - thierry-l85
+    #     - barevner
+    #     - 1Kalinka
+    #     - AKASH6386
+    #     - flickjazz
+    #     - Bacon_and_Jaegs
+    #     - AsisIsisA
+    #     - aadam178
+    #     - Brewmaoster
+    #     - carlosfds
+    #     - ALMacugay
+    #     - CrazyProfAJ
+    #     - MOHIT_0620
+    #     - Karim30120
+    #     - kishoban
+    #     - AAgkoss
+    #     - alirezanorollahi
+    #     - xamxamsoun
+    #     - coffeeandchess4567
+    #     - nujoom90
+    #     - dmcam123
+    #     - dacruzthemagic
+    #     - basevicius
+    #     - mickigallo
+    #     - chessy-checking
+    #     - inex23
+    #     - wivifvbfutitujtjgky
+    #     - lffcc
+    #     - cheloniana
+    #     - zollgrooz
+    #     - philip_s
+    #     - sourav2005
+    #     - beachbum2209
+    #     - goldiefish2000
+    #     - nightfoufou
+    #     - lemo28203
+    #     - pettyboy123
+    #     - robertfisher84
+    #     - xenonide
+    #     - ru_shaikh
+    #     - lool540
+    #     - monkeyd-red
+    #     - hugoredondo
+    #     - noslayerr770
+    #     - erickrv7
+    #     - jejeboro
+    #     - mrwolf3
+    #     - shauryabharat
+    #     - blabla5484
+    #     - chefcaboose
+    #     - dawid-26
+    #     - getrektyousnail
+    #     - angycaff
+    #   start_month: "2026/04"
 
 postgres:
   schemas:

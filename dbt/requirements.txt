@@ -10,3 +10,5 @@ huggingface-hub
 pyarrow
 sqlfluff
 sqlfluff-templater-dbt
+psycopg
+psycopg-binary

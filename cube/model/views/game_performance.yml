@@ -54,3 +54,4 @@ views:
           - opening_level_2_name
           - opening_level_7_name
           - opener_7_moves
+          - nb_distinct_openings

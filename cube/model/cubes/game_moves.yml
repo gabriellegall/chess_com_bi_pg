@@ -77,6 +77,27 @@ cubes:
         format: percent
         description: "Blunders and massive blunders / moves played by the player."
 
+      - name: nb_player_moves_rolling_30d
+        type: count
+        filters:
+          - sql: "{CUBE}.is_playing_turn"
+        rolling_window:
+          trailing: 30 day
+
+      - name: nb_blunders_rolling_30d
+        type: count
+        filters:
+          - sql: "{CUBE}.miss_category_playing IN ('Blunder', 'Massive Blunder')"
+        rolling_window:
+          trailing: 30 day
+
+      - name: blunder_rate_rolling_30d
+        multi_stage: true
+        type: number
+        sql: "1.0 * {nb_blunders_rolling_30d} / NULLIF({nb_player_moves_rolling_30d}, 0)"
+        format: percent
+        description: "blunder_rate over the 30 days up to each date. Query it with a time dimension (e.g. end_time by day)."
+
       - name: avg_score_playing
         sql: score_playing
         type: avg

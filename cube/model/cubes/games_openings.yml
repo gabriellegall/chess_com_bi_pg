@@ -24,3 +24,9 @@ cubes:
       - name: opener_7_moves
         sql: opener_7_moves
         type: string
+
+    measures:
+      - name: nb_distinct_openings
+        sql: uci_hierarchy_level_1_name
+        type: count_distinct
+        description: "Number of distinct level-1 openings played. Not additive: the monthly values do not add up to the yearly value."

@@ -264,12 +264,21 @@ The model is under `cube/model/`:
 - `views/`: the interfaces for consumers.
     - `game_performance`: one row per game. Results, win rate, rating gap, blunder rates by game phase, time management and openings.
     - `move_analysis`: one row per move. Mistakes, blunders and massive blunders by game phase, position and time remaining.
+      It also has `blunder_rate_rolling_30d`: the blunder rate over the 30 days up to each date. Query it with `end_time` and a granularity (e.g. day).
 
 Cube measures only aggregate mart columns (`count`, `sum`, `avg`, ratios of measures). The business rules (blunder thresholds, game phases, throw vs. missed opportunity) stay in the dbt `intermediate` layer (see dbt > Layers > Business logic placement).
 
 Access (local):
 - Playground: http://localhost:4000 (only when CUBE_DEV_MODE is `true`).
 - SQL API: `psql -h localhost -p 15432 -U <CUBE_SQL_USER> -d db`, then for example `SELECT time_class, MEASURE(win_rate) FROM game_performance GROUP BY 1;`. Any Postgres client (e.g. Metabase) can connect the same way.
+- Rolling blunder rate, per day:
+    ```sql
+    SELECT DATE_TRUNC('day', end_time) AS day, MEASURE(blunder_rate_rolling_30d)
+    FROM move_analysis
+    WHERE end_time >= '2026-01-01'
+    GROUP BY 1
+    ORDER BY 1;
+    ```
 
 Cube needs the `marts` schema to exist: run the dbt pipeline at least once before you query it.
 

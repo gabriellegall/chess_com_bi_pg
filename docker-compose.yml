@@ -28,13 +28,12 @@ services:
     ports:
       - "8501:8501"
     depends_on:
-      - analytical_db
+      - cube
     environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: analytical_db
-      DB_PORT: 5432
+      CUBE_SQL_USER: ${CUBE_SQL_USER}
+      CUBE_SQL_PASSWORD: ${CUBE_SQL_PASSWORD}
+      CUBE_SQL_HOST: cube
+      CUBE_SQL_PORT: 15432
 
   cube:
     image: cubejs/cube:latest
@@ -60,6 +59,8 @@ services:
       CUBEJS_PG_SQL_PORT: 15432
       CUBEJS_SQL_USER: ${CUBE_SQL_USER}
       CUBEJS_SQL_PASSWORD: ${CUBE_SQL_PASSWORD}
+      # Default is 50000 rows: Streamlit loads all games (row-level) from the game_details view.
+      CUBEJS_DB_QUERY_LIMIT: 1000000
 
   dbt:
     image: gabriellegall/chess-com-bi-pg-dbt:latest

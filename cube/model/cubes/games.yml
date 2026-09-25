@@ -106,7 +106,7 @@ cubes:
         type: number
         sql: "1.0 * {nb_wins} / NULLIF({nb_wins} + {nb_losses}, 0)"
         format: percent
-        description: "Wins / (wins + losses). Draws are excluded, like in obt_games_stats_filtered."
+        description: "Wins / (wins + losses). Draws are excluded, like in the Streamlit app."
 
       - name: avg_playing_rating
         sql: playing_rating

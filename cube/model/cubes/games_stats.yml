@@ -18,6 +18,139 @@ cubes:
         sql: nb_moves
         type: number
 
+      # Game-level values, used for row-level queries (e.g. distributions in Streamlit).
+      - name: prct_time_remaining_playing_early
+        sql: prct_time_remaining_playing_early
+        type: number
+
+      - name: prct_time_remaining_playing_mid
+        sql: prct_time_remaining_playing_mid
+        type: number
+
+      - name: prct_time_remaining_playing_late
+        sql: prct_time_remaining_playing_late
+        type: number
+
+      - name: has_throw_blunder_playing
+        sql: has_throw_blunder_playing
+        type: number
+
+      - name: has_throw_blunder_playing_early
+        sql: has_throw_blunder_playing_early
+        type: number
+
+      - name: has_throw_blunder_playing_mid
+        sql: has_throw_blunder_playing_mid
+        type: number
+
+      - name: has_throw_blunder_playing_late
+        sql: has_throw_blunder_playing_late
+        type: number
+
+      - name: has_throw_massive_blunder_playing
+        sql: has_throw_massive_blunder_playing
+        type: number
+
+      - name: has_throw_massive_blunder_playing_early
+        sql: has_throw_massive_blunder_playing_early
+        type: number
+
+      - name: has_throw_massive_blunder_playing_mid
+        sql: has_throw_massive_blunder_playing_mid
+        type: number
+
+      - name: has_throw_massive_blunder_playing_late
+        sql: has_throw_massive_blunder_playing_late
+        type: number
+
+      - name: has_missed_opportunity_blunder_playing
+        sql: has_missed_opportunity_blunder_playing
+        type: number
+
+      - name: has_missed_opportunity_blunder_playing_early
+        sql: has_missed_opportunity_blunder_playing_early
+        type: number
+
+      - name: has_missed_opportunity_blunder_playing_mid
+        sql: has_missed_opportunity_blunder_playing_mid
+        type: number
+
+      - name: has_missed_opportunity_blunder_playing_late
+        sql: has_missed_opportunity_blunder_playing_late
+        type: number
+
+      - name: has_missed_opportunity_massive_blunder_playing
+        sql: has_missed_opportunity_massive_blunder_playing
+        type: number
+
+      - name: has_missed_opportunity_massive_blunder_playing_early
+        sql: has_missed_opportunity_massive_blunder_playing_early
+        type: number
+
+      - name: has_missed_opportunity_massive_blunder_playing_mid
+        sql: has_missed_opportunity_massive_blunder_playing_mid
+        type: number
+
+      - name: has_missed_opportunity_massive_blunder_playing_late
+        sql: has_missed_opportunity_massive_blunder_playing_late
+        type: number
+
+      - name: first_blunder_massive_blunder_playing_prct_time_remaining
+        sql: first_blunder_massive_blunder_playing_prct_time_remaining
+        type: number
+
+      - name: first_massive_blunder_playing_prct_time_remaining
+        sql: first_massive_blunder_playing_prct_time_remaining
+        type: number
+
+      - name: first_missed_opp_massive_blunder_playing_prct_time_remaining
+        sql: first_missed_opp_massive_blunder_playing_prct_time_remaining
+        type: number
+
+      - name: first_throw_massive_blunder_playing_prct_time_remaining
+        sql: first_throw_massive_blunder_playing_prct_time_remaining
+        type: number
+
+      - name: score_playing_turn_5
+        sql: score_playing_turn_5
+        type: number
+
+      - name: score_playing_turn_10
+        sql: score_playing_turn_10
+        type: number
+
+      - name: score_playing_turn_15
+        sql: score_playing_turn_15
+        type: number
+
+      - name: score_playing_turn_20
+        sql: score_playing_turn_20
+        type: number
+
+      - name: score_playing_turn_25
+        sql: score_playing_turn_25
+        type: number
+
+      - name: score_playing_turn_30
+        sql: score_playing_turn_30
+        type: number
+
+      - name: score_playing_turn_35
+        sql: score_playing_turn_35
+        type: number
+
+      - name: score_playing_turn_40
+        sql: score_playing_turn_40
+        type: number
+
+      - name: score_playing_turn_45
+        sql: score_playing_turn_45
+        type: number
+
+      - name: score_playing_turn_50
+        sql: score_playing_turn_50
+        type: number
+
     measures:
       - name: nb_games_analyzed
         type: count

@@ -6,17 +6,17 @@ import os
 
 def get_engine() -> Engine:
     """  
-    Pass the credentials to connect to the Postgres engine DB.
+    Pass the credentials to connect to the Cube SQL API (Postgres wire protocol).
     """
     load_dotenv()
 
-    db_name     = os.getenv("DB_NAME")
-    db_user     = os.getenv("DB_USER")
-    db_password = os.getenv("DB_PASSWORD")
-    db_host     = os.getenv("DB_HOST")
-    db_port     = os.getenv("DB_PORT")
+    cube_user     = os.getenv("CUBE_SQL_USER")
+    cube_password = os.getenv("CUBE_SQL_PASSWORD")
+    cube_host     = os.getenv("CUBE_SQL_HOST")
+    cube_port     = os.getenv("CUBE_SQL_PORT")
 
-    return create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
+    # The database name is not used by Cube
+    return create_engine(f"postgresql://{cube_user}:{cube_password}@{cube_host}:{cube_port}/db")
 
 def load_query(sql_path: str, params: dict = None) -> pd.DataFrame:
     """

@@ -71,8 +71,8 @@ graph LR;
     n2 -->|"Reads & loads"| C
     D -->|"Executes models"| C
     C -->|"Queries"| E
-    C -->|"Queries"| F
     C -->|"Queries"| H
+    H -->|"Queries"| F
 
     %% Subgraph styling (light, semi-transparent)
     style DS fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
@@ -265,6 +265,7 @@ The model is under `cube/model/`:
     - `game_performance`: one row per game. Results, win rate, rating gap, blunder rates by game phase, time management and openings.
     - `move_analysis`: one row per move. Mistakes, blunders and massive blunders by game phase, position and time remaining.
       It also has `blunder_rate_rolling_30d`: the blunder rate over the 30 days up to each date. Query it with `end_time` and a granularity (e.g. day).
+    - `game_details`: one row per game, dimensions only (no measures). Streamlit reads it through the SQL API and computes its own distributions (medians, percentiles).
 
 Cube measures only aggregate mart columns (`count`, `sum`, `avg`, ratios of measures). The business rules (blunder thresholds, game phases, throw vs. missed opportunity) stay in the dbt `intermediate` layer (see dbt > Layers > Business logic placement).
 
@@ -290,6 +291,8 @@ I chose Streamlit because it is the most flexible free tool I found for building
 While I would have preferred to use Tableau for this highly analytical use case, Tableau Public does not allow free connectivity to a database.
 
 It is also important to note that the Streamlit application has a dependency on dbt, since it uses the `dbt_project.yml` file to display metrics definitions and business rules dynamically. Those definitions are exposed in `config.py`.
+
+Streamlit reads its data from Cube (the `game_details` view), through the SQL API. The query is in `streamlit/data/streamlit_game_details.sql`.
 
 ### Metabase
 If needed a Metabase app is also made available in `docker-compose.yml` for self-service analytics.

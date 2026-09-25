@@ -9,9 +9,9 @@ min_benchmark_games = 10
 @st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
     """
-    Loads the raw game data from the specified SQL query.
+    Loads the raw game data from Cube (game_details view).
     """
-    return load_query("data/streamlit_games_stats_filtered.sql")
+    return load_query("data/streamlit_game_details.sql")
 
 @st.cache_data
 def get_players_aggregates(data: pd.DataFrame, plot_config: dict, min_games: int = min_benchmark_games, group_by_col: str = 'username_global') -> pd.DataFrame:

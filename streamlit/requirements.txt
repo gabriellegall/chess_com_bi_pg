@@ -6,3 +6,5 @@ pytest
 pyyaml
 python-dotenv
 psycopg2-binary
+psycopg
+psycopg-binary

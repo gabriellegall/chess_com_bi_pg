@@ -1,9 +1,7 @@
--- Queried through the Cube SQL API: no GROUP BY and no MEASURE() means one row per game.
 SELECT
     games_sk,
     username_global,
     uuid,
-    -- Game info
     url,
     eco,
     end_time,
@@ -15,12 +13,10 @@ SELECT
     opponent_rating,
     opponent_rating_range,
     playing_result,
-    -- Openings
     opening_level_1_name AS uci_hierarchy_level_1_name,
     opening_level_2_name AS uci_hierarchy_level_2_name,
     opening_level_7_name AS uci_hierarchy_level_7_name,
     opener_7_moves,
-    -- Stats
     prct_time_remaining_playing_early,
     prct_time_remaining_playing_mid,
     prct_time_remaining_playing_late,
@@ -56,6 +52,6 @@ SELECT
     score_playing_turn_50
 FROM game_details
 WHERE
-    games_sk IS NOT NULL -- Games evaluated by Stockfish only
+    games_sk IS NOT NULL
     AND playing_result IN ('Win', 'Lose')
 ORDER BY end_time DESC

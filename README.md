@@ -23,6 +23,7 @@ This repository contains all the scripts aiming to:
 5. Construct a full data model using dbt to validate and transform data - defining metrics and dimensions (blunders, game phases, ELO ranges, etc.).
 6. Deploy a Streamlit dashboard containing the key analytical visualizations.
 7. Deploy a Metabase instance for self-service analytics (if ever needed).
+8. Deploy a Cube semantic layer on top of the marts, with shared dimensions and measures.
 
 # 🛠️ Technical overview
 
@@ -50,6 +51,11 @@ graph LR;
         C[Postgres Database]
     end
 
+    %% Semantic layer
+    subgraph SL ["Semantic Layer"]
+        H["Cube"]
+    end
+
     %% Visualization
     subgraph Viz ["Data Visualization"]
         E["Metabase"]
@@ -66,12 +72,14 @@ graph LR;
     D -->|"Executes models"| C
     C -->|"Queries"| E
     C -->|"Queries"| F
+    C -->|"Queries"| H
 
     %% Subgraph styling (light, semi-transparent)
     style DS fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
     style Processing fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
     style Storage fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
     style Viz fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
+    style SL fill:#f4f4f4,stroke:#ccc,stroke-width:1px,color:#000
 
     %% Node styling
     style A fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:white
@@ -84,6 +92,7 @@ graph LR;
     style C fill:#1B4F72,stroke:#154360,stroke-width:2px,color:white
     style E fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
     style F fill:#16a085,stroke:#138d75,stroke-width:2px,color:white
+    style H fill:#7a77ff,stroke:#5c59d6,stroke-width:2px,color:white
 ```
 
 ## Tools
@@ -93,6 +102,7 @@ graph LR;
 - Data storage & compute: **Postgres**
 - Data transformation: **dbt** (on Docker)
 - Data visualization: **Streamlit** (on Docker)
+- Semantic layer: **Cube** (on Docker)
 - Documentation: **dbt Docs**
 - Deployment: **from Docker Hub**, with **Docker Compose** including [**Watchtower**](https://github.com/containrrr/watchtower)
 - Pipeline monitoring: [**Healthcheck.io**](https://healthchecks.io/)
@@ -108,7 +118,7 @@ This project is fully dockerized and can be executed locally or deployed on a se
 ### Local execution
 
 #### Dockerized (recommended)
-1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
+1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD, CUBE_API_SECRET, CUBE_SQL_USER, CUBE_SQL_PASSWORD with the values of your choice.
 2. Using Docker Desktop, run `docker-compose up -d`
 
 #### Non-Dockerized Python execution
@@ -133,9 +143,9 @@ Data quality commands:
 - `make sqlfluff_fix`: run sqlfluff to verify (and fix) all dbt models and ensure that the SQL complies with the enforced rules.
 
 ### Server deployment (VPS)
-1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD with the values of your choice.
+1. Rename the `.env.example` file to `.env` and update the DB_NAME, DB_USER, DB_PASSWORD, CUBE_API_SECRET, CUBE_SQL_USER, CUBE_SQL_PASSWORD with the values of your choice. Set CUBE_DEV_MODE to `false`.
 2. copy the `.env` file to a project repository on your server.
-3. copy the `docker-compose.yml` to the same project repository on your server.
+3. copy the `docker-compose.yml` and the `cube/` folder to the same project repository on your server.
 4. run the command `docker-compose up -d`. This will start all applications and execute `run_all.py`.
 
 # 📂 Project
@@ -246,6 +256,23 @@ Each loop performs the following steps:
 
 If any pipeline/build step raises an exception, the script sends a failure ping to the main healthcheck endpoint and exits.
 
+## Semantic layer (Cube)
+Cube reads the core marts (`dim_*`, `fct_*`) in Postgres and exposes shared dimensions and measures through a REST/GraphQL API and a Postgres-compatible SQL API.
+
+The model is under `cube/model/`:
+- `cubes/`: one cube per core mart. `games` (`dim_games`) is the hub: it joins `players`, `games_stats`, `games_openings` (one-to-one or many-to-one) and `game_moves` (one-to-many).
+- `views/`: the interfaces for consumers.
+    - `game_performance`: one row per game. Results, win rate, rating gap, blunder rates by game phase, time management and openings.
+    - `move_analysis`: one row per move. Mistakes, blunders and massive blunders by game phase, position and time remaining.
+
+Cube measures only aggregate mart columns (`count`, `sum`, `avg`, ratios of measures). The business rules (blunder thresholds, game phases, throw vs. missed opportunity) stay in the dbt `intermediate` layer (see dbt > Layers > Business logic placement).
+
+Access (local):
+- Playground: http://localhost:4000 (only when CUBE_DEV_MODE is `true`).
+- SQL API: `psql -h localhost -p 15432 -U <CUBE_SQL_USER> -d db`, then for example `SELECT time_class, MEASURE(win_rate) FROM game_performance GROUP BY 1;`. Any Postgres client (e.g. Metabase) can connect the same way.
+
+Cube needs the `marts` schema to exist: run the dbt pipeline at least once before you query it.
+
 ## Data visualization
 ### Streamlit
 Streamlit is the main data visualization tool used in this project.
@@ -316,7 +343,7 @@ This section summarizes the dbt best practices that are implemented in this proj
     - Building a mart from other marts is used thoughtfully, instead of recomputing everything from upstream logic.
     - Clear model grain is declared and enforced.
     - Marts are materialized as tables/incremental models for query performance.
-    - In the absence of a Semantic Layer, wide OBT-style marts are provided and heavily denormalized to optimize for compute and end-user consumption.
+    - Wide OBT-style marts are provided and heavily denormalized to optimize for compute and end-user consumption. The Cube semantic layer is built on the normalized `dim_*` / `fct_*` marts instead.
     - Surrogate keys are used consistently to stabilize joins.
 
     sources: 

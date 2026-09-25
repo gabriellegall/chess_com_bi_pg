@@ -1,0 +1,18 @@
+cubes:
+  - name: players
+    sql_table: marts.dim_players
+    description: "One row per chess.com account. username_global groups several accounts of the same person."
+
+    dimensions:
+      - name: players_sk
+        sql: players_sk
+        type: string
+        primary_key: true
+
+      - name: username
+        sql: username
+        type: string
+
+      - name: username_global
+        sql: username_global
+        type: string

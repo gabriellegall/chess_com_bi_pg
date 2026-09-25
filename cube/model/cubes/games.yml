@@ -1,0 +1,122 @@
+cubes:
+  - name: games
+    sql_table: marts.dim_games
+    description: "One row per game and player (dim_games). Hub cube: all other cubes join from here."
+
+    joins:
+      - name: players
+        sql: "{CUBE}.players_sk = {players}.players_sk"
+        relationship: many_to_one
+
+      - name: games_stats
+        sql: "{CUBE}.games_sk = {games_stats}.games_sk"
+        relationship: one_to_one
+
+      - name: games_openings
+        sql: "{CUBE}.games_sk = {games_openings}.games_sk"
+        relationship: one_to_one
+
+      - name: game_moves
+        sql: "{CUBE}.games_sk = {game_moves}.games_sk"
+        relationship: one_to_many
+
+    dimensions:
+      - name: games_sk
+        sql: games_sk
+        type: string
+        primary_key: true
+
+      - name: uuid
+        sql: uuid
+        type: string
+
+      - name: url
+        sql: url
+        type: string
+
+      - name: end_time
+        sql: end_time
+        type: time
+
+      - name: time_class
+        sql: time_class
+        type: string
+
+      - name: time_control
+        sql: time_control
+        type: string
+
+      - name: rated
+        sql: rated
+        type: boolean
+
+      - name: eco
+        sql: eco
+        type: string
+
+      - name: playing_as
+        sql: playing_as
+        type: string
+
+      - name: playing_result
+        sql: playing_result
+        type: string
+        description: "Win, Lose or Draw, from the player's perspective."
+
+      - name: playing_result_detailed
+        sql: playing_result_detailed
+        type: string
+
+      - name: playing_rating
+        sql: playing_rating
+        type: number
+
+      - name: opponent_rating
+        sql: opponent_rating
+        type: number
+
+      - name: playing_rating_range
+        sql: playing_rating_range
+        type: string
+
+      - name: opponent_rating_range
+        sql: opponent_rating_range
+        type: string
+
+    measures:
+      - name: nb_games
+        type: count
+
+      - name: nb_wins
+        type: count
+        filters:
+          - sql: "{CUBE}.playing_result = 'Win'"
+
+      - name: nb_losses
+        type: count
+        filters:
+          - sql: "{CUBE}.playing_result = 'Lose'"
+
+      - name: nb_draws
+        type: count
+        filters:
+          - sql: "{CUBE}.playing_result = 'Draw'"
+
+      - name: win_rate
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_wins} + {nb_losses}, 0)"
+        format: percent
+        description: "Wins / (wins + losses). Draws are excluded, like in obt_games_stats_filtered."
+
+      - name: avg_playing_rating
+        sql: playing_rating
+        type: avg
+
+      - name: avg_opponent_rating
+        sql: opponent_rating
+        type: avg
+
+      - name: avg_rating_gap
+        sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating"
+        type: avg
+        description: "Average of opponent rating minus player rating. Positive means stronger opponents."

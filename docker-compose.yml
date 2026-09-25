@@ -36,6 +36,30 @@ services:
       DB_HOST: analytical_db
       DB_PORT: 5432
 
+  cube:
+    image: cubejs/cube:latest
+    container_name: chess_cube_container
+    restart: always
+    ports:
+      - "4000:4000"
+      - "15432:15432"
+    depends_on:
+      - analytical_db
+    volumes:
+      - ./cube:/cube/conf
+    environment:
+      CUBEJS_DB_TYPE: postgres
+      CUBEJS_DB_HOST: analytical_db
+      CUBEJS_DB_PORT: 5432
+      CUBEJS_DB_NAME: ${DB_NAME}
+      CUBEJS_DB_USER: ${DB_USER}
+      CUBEJS_DB_PASS: ${DB_PASSWORD}
+      CUBEJS_API_SECRET: ${CUBE_API_SECRET}
+      CUBEJS_DEV_MODE: ${CUBE_DEV_MODE:-true}
+      CUBEJS_PG_SQL_PORT: 15432
+      CUBEJS_SQL_USER: ${CUBE_SQL_USER}
+      CUBEJS_SQL_PASSWORD: ${CUBE_SQL_PASSWORD}
+
   dbt:
     image: gabriellegall/chess-com-bi-pg-dbt:latest
     container_name: chess_dbt_container

@@ -1,0 +1,56 @@
+views:
+  - name: game_performance
+    description: "Game-level analysis: results, ratings, blunder rates, time management and openings."
+
+    cubes:
+      - join_path: games
+        includes:
+          - end_time
+          - time_class
+          - time_control
+          - rated
+          - playing_as
+          - playing_result
+          - playing_rating_range
+          - opponent_rating_range
+          - eco
+          - url
+          - nb_games
+          - nb_wins
+          - nb_losses
+          - nb_draws
+          - win_rate
+          - avg_playing_rating
+          - avg_opponent_rating
+          - avg_rating_gap
+
+      - join_path: games.players
+        includes:
+          - username_global
+
+      - join_path: games.games_stats
+        includes:
+          - max_score_playing_type
+          - nb_games_analyzed
+          - avg_nb_moves
+          - massive_blunders_per_game
+          - blunders_per_game
+          - blunders_per_game_early
+          - blunders_per_game_mid
+          - blunders_per_game_late
+          - blunders_per_game_very_late
+          - throw_blunder_rate
+          - throw_massive_blunder_rate
+          - missed_opportunity_blunder_rate
+          - missed_opportunity_massive_blunder_rate
+          - avg_prct_time_remaining_early
+          - avg_prct_time_remaining_mid
+          - avg_prct_time_remaining_late
+          - avg_max_score
+
+      - join_path: games.games_openings
+        includes:
+          - opening_level_1_name
+          - opening_level_2_name
+          - opening_level_7_name
+          - opener_7_moves

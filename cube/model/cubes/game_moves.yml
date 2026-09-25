@@ -1,0 +1,86 @@
+cubes:
+  - name: game_moves
+    sql_table: marts.fct_game_moves
+    description: "One row per move, game and player (fct_game_moves). Includes the moves of both sides."
+
+    dimensions:
+      - name: game_moves_sk
+        sql: "{CUBE}.games_sk || '-' || CAST({CUBE}.move_number AS TEXT)"
+        type: string
+        primary_key: true
+
+      - name: move_number
+        sql: move_number
+        type: number
+
+      - name: game_phase
+        sql: game_phase
+        type: string
+
+      - name: playing_turn_name
+        sql: playing_turn_name
+        type: string
+
+      - name: is_playing_turn
+        sql: is_playing_turn
+        type: boolean
+
+      - name: miss_category_playing
+        sql: miss_category_playing
+        type: string
+        description: "Mistake, Blunder or Massive Blunder made by the player."
+
+      - name: miss_context_playing
+        sql: miss_context_playing
+        type: string
+        description: "Throw or Missed Opportunity."
+
+      - name: miss_category_opponent
+        sql: miss_category_opponent
+        type: string
+
+      - name: position_status_playing
+        sql: position_status_playing
+        type: string
+
+      - name: prct_time_remaining
+        sql: prct_time_remaining
+        type: number
+
+    measures:
+      - name: nb_moves
+        type: count
+
+      - name: nb_player_moves
+        type: count
+        filters:
+          - sql: "{CUBE}.is_playing_turn"
+
+      - name: nb_mistakes
+        type: count
+        filters:
+          - sql: "{CUBE}.miss_category_playing = 'Mistake'"
+
+      - name: nb_blunders
+        type: count
+        filters:
+          - sql: "{CUBE}.miss_category_playing = 'Blunder'"
+
+      - name: nb_massive_blunders
+        type: count
+        filters:
+          - sql: "{CUBE}.miss_category_playing = 'Massive Blunder'"
+
+      - name: blunder_rate
+        type: number
+        sql: "1.0 * ({nb_blunders} + {nb_massive_blunders}) / NULLIF({nb_player_moves}, 0)"
+        format: percent
+        description: "Blunders and massive blunders / moves played by the player."
+
+      - name: avg_score_playing
+        sql: score_playing
+        type: avg
+
+      - name: avg_prct_time_remaining
+        sql: prct_time_remaining
+        type: avg

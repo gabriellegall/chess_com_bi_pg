@@ -1,0 +1,35 @@
+views:
+  - name: move_analysis
+    description: "Move-level analysis: mistakes by game phase, time pressure and position."
+
+    cubes:
+      - join_path: games
+        includes:
+          - end_time
+          - time_class
+          - playing_result
+          - playing_rating_range
+
+      - join_path: games.players
+        includes:
+          - username_global
+
+      - join_path: games.game_moves
+        includes:
+          - move_number
+          - game_phase
+          - playing_turn_name
+          - is_playing_turn
+          - miss_category_playing
+          - miss_context_playing
+          - miss_category_opponent
+          - position_status_playing
+          - prct_time_remaining
+          - nb_moves
+          - nb_player_moves
+          - nb_mistakes
+          - nb_blunders
+          - nb_massive_blunders
+          - blunder_rate
+          - avg_score_playing
+          - avg_prct_time_remaining

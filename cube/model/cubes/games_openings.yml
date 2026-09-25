@@ -1,0 +1,26 @@
+cubes:
+  - name: games_openings
+    sql_table: marts.dim_games_openings
+    description: "Opening hierarchy of each game (dim_games_openings). Level X is the opening name at move X."
+
+    dimensions:
+      - name: games_sk
+        sql: games_sk
+        type: string
+        primary_key: true
+
+      - name: opening_level_1_name
+        sql: uci_hierarchy_level_1_name
+        type: string
+
+      - name: opening_level_2_name
+        sql: uci_hierarchy_level_2_name
+        type: string
+
+      - name: opening_level_7_name
+        sql: uci_hierarchy_level_7_name
+        type: string
+
+      - name: opener_7_moves
+        sql: opener_7_moves
+        type: string

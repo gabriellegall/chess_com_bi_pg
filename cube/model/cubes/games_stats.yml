@@ -1,0 +1,98 @@
+cubes:
+  - name: games_stats
+    sql_table: marts.fct_games_stats
+    description: "One row per game and player evaluated by Stockfish (fct_games_stats)."
+
+    dimensions:
+      - name: games_sk
+        sql: games_sk
+        type: string
+        primary_key: true
+
+      - name: max_score_playing_type
+        sql: max_score_playing_type
+        type: string
+        description: "Decisive advantage or not, at any point in the game."
+
+      - name: nb_moves
+        sql: nb_moves
+        type: number
+
+    measures:
+      - name: nb_games_analyzed
+        type: count
+
+      - name: avg_nb_moves
+        sql: nb_moves
+        type: avg
+
+      - name: nb_massive_blunders
+        sql: nb_massive_blunder_playing
+        type: sum
+
+      - name: nb_blunders_and_massive_blunders
+        sql: nb_blunder_massive_blunder_playing
+        type: sum
+
+      - name: massive_blunders_per_game
+        sql: nb_massive_blunder_playing
+        type: avg
+
+      - name: blunders_per_game
+        sql: nb_blunder_massive_blunder_playing
+        type: avg
+        description: "Average number of blunders and massive blunders per game."
+
+      - name: blunders_per_game_early
+        sql: nb_blunder_massive_blunder_playing_early
+        type: avg
+
+      - name: blunders_per_game_mid
+        sql: nb_blunder_massive_blunder_playing_mid
+        type: avg
+
+      - name: blunders_per_game_late
+        sql: nb_blunder_massive_blunder_playing_late
+        type: avg
+
+      - name: blunders_per_game_very_late
+        sql: nb_blunder_massive_blunder_playing_very_late
+        type: avg
+
+      - name: throw_blunder_rate
+        sql: has_throw_blunder_playing
+        type: avg
+        format: percent
+        description: "Share of games with at least one blunder thrown from an even or losing position."
+
+      - name: throw_massive_blunder_rate
+        sql: has_throw_massive_blunder_playing
+        type: avg
+        format: percent
+
+      - name: missed_opportunity_blunder_rate
+        sql: has_missed_opportunity_blunder_playing
+        type: avg
+        format: percent
+        description: "Share of games with at least one blunder made from a winning position."
+
+      - name: missed_opportunity_massive_blunder_rate
+        sql: has_missed_opportunity_massive_blunder_playing
+        type: avg
+        format: percent
+
+      - name: avg_prct_time_remaining_early
+        sql: prct_time_remaining_playing_early
+        type: avg
+
+      - name: avg_prct_time_remaining_mid
+        sql: prct_time_remaining_playing_mid
+        type: avg
+
+      - name: avg_prct_time_remaining_late
+        sql: prct_time_remaining_playing_late
+        type: avg
+
+      - name: avg_max_score
+        sql: max_score_playing
+        type: avg

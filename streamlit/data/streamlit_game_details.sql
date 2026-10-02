@@ -54,7 +54,7 @@ SELECT
     score_playing_turn_40,
     score_playing_turn_45,
     score_playing_turn_50
-FROM game_details
+FROM g
 WHERE
     games_sk IS NOT NULL -- Games evaluated by Stockfish only
     AND playing_result IN ('Win', 'Lose')

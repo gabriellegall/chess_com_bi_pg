@@ -1,5 +1,5 @@
 views:
-  - name: game_details
+  - name: g
     description: "Row-level game view (one row per game and player), without measures. Used by Streamlit, which computes its own distributions (medians, percentiles)."
 
     cubes:

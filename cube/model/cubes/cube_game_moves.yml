@@ -4,7 +4,7 @@ cubes:
 
     dimensions:
       - name: game_moves_sk
-        sql: "{CUBE}.games_sk || '-' || CAST({CUBE}.move_number AS TEXT)"
+        sql: game_moves_sk
         type: string
         primary_key: true
 

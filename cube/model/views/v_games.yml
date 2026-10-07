@@ -23,7 +23,6 @@ views:
         includes:
           - username_global
 
-      # games_sk comes from games_stats: it is NULL for games not evaluated by Stockfish.
       - join_path: cube_games.cube_games_stats
         includes:
           - games_sk

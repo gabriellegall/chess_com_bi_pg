@@ -18,6 +18,7 @@ views:
           - playing_result
           - rated
           - win_rate
+          - win_rate_last_30_days
 
       - join_path: cube_games.cube_players
         includes:

@@ -87,12 +87,33 @@ cubes:
         filters:
           - sql: "{CUBE}.playing_result = 'Win'"
 
+      - name: nb_wins_last_30_days
+        type: sum
+        sql: "1"
+        filters:
+          - sql: "{CUBE}.playing_result = 'Win'"
+        rolling_window:
+          trailing: 30 day
+
       - name: nb_losses
         type: count
         filters:
           - sql: "{CUBE}.playing_result = 'Lose'"
 
+      - name: nb_losses_last_30_days
+        type: sum
+        sql: "1"
+        filters:
+          - sql: "{CUBE}.playing_result = 'Lose'"
+        rolling_window:
+          trailing: 30 day
+
       - name: win_rate
         type: number
         sql: "1.0 * {nb_wins} / NULLIF({nb_wins} + {nb_losses}, 0)"
+        format: percent
+
+      - name: win_rate_last_30_days
+        type: number
+        sql: "1.0 * {nb_wins_last_30_days} / NULLIF({nb_wins_last_30_days} + {nb_losses_last_30_days}, 0)"
         format: percent

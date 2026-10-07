@@ -9,6 +9,7 @@
 SELECT
     {{ dbt_utils.generate_surrogate_key(['gm.username']) }} AS players_sk,
     {{ dbt_utils.generate_surrogate_key(['gm.uuid', 'gm.username']) }} AS games_sk,
+    {{ dbt_utils.generate_surrogate_key(['gm.uuid', 'gm.username', 'gm.move_number']) }} AS game_moves_sk,
     gm.uuid,
     gm.username,
     gm.playing_as,

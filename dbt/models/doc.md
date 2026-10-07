@@ -6,6 +6,10 @@ Hash surrogate key for player grain (username).
 Hash surrogate key for the game grain (uuid + username).
 {% enddocs %}
 
+{% docs game_moves_sk %}
+Hash surrogate key for the game move grain (uuid + username + move_number).
+{% enddocs %}
+
 {% docs archive_url %}
 Partition queried via the API to fetch the games. Contains the month and the username.
 {% enddocs %}

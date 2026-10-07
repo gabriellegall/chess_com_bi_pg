@@ -477,6 +477,11 @@ models:
           - relationships:
               to: ref('dim_games')
               field: games_sk
+      - name: game_moves_sk
+        description: "{{ doc('game_moves_sk') }}"
+        data_tests:
+          - not_null
+          - unique
       - name: uuid
         description: "{{ doc('uuid') }}"
       - name: username

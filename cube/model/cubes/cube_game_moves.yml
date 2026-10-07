@@ -1,7 +1,6 @@
 cubes:
   - name: cube_game_moves
     sql_table: marts.fct_game_moves
-    description: "One row per move, game and player (fct_game_moves). Includes the moves of both sides."
 
     dimensions:
       - name: game_moves_sk
@@ -28,12 +27,10 @@ cubes:
       - name: miss_category_playing
         sql: miss_category_playing
         type: string
-        description: "Mistake, Blunder or Big Blunder made by the player."
 
       - name: miss_context_playing
         sql: miss_context_playing
         type: string
-        description: "Throw or Missed Opportunity."
 
       - name: miss_category_opponent
         sql: miss_category_opponent
@@ -46,62 +43,3 @@ cubes:
       - name: prct_time_remaining
         sql: prct_time_remaining
         type: number
-
-    measures:
-      - name: nb_moves
-        type: count
-
-      - name: nb_player_moves
-        type: count
-        filters:
-          - sql: "{CUBE}.is_playing_turn"
-
-      - name: nb_mistakes
-        type: count
-        filters:
-          - sql: "{CUBE}.miss_category_playing = 'Mistake'"
-
-      - name: nb_blunders
-        type: count
-        filters:
-          - sql: "{CUBE}.miss_category_playing = 'Blunder'"
-
-      - name: nb_big_blunders
-        type: count
-        filters:
-          - sql: "{CUBE}.miss_category_playing = 'Big Blunder'"
-
-      - name: blunder_rate
-        type: number
-        sql: "1.0 * ({nb_blunders} + {nb_big_blunders}) / NULLIF({nb_player_moves}, 0)"
-        format: percent
-        description: "Blunders and big blunders / moves played by the player."
-
-      - name: nb_player_moves_rolling_30d
-        type: count
-        filters:
-          - sql: "{CUBE}.is_playing_turn"
-        rolling_window:
-          trailing: 30 day
-
-      - name: nb_blunders_rolling_30d
-        type: count
-        filters:
-          - sql: "{CUBE}.miss_category_playing IN ('Blunder', 'Big Blunder')"
-        rolling_window:
-          trailing: 30 day
-
-      - name: blunder_rate_rolling_30d
-        multi_stage: true
-        type: number
-        sql: "1.0 * {nb_blunders_rolling_30d} / NULLIF({nb_player_moves_rolling_30d}, 0)"
-        format: percent
-        description: "blunder_rate over the 30 days up to each date. Query it with a time dimension (e.g. end_time by day)."
-
-      - name: avg_score_playing
-        sql: score_playing
-        type: avg
-
-      - name: avg_prct_time_remaining
-        sql: prct_time_remaining
-        type: avg

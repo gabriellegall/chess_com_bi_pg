@@ -1,7 +1,6 @@
 cubes:
   - name: cube_games
     sql_table: marts.dim_games
-    description: "One row per game and player (dim_games). Hub cube: all other cubes join from here."
 
     joins:
       - name: cube_players
@@ -61,7 +60,6 @@ cubes:
       - name: playing_result
         sql: playing_result
         type: string
-        description: "Win, Lose or Draw, from the player's perspective."
 
       - name: playing_result_detailed
         sql: playing_result_detailed
@@ -84,9 +82,6 @@ cubes:
         type: string
 
     measures:
-      - name: nb_games
-        type: count
-
       - name: nb_wins
         type: count
         filters:
@@ -97,26 +92,7 @@ cubes:
         filters:
           - sql: "{CUBE}.playing_result = 'Lose'"
 
-      - name: nb_draws
-        type: count
-        filters:
-          - sql: "{CUBE}.playing_result = 'Draw'"
-
       - name: win_rate
         type: number
         sql: "1.0 * {nb_wins} / NULLIF({nb_wins} + {nb_losses}, 0)"
         format: percent
-        description: "Wins / (wins + losses). Draws are excluded, like in the Streamlit app."
-
-      - name: avg_playing_rating
-        sql: playing_rating
-        type: avg
-
-      - name: avg_opponent_rating
-        sql: opponent_rating
-        type: avg
-
-      - name: avg_rating_gap
-        sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating"
-        type: avg
-        description: "Average of opponent rating minus player rating. Positive means stronger opponents."

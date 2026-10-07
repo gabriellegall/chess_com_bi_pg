@@ -1,7 +1,6 @@
 cubes:
   - name: cube_games_openings
     sql_table: marts.dim_games_openings
-    description: "Opening hierarchy of each game (dim_games_openings). Level X is the opening name at move X."
 
     dimensions:
       - name: games_sk
@@ -24,9 +23,3 @@ cubes:
       - name: opener_7_moves
         sql: opener_7_moves
         type: string
-
-    measures:
-      - name: nb_distinct_openings
-        sql: uci_hierarchy_level_1_name
-        type: count_distinct
-        description: "Number of distinct level-1 openings played. Not additive: the monthly values do not add up to the yearly value."

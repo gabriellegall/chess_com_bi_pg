@@ -1,6 +1,5 @@
 views:
   - name: v_game_moves
-    description: "Move-level analysis: mistakes by game phase, time pressure and position."
 
     cubes:
       - join_path: cube_games
@@ -25,14 +24,3 @@ views:
           - miss_category_opponent
           - position_status_playing
           - prct_time_remaining
-          - nb_moves
-          - nb_player_moves
-          - nb_mistakes
-          - nb_blunders
-          - nb_big_blunders
-          - blunder_rate
-          - nb_player_moves_rolling_30d
-          - nb_blunders_rolling_30d
-          - blunder_rate_rolling_30d
-          - avg_score_playing
-          - avg_prct_time_remaining

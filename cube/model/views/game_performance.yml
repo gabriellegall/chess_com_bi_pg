@@ -33,16 +33,16 @@ views:
           - max_score_playing_type
           - nb_games_analyzed
           - avg_nb_moves
-          - massive_blunders_per_game
+          - big_blunders_per_game
           - blunders_per_game
           - blunders_per_game_early
           - blunders_per_game_mid
           - blunders_per_game_late
           - blunders_per_game_very_late
           - throw_blunder_rate
-          - throw_massive_blunder_rate
-          - missed_opportunity_blunder_rate
-          - missed_opportunity_massive_blunder_rate
+          - throw_big_blunder_rate
+          - miss_opp_blunder_rate
+          - miss_opp_big_blunder_rate
           - avg_prct_time_remaining_early
           - avg_prct_time_remaining_mid
           - avg_prct_time_remaining_late

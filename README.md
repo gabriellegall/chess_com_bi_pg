@@ -233,7 +233,7 @@ dbt tests have been developed to monitor data quality:
 All tests are automatically executed via the script `run_all.py` (more information below).
 
 ### Documentation
-All models are documented in dbt via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a massive blunder, etc.). 
+All models are documented in dbt via YAML files. All parameters are centralized under the `dbt_project.yml` file (e.g. describing when each game phase starts, what is the threshold for a small blunder or a big blunder, etc.).
 
 Since several models share the same fields, I use a markdown file `doc.md` to centralize new definitions and I call those definitions inside each YAML file. To ensure that there is a perfect match between the `doc.md` and the various YAML files, I created a script `test_doc.py` which can be executed to make a full gap analysis and raise warnings if any.
 
@@ -263,7 +263,7 @@ The model is under `cube/model/`:
 - `cubes/`: one cube per core mart. `games` (`dim_games`) is the hub: it joins `players`, `games_stats`, `games_openings` (one-to-one or many-to-one) and `game_moves` (one-to-many).
 - `views/`: the interfaces for consumers.
     - `game_performance`: one row per game. Results, win rate, rating gap, blunder rates by game phase, time management and openings.
-    - `move_analysis`: one row per move. Mistakes, blunders and massive blunders by game phase, position and time remaining.
+    - `move_analysis`: one row per move. Mistakes, blunders and big blunders by game phase, position and time remaining.
       It also has `blunder_rate_rolling_30d`: the blunder rate over the 30 days up to each date. Query it with `end_time` and a granularity (e.g. day).
     - `game_details`: one row per game, dimensions only (no measures). Streamlit reads it through the SQL API and computes its own distributions (medians, percentiles).
 
@@ -410,7 +410,7 @@ This section summarizes the dbt best practices that are implemented in this proj
 
 ### Data analytics
 - The Streamlit app could be enriched with more analysis, focusing on key areas of improvement:
-    - The ability to convert opponent's error into a win: ```P(Win|[nb_throw_massive_blunder_opponent] > 0)```, or ```P(Win|[max_score_playing] > X)```.
+    - The ability to convert opponent's error into a win: ```P(Win|[nb_throw_big_blunder_opponent] > 0)```, or ```P(Win|[max_score_playing] > X)```.
     - The ability to convert a late-game advantage into a win: ```P(Win|score_playing_late_phase > X)```.
     - The ability to withstand near-equal late-game positions: ```P(Win|score_playing_late_phase BETWEEN 0 AND X)```.
 

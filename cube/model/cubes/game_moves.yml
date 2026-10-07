@@ -28,7 +28,7 @@ cubes:
       - name: miss_category_playing
         sql: miss_category_playing
         type: string
-        description: "Mistake, Blunder or Massive Blunder made by the player."
+        description: "Mistake, Blunder or Big Blunder made by the player."
 
       - name: miss_context_playing
         sql: miss_context_playing
@@ -66,16 +66,16 @@ cubes:
         filters:
           - sql: "{CUBE}.miss_category_playing = 'Blunder'"
 
-      - name: nb_massive_blunders
+      - name: nb_big_blunders
         type: count
         filters:
-          - sql: "{CUBE}.miss_category_playing = 'Massive Blunder'"
+          - sql: "{CUBE}.miss_category_playing = 'Big Blunder'"
 
       - name: blunder_rate
         type: number
-        sql: "1.0 * ({nb_blunders} + {nb_massive_blunders}) / NULLIF({nb_player_moves}, 0)"
+        sql: "1.0 * ({nb_blunders} + {nb_big_blunders}) / NULLIF({nb_player_moves}, 0)"
         format: percent
-        description: "Blunders and massive blunders / moves played by the player."
+        description: "Blunders and big blunders / moves played by the player."
 
       - name: nb_player_moves_rolling_30d
         type: count
@@ -87,7 +87,7 @@ cubes:
       - name: nb_blunders_rolling_30d
         type: count
         filters:
-          - sql: "{CUBE}.miss_category_playing IN ('Blunder', 'Massive Blunder')"
+          - sql: "{CUBE}.miss_category_playing IN ('Blunder', 'Big Blunder')"
         rolling_window:
           trailing: 30 day
 

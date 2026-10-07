@@ -103,7 +103,7 @@ vars:
   move_stats_snapshots: [5,10,15,20,25,30,35,40,45,50]
   elo_range: [400,600,800,1000,1200,1400,1600,1800]
   score_thresholds:
-    variance_score_massive_blunder: 600
+    variance_score_big_blunder: 600
     variance_score_blunder: 250
     variance_score_mistake: 100
     score_balanced_limit: 200

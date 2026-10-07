@@ -47,68 +47,68 @@ cubes:
         sql: has_throw_blunder_playing_late
         type: number
 
-      - name: has_throw_massive_blunder_playing
-        sql: has_throw_massive_blunder_playing
+      - name: has_throw_big_blunder_playing
+        sql: has_throw_big_blunder_playing
         type: number
 
-      - name: has_throw_massive_blunder_playing_early
-        sql: has_throw_massive_blunder_playing_early
+      - name: has_throw_big_blunder_playing_early
+        sql: has_throw_big_blunder_playing_early
         type: number
 
-      - name: has_throw_massive_blunder_playing_mid
-        sql: has_throw_massive_blunder_playing_mid
+      - name: has_throw_big_blunder_playing_mid
+        sql: has_throw_big_blunder_playing_mid
         type: number
 
-      - name: has_throw_massive_blunder_playing_late
-        sql: has_throw_massive_blunder_playing_late
+      - name: has_throw_big_blunder_playing_late
+        sql: has_throw_big_blunder_playing_late
         type: number
 
-      - name: has_missed_opportunity_blunder_playing
-        sql: has_missed_opportunity_blunder_playing
+      - name: has_miss_opp_blunder_playing
+        sql: has_miss_opp_blunder_playing
         type: number
 
-      - name: has_missed_opportunity_blunder_playing_early
-        sql: has_missed_opportunity_blunder_playing_early
+      - name: has_miss_opp_blunder_playing_early
+        sql: has_miss_opp_blunder_playing_early
         type: number
 
-      - name: has_missed_opportunity_blunder_playing_mid
-        sql: has_missed_opportunity_blunder_playing_mid
+      - name: has_miss_opp_blunder_playing_mid
+        sql: has_miss_opp_blunder_playing_mid
         type: number
 
-      - name: has_missed_opportunity_blunder_playing_late
-        sql: has_missed_opportunity_blunder_playing_late
+      - name: has_miss_opp_blunder_playing_late
+        sql: has_miss_opp_blunder_playing_late
         type: number
 
-      - name: has_missed_opportunity_massive_blunder_playing
-        sql: has_missed_opportunity_massive_blunder_playing
+      - name: has_miss_opp_big_blunder_playing
+        sql: has_miss_opp_big_blunder_playing
         type: number
 
-      - name: has_missed_opportunity_massive_blunder_playing_early
-        sql: has_missed_opportunity_massive_blunder_playing_early
+      - name: has_miss_opp_big_blunder_playing_early
+        sql: has_miss_opp_big_blunder_playing_early
         type: number
 
-      - name: has_missed_opportunity_massive_blunder_playing_mid
-        sql: has_missed_opportunity_massive_blunder_playing_mid
+      - name: has_miss_opp_big_blunder_playing_mid
+        sql: has_miss_opp_big_blunder_playing_mid
         type: number
 
-      - name: has_missed_opportunity_massive_blunder_playing_late
-        sql: has_missed_opportunity_massive_blunder_playing_late
+      - name: has_miss_opp_big_blunder_playing_late
+        sql: has_miss_opp_big_blunder_playing_late
         type: number
 
-      - name: first_blunder_massive_blunder_playing_prct_time_remaining
-        sql: first_blunder_massive_blunder_playing_prct_time_remaining
+      - name: first_blunder_big_blunder_playing_prct_time_remaining
+        sql: first_blunder_big_blunder_playing_prct_time_remaining
         type: number
 
-      - name: first_massive_blunder_playing_prct_time_remaining
-        sql: first_massive_blunder_playing_prct_time_remaining
+      - name: first_big_blunder_playing_prct_time_remaining
+        sql: first_big_blunder_playing_prct_time_remaining
         type: number
 
-      - name: first_missed_opp_massive_blunder_playing_prct_time_remaining
-        sql: first_missed_opp_massive_blunder_playing_prct_time_remaining
+      - name: first_missed_opp_big_blunder_playing_prct_time_remaining
+        sql: first_missed_opp_big_blunder_playing_prct_time_remaining
         type: number
 
-      - name: first_throw_massive_blunder_playing_prct_time_remaining
-        sql: first_throw_massive_blunder_playing_prct_time_remaining
+      - name: first_throw_big_blunder_playing_prct_time_remaining
+        sql: first_throw_big_blunder_playing_prct_time_remaining
         type: number
 
       - name: score_playing_turn_5
@@ -159,37 +159,37 @@ cubes:
         sql: nb_moves
         type: avg
 
-      - name: nb_massive_blunders
-        sql: nb_massive_blunder_playing
+      - name: nb_big_blunders
+        sql: nb_big_blunder_playing
         type: sum
 
-      - name: nb_blunders_and_massive_blunders
-        sql: nb_blunder_massive_blunder_playing
+      - name: nb_blunders_and_big_blunders
+        sql: nb_blunder_big_blunder_playing
         type: sum
 
-      - name: massive_blunders_per_game
-        sql: nb_massive_blunder_playing
+      - name: big_blunders_per_game
+        sql: nb_big_blunder_playing
         type: avg
 
       - name: blunders_per_game
-        sql: nb_blunder_massive_blunder_playing
+        sql: nb_blunder_big_blunder_playing
         type: avg
-        description: "Average number of blunders and massive blunders per game."
+        description: "Average number of blunders and big blunders per game."
 
       - name: blunders_per_game_early
-        sql: nb_blunder_massive_blunder_playing_early
+        sql: nb_blunder_big_blunder_playing_early
         type: avg
 
       - name: blunders_per_game_mid
-        sql: nb_blunder_massive_blunder_playing_mid
+        sql: nb_blunder_big_blunder_playing_mid
         type: avg
 
       - name: blunders_per_game_late
-        sql: nb_blunder_massive_blunder_playing_late
+        sql: nb_blunder_big_blunder_playing_late
         type: avg
 
       - name: blunders_per_game_very_late
-        sql: nb_blunder_massive_blunder_playing_very_late
+        sql: nb_blunder_big_blunder_playing_very_late
         type: avg
 
       - name: throw_blunder_rate
@@ -198,19 +198,19 @@ cubes:
         format: percent
         description: "Share of games with at least one blunder thrown from an even or losing position."
 
-      - name: throw_massive_blunder_rate
-        sql: has_throw_massive_blunder_playing
+      - name: throw_big_blunder_rate
+        sql: has_throw_big_blunder_playing
         type: avg
         format: percent
 
-      - name: missed_opportunity_blunder_rate
-        sql: has_missed_opportunity_blunder_playing
+      - name: miss_opp_blunder_rate
+        sql: has_miss_opp_blunder_playing
         type: avg
         format: percent
         description: "Share of games with at least one blunder made from a winning position."
 
-      - name: missed_opportunity_massive_blunder_rate
-        sql: has_missed_opportunity_massive_blunder_playing
+      - name: miss_opp_big_blunder_rate
+        sql: has_miss_opp_big_blunder_playing
         type: avg
         format: percent
 

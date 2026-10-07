@@ -29,7 +29,7 @@ views:
           - nb_player_moves
           - nb_mistakes
           - nb_blunders
-          - nb_massive_blunders
+          - nb_big_blunders
           - blunder_rate
           - nb_player_moves_rolling_30d
           - nb_blunders_rolling_30d

@@ -83,9 +83,9 @@ WITH games_scope AS (
         CASE
             WHEN
                 is_playing_turn
-                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_big_blunder'] }}
                 AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
-                AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
+                AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Big Blunder'
             WHEN
                 is_playing_turn
                 AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_blunder'] }}
@@ -105,17 +105,17 @@ WITH games_scope AS (
         CASE
             WHEN
                 is_playing_turn
-                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND variance_score_playing <= -{{ var('score_thresholds')['variance_score_big_blunder'] }}
                 AND prev_score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }}
                 AND score_playing < {{ var('score_thresholds')['score_balanced_limit'] }} THEN move_number
             ELSE NULL
-        END AS massive_blunder_move_number_playing,
+        END AS big_blunder_move_number_playing,
         CASE
             WHEN
                 NOT is_playing_turn
-                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_massive_blunder'] }}
+                AND variance_score_playing >= {{ var('score_thresholds')['variance_score_big_blunder'] }}
                 AND prev_score_playing < {{ var('score_thresholds')['score_balanced_limit'] }}
-                AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Massive Blunder'
+                AND score_playing > -{{ var('score_thresholds')['score_balanced_limit'] }} THEN 'Big Blunder'
             WHEN
                 NOT is_playing_turn
                 AND variance_score_playing >= {{ var('score_thresholds')['variance_score_blunder'] }}
@@ -160,19 +160,19 @@ WITH games_scope AS (
         *,
         CASE
             WHEN
-                miss_category_playing IN ('Blunder', 'Massive Blunder')
+                miss_category_playing IN ('Blunder', 'Big Blunder')
                 AND prev_position_status_playing IN ('Even', 'Disadvantage') THEN 'Throw'
             WHEN
-                miss_category_playing IN ('Blunder', 'Massive Blunder')
+                miss_category_playing IN ('Blunder', 'Big Blunder')
                 AND prev_position_status_playing IN ('Advantage') THEN 'Missed Opportunity'
             ELSE NULL
         END AS miss_context_playing,
         CASE
             WHEN
-                miss_category_opponent IN ('Blunder', 'Massive Blunder')
+                miss_category_opponent IN ('Blunder', 'Big Blunder')
                 AND prev_position_status_opponent IN ('Even', 'Disadvantage') THEN 'Throw'
             WHEN
-                miss_category_opponent IN ('Blunder', 'Massive Blunder')
+                miss_category_opponent IN ('Blunder', 'Big Blunder')
                 AND prev_position_status_opponent IN ('Advantage') THEN 'Missed Opportunity'
             ELSE NULL
         END AS miss_context_opponent

@@ -26,7 +26,7 @@ SELECT
     gm.variance_score_playing,
     gm.miss_category_playing,
     gm.miss_move_number_playing,
-    gm.massive_blunder_move_number_playing,
+    gm.big_blunder_move_number_playing,
     gm.miss_category_opponent,
     gm.miss_move_number_opponent,
     gm.position_status_playing,

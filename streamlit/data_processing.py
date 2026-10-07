@@ -9,7 +9,7 @@ min_benchmark_games = 10
 @st.cache_data(ttl=600)
 def get_raw_data() -> pd.DataFrame:
     """
-    Loads the raw game data from Cube (game_details view).
+    Loads the raw game data from Cube (v_games view).
     """
     return load_query("data/streamlit_game_details.sql")
 
@@ -283,4 +283,3 @@ def get_score_distribution_by_opening(
     melted["n_games"] = melted["opening"].map(valid_openings.to_dict())
 
     return melted[["opening", "turn", "score", "n_games"]]
-

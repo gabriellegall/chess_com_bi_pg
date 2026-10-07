@@ -163,7 +163,7 @@ def get_plot_config(game_phases_config: dict, score_thresholds_config: dict) -> 
             'plot_title': '⌛🔴💥 Time remaining on the 1st Big Throw',
             'help': f"This boxplot represents, for each player, the percentage of time remaining on the clock when the 1st big throw occurs. A big throw is a throw with a decrease in centipawn advantage beyond {score_thresholds_config.get('variance_score_big_blunder')}."
         },
-        'first_missed_opp_big_blunder_playing_prct_time_remaining': {
+        'first_miss_opp_big_blunder_playing_prct_time_remaining': {
             'agg': 'median',
             'left_annotation': '⏳ You had no time',
             'right_annotation': '🚨 You had time',
@@ -209,7 +209,7 @@ def get_section_config(game_phases_config: dict, score_thresholds_config: dict) 
             "metrics": (
                 "first_big_blunder_playing_prct_time_remaining",
                 "first_throw_big_blunder_playing_prct_time_remaining",
-                "first_missed_opp_big_blunder_playing_prct_time_remaining",
+                "first_miss_opp_big_blunder_playing_prct_time_remaining",
             ),
             "help_text": "These plots show, for each player, the percentage of time remaining on the clock when the 1st big mistake (throw or missed opportunity) occurs in a game.",
             "has_breakdown": False

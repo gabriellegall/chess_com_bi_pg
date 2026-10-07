@@ -1,5 +1,5 @@
 cubes:
-  - name: games_stats
+  - name: cube_games_stats
     sql_table: marts.fct_games_stats
     description: "One row per game and player evaluated by Stockfish (fct_games_stats)."
 
@@ -103,8 +103,8 @@ cubes:
         sql: first_big_blunder_playing_prct_time_remaining
         type: number
 
-      - name: first_missed_opp_big_blunder_playing_prct_time_remaining
-        sql: first_missed_opp_big_blunder_playing_prct_time_remaining
+      - name: first_miss_opp_big_blunder_playing_prct_time_remaining
+        sql: first_miss_opp_big_blunder_playing_prct_time_remaining
         type: number
 
       - name: first_throw_big_blunder_playing_prct_time_remaining

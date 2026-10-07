@@ -691,7 +691,7 @@ Percent of the clock time remaining when username made the first blunder or big 
 Percent of the clock time remaining when username made the first big blunder.
 {% enddocs %}
 
-{% docs first_missed_opp_big_blunder_playing_prct_time_remaining %}
+{% docs first_miss_opp_big_blunder_playing_prct_time_remaining %}
 Percent of the clock time remaining when username made the first big blunder on a missed opportunity.
 {% enddocs %}
 

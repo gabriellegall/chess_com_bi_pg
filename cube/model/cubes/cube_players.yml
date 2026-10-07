@@ -1,5 +1,5 @@
 cubes:
-  - name: players
+  - name: cube_players
     sql_table: marts.dim_players
     description: "One row per chess.com account. username_global groups several accounts of the same person."
 

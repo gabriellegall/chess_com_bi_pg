@@ -1,5 +1,5 @@
 cubes:
-  - name: game_moves
+  - name: cube_game_moves
     sql_table: marts.fct_game_moves
     description: "One row per move, game and player (fct_game_moves). Includes the moves of both sides."
 

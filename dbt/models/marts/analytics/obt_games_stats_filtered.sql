@@ -53,7 +53,7 @@ SELECT
     games_stats.has_miss_opp_blunder_playing_late,
     games_stats.first_blunder_big_blunder_playing_prct_time_remaining,
     games_stats.first_big_blunder_playing_prct_time_remaining,
-    games_stats.first_missed_opp_big_blunder_playing_prct_time_remaining,
+    games_stats.first_miss_opp_big_blunder_playing_prct_time_remaining,
     games_stats.first_throw_big_blunder_playing_prct_time_remaining,
     games_stats.score_playing_turn_5,
     games_stats.score_playing_turn_10,

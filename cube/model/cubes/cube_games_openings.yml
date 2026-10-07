@@ -1,5 +1,5 @@
 cubes:
-  - name: games_openings
+  - name: cube_games_openings
     sql_table: marts.dim_games_openings
     description: "Opening hierarchy of each game (dim_games_openings). Level X is the opening name at move X."
 

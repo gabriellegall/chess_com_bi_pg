@@ -89,7 +89,7 @@ SELECT
     gs.nb_throw_big_blunder_opponent_very_late,
     gs.first_blunder_big_blunder_playing_prct_time_remaining,
     gs.first_big_blunder_playing_prct_time_remaining,
-    gs.first_missed_opp_big_blunder_playing_prct_time_remaining,
+    gs.first_miss_opp_big_blunder_playing_prct_time_remaining,
     gs.first_throw_big_blunder_playing_prct_time_remaining,
     gs.prct_time_remaining_playing_early,
     gs.prct_time_remaining_playing_mid,

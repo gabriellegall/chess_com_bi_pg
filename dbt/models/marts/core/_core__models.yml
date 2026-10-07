@@ -387,8 +387,8 @@ models:
         description: "{{ doc('first_blunder_big_blunder_playing_prct_time_remaining') }}"
       - name: first_big_blunder_playing_prct_time_remaining
         description: "{{ doc('first_big_blunder_playing_prct_time_remaining') }}"
-      - name: first_missed_opp_big_blunder_playing_prct_time_remaining
-        description: "{{ doc('first_missed_opp_big_blunder_playing_prct_time_remaining') }}"
+      - name: first_miss_opp_big_blunder_playing_prct_time_remaining
+        description: "{{ doc('first_miss_opp_big_blunder_playing_prct_time_remaining') }}"
       - name: first_throw_big_blunder_playing_prct_time_remaining
         description: "{{ doc('first_throw_big_blunder_playing_prct_time_remaining') }}"
       - name: prct_time_remaining_playing_early

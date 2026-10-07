@@ -1,20 +1,20 @@
 views:
-  - name: move_analysis
+  - name: v_game_moves
     description: "Move-level analysis: mistakes by game phase, time pressure and position."
 
     cubes:
-      - join_path: games
+      - join_path: cube_games
         includes:
           - end_time
           - time_class
           - playing_result
           - playing_rating_range
 
-      - join_path: games.players
+      - join_path: cube_games.cube_players
         includes:
           - username_global
 
-      - join_path: games.game_moves
+      - join_path: cube_games.cube_game_moves
         includes:
           - move_number
           - game_phase

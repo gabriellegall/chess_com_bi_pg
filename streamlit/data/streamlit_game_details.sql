@@ -38,7 +38,7 @@ SELECT
     has_miss_opp_blunder_playing_late,
     first_blunder_big_blunder_playing_prct_time_remaining,
     first_big_blunder_playing_prct_time_remaining,
-    first_missed_opp_big_blunder_playing_prct_time_remaining,
+    first_miss_opp_big_blunder_playing_prct_time_remaining,
     first_throw_big_blunder_playing_prct_time_remaining,
     score_playing_turn_5,
     score_playing_turn_10,
@@ -50,7 +50,7 @@ SELECT
     score_playing_turn_40,
     score_playing_turn_45,
     score_playing_turn_50
-FROM g
+FROM v_games
 WHERE
     games_sk IS NOT NULL
     AND playing_result IN ('Win', 'Lose')

@@ -1,23 +1,23 @@
 cubes:
-  - name: games
+  - name: cube_games
     sql_table: marts.dim_games
     description: "One row per game and player (dim_games). Hub cube: all other cubes join from here."
 
     joins:
-      - name: players
-        sql: "{CUBE}.players_sk = {players}.players_sk"
+      - name: cube_players
+        sql: "{CUBE}.players_sk = {cube_players}.players_sk"
         relationship: many_to_one
 
-      - name: games_stats
-        sql: "{CUBE}.games_sk = {games_stats}.games_sk"
+      - name: cube_games_stats
+        sql: "{CUBE}.games_sk = {cube_games_stats}.games_sk"
         relationship: one_to_one
 
-      - name: games_openings
-        sql: "{CUBE}.games_sk = {games_openings}.games_sk"
+      - name: cube_games_openings
+        sql: "{CUBE}.games_sk = {cube_games_openings}.games_sk"
         relationship: one_to_one
 
-      - name: game_moves
-        sql: "{CUBE}.games_sk = {game_moves}.games_sk"
+      - name: cube_game_moves
+        sql: "{CUBE}.games_sk = {cube_game_moves}.games_sk"
         relationship: one_to_many
 
     dimensions:

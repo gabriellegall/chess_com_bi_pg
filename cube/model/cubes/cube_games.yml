@@ -133,7 +133,7 @@ cubes:
         sql: "1.0 * {nb_wins_last_30_days} / NULLIF({nb_wins_last_30_days} + {nb_losses_last_30_days}, 0)"
         format: percent
 
-      - name: average_win_rate_per_player
+      - name: win_rate_per_player_avg_agg
         multi_stage: true
         sql: "{win_rate}"
         type: avg
@@ -148,10 +148,19 @@ cubes:
           include:
             - cube_players.username_global
 
-      - name: highest_win_rate
+      - name: win_rate_per_player_max_agg
         multi_stage: true
-        sql: "{average_win_rate_per_player}"
+        sql: "{win_rate_per_player_avg_agg}"
         type: max
+        format: percent
+        grain:
+          include:
+            - cube_players.username_global
+
+      - name: win_rate_per_player_min_agg
+        multi_stage: true
+        sql: "{win_rate_per_player_avg_agg}"
+        type: min
         format: percent
         grain:
           include:

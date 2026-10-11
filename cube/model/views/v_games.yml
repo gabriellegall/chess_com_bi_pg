@@ -23,8 +23,9 @@ views:
           - nb_wins
           - win_rate
           - win_rate_last_30_days
-          - average_win_rate_per_player
-          - highest_win_rate
+          - win_rate_per_player_avg_agg
+          - win_rate_per_player_max_agg
+          - win_rate_per_player_min_agg
 
       - join_path: cube_games.cube_players
         includes:

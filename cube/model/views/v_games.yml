@@ -17,6 +17,9 @@ views:
           - opponent_rating_range
           - playing_result
           - rated
+          - nb_players
+          - nb_players_above_1000
+          - nb_wins
           - win_rate
           - win_rate_last_30_days
 

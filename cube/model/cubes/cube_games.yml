@@ -82,6 +82,21 @@ cubes:
         type: string
 
     measures:
+      - name: nb_players
+        sql: "{cube_players.players_sk}"
+        type: count_distinct
+
+      - name: nb_players_above_1000
+        multi_stage: true
+        sql: "{nb_players}"
+        type: number
+        filter:
+          include:
+            - member: cube_games.playing_rating
+              operator: gt
+              values:
+                - "1000"
+
       - name: nb_wins
         type: count
         filters:

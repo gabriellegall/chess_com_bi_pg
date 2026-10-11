@@ -119,6 +119,10 @@ cubes:
           - sql: "{CUBE}.playing_result = 'Lose'"
           - sql: "{CUBE}.end_time >= CURRENT_DATE - INTERVAL '30 days'"
 
+      - name: nb_games_played
+        sql: games_sk
+        type: count
+
       - name: win_rate
         type: number
         sql: "1.0 * {nb_wins} / NULLIF({nb_wins} + {nb_losses}, 0)"
@@ -128,3 +132,27 @@ cubes:
         type: number
         sql: "1.0 * {nb_wins_last_30_days} / NULLIF({nb_wins_last_30_days} + {nb_losses_last_30_days}, 0)"
         format: percent
+
+      - name: average_win_rate_per_player
+        multi_stage: true
+        sql: "{win_rate}"
+        type: avg
+        format: percent
+        filter:
+          include:
+            - member: cube_games.nb_games_played
+              operator: gte
+              values:
+                - "30"
+        grain:
+          include:
+            - cube_players.username_global
+
+      - name: highest_win_rate
+        multi_stage: true
+        sql: "{average_win_rate_per_player}"
+        type: max
+        format: percent
+        grain:
+          include:
+            - cube_players.username_global

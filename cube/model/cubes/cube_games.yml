@@ -164,3 +164,30 @@ cubes:
             - cube_games.playing_rating_range
         filter:
           keep_only: []
+
+      # Return NULL instead of MAX when either of ["time_class", "playing_rating_range"] are aggregated: 
+      {%- for dim in ["time_class", "playing_rating_range"] %}
+      - name: nb_distinct_{{ dim | safe }}
+        sql: "{{ dim | safe }}"
+        type: count_distinct
+        public: false
+
+      - name: is_grouped_by_{{ dim | safe }}
+        multi_stage: true
+        sql: "{nb_distinct_{{- dim | safe -}} }"
+        type: max
+        public: false
+        grain:
+          keep_only:
+            - cube_games.{{ dim | safe }}
+        filter:
+          keep_only: []
+      {%- endfor %}
+
+      - name: avg_blunder_big_blunder_playing_time_class_rating_2 
+        multi_stage: true
+        type: number
+        sql: >
+          CASE WHEN {is_grouped_by_time_class} = 1 AND {is_grouped_by_playing_rating_range} = 1
+          THEN {avg_blunder_big_blunder_playing_time_class_rating} END
+      # ---------------------------------------------------------------------------------------------------

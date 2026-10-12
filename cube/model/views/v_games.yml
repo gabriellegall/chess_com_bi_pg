@@ -26,6 +26,8 @@ views:
           - win_rate_per_player_min
           - win_rate_per_player_max
           - win_rate_per_player_avg
+          - avg_blunder_big_blunder_playing
+          - avg_blunder_big_blunder_playing_time_class_rating
 
       - join_path: cube_games.cube_players
         includes:

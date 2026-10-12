@@ -16,6 +16,10 @@ cubes:
         sql: nb_moves
         type: number
 
+      - name: nb_blunder_big_blunder_playing
+        sql: nb_blunder_big_blunder_playing
+        type: number
+
       - name: prct_time_remaining_playing_early
         sql: prct_time_remaining_playing_early
         type: number

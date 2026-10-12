@@ -149,3 +149,18 @@ cubes:
           include:
             - cube_players.username_global
       {%- endfor %}
+
+      - name: avg_blunder_big_blunder_playing
+        sql: "{cube_games_stats.nb_blunder_big_blunder_playing}"
+        type: avg
+
+      - name: avg_blunder_big_blunder_playing_time_class_rating
+        multi_stage: true
+        sql: "{avg_blunder_big_blunder_playing}"
+        type: max
+        grain:
+          keep_only:
+            - cube_games.time_class
+            - cube_games.playing_rating_range
+        filter:
+          keep_only: []

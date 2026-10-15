@@ -29,6 +29,8 @@ views:
           - avg_blunder_big_blunder_playing
           - avg_blunder_big_blunder_playing_time_class_rating
           - avg_blunder_big_blunder_playing_time_class_rating_2
+          - avg_blunder_big_blunder_playing_peers
+          - avg_blunder_big_blunder_playing_vs_peers
 
       - join_path: cube_games.cube_players
         includes:

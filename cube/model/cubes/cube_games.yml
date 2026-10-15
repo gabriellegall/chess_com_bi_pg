@@ -190,4 +190,19 @@ cubes:
         sql: >
           CASE WHEN {is_grouped_by_time_class} = 1 AND {is_grouped_by_playing_rating_range} = 1
           THEN {avg_blunder_big_blunder_playing_time_class_rating} END
-      # ------------------------------------------------------------------------------------------------
+
+      - name: avg_blunder_big_blunder_playing_peers
+        multi_stage: true
+        sql: "{avg_blunder_big_blunder_playing}"
+        type: max
+        grain:
+          exclude:
+            - cube_players.username_global
+        filter:
+          exclude:
+            - cube_players.username_global
+
+      - name: avg_blunder_big_blunder_playing_vs_peers
+        multi_stage: true
+        sql: "{avg_blunder_big_blunder_playing} - {avg_blunder_big_blunder_playing_peers}"
+        type: number

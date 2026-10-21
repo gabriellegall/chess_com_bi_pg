@@ -150,6 +150,83 @@ cubes:
             - cube_players.username_global
       {%- endfor %}
 
+      # Variants of win_rate_per_player_max: grain (query grain + player vs. player only) x filter (WHERE applied vs. ignored)
+      - name: win_rate_per_player_max_unfiltered
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        filter:
+          keep_only: []
+          include:
+            - member: cube_games.nb_games_played
+              operator: gte
+              values:
+                - "30"
+        grain:
+          include:
+            - cube_players.username_global
+
+      - name: win_rate_per_player_max_fixed_grain
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        filter:
+          include:
+            - member: cube_games.nb_games_played
+              operator: gte
+              values:
+                - "30"
+        grain:
+          keep_only: []
+          include:
+            - cube_players.username_global
+
+      - name: win_rate_per_player_max_fixed_grain_unfiltered
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        filter:
+          keep_only: []
+          include:
+            - member: cube_games.nb_games_played
+              operator: gte
+              values:
+                - "30"
+        grain:
+          keep_only: []
+          include:
+            - cube_players.username_global
+
+      # keep_only alone only narrows the query's dims: if username_global is not in the query, the grain is empty
+      - name: win_rate_per_player_max_keep_only
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        filter:
+          include:
+            - member: cube_games.nb_games_played
+              operator: gte
+              values:
+                - "30"
+        grain:
+          keep_only:
+            - cube_players.username_global
+
+      # Tableau MAX({ FIXED username_global : win_rate }): the grain (query grain + player) only contains the
+      # players present in each row, and each of them carries their overall (fixed, unfiltered) win rate
+      - name: win_rate_per_player_max_tableau_fixed
+        multi_stage: true
+        sql: "{win_rate_per_player_max_fixed_grain_unfiltered}"
+        type: max
+        format: percent
+        grain:
+          include:
+            - cube_players.username_global
+
       - name: avg_blunder_big_blunder_playing
         sql: "{cube_games_stats.nb_blunder_big_blunder_playing}"
         type: avg

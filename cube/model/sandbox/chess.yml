@@ -1,0 +1,199 @@
+# Sandbox: Tableau LoD / DAX equivalents on the 9-game toy dataset (schema chess)
+cubes:
+  - name: dim_player
+    sql_table: chess.dim_player
+
+    dimensions:
+      - name: player_id
+        sql: player_id
+        type: number
+        primary_key: true
+
+      - name: username_global
+        sql: username_global
+        type: string
+
+  - name: fact_games
+    sql_table: chess.fact_games
+
+    joins:
+      - name: dim_player
+        sql: "{CUBE}.player_id = {dim_player}.player_id"
+        relationship: many_to_one
+
+    dimensions:
+      - name: game_id
+        sql: game_id
+        type: number
+        primary_key: true
+
+      - name: year
+        sql: year
+        type: number
+
+      - name: time_class
+        sql: time_class
+        type: string
+
+    measures:
+      - name: nb_wins
+        sql: win
+        type: sum
+
+      - name: nb_games_played
+        sql: total_games
+        type: sum
+
+      - name: nb_games_played_current_year
+        sql: total_games
+        type: sum
+        filters:
+          - sql: "{CUBE}.year = EXTRACT(YEAR FROM CURRENT_DATE)"
+
+      - name: nb_players
+        sql: "{dim_player.player_id}"
+        type: count_distinct
+
+      - name: win_rate
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        format: percent
+
+      # ID 1 · Simple win rate
+      - name: id1_simple
+        type: number
+        sql: "{win_rate}"
+        format: percent
+
+      # ID 2 · Tableau INCLUDE
+      - name: id2_include
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        grain:
+          include:
+            - dim_player.username_global
+
+      # ID 3 · Tableau EXCLUDE player dim
+      - name: id3_exclude_player
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        grain:
+          exclude:
+            - dim_player.username_global
+
+      # ID 4 · Tableau EXCLUDE <all dims but player dim>
+      - name: id4_exclude_all_but_player
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        grain:
+          keep_only:
+            - dim_player.username_global
+
+      # ID 5.A · Intermediate Cube step (= win_rate_per_player_max_fixed_grain_unfiltered)
+      - name: id5a_cube_intermediate
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        grain:
+          keep_only: []
+          include:
+            - dim_player.username_global
+        filter:
+          keep_only: []
+
+      # ID 5 · Tableau FIXED (= win_rate_per_player_max_tableau_fixed)
+      - name: id5_fixed
+        multi_stage: true
+        sql: "{id5a_cube_intermediate}"
+        type: max
+        format: percent
+        grain:
+          include:
+            - dim_player.username_global
+
+      # ID 6 intermediate (= win_rate_per_player_max_fixed_grain_filtered)
+      - name: id6_intermediate
+        multi_stage: true
+        sql: "{win_rate}"
+        type: max
+        format: percent
+        grain:
+          keep_only: []
+          include:
+            - dim_player.username_global
+
+      # ID 6 · Tableau FIXED + context filters (= win_rate_per_player_max_tableau_fixed_context)
+      - name: id6_fixed_context
+        multi_stage: true
+        sql: "{id6_intermediate}"
+        type: max
+        format: percent
+        grain:
+          include:
+            - dim_player.username_global
+
+      # Jinja: MIN / MAX / AVG of the per-player win rate
+      {%- for agg in ["min", "max", "avg"] %}
+      - name: win_rate_per_player_{{ agg | safe }}
+        multi_stage: true
+        sql: "{win_rate}"
+        type: {{ agg | safe }}
+        format: percent
+        grain:
+          include:
+            - dim_player.username_global
+      {%- endfor %}
+
+      # Workaround: NULL instead of the grand total when username_global is not in the query (grain: keep_only)
+      - name: is_grouped_by_player
+        multi_stage: true
+        sql: "{nb_players}"
+        type: max
+        grain:
+          keep_only:
+            - dim_player.username_global
+        filter:
+          keep_only: []
+
+      - name: id4_exclude_all_but_player_strict
+        multi_stage: true
+        sql: "CASE WHEN {is_grouped_by_player} = 1 THEN {id4_exclude_all_but_player} END"
+        type: number
+        format: percent
+
+views:
+  - name: v_fact_games
+
+    cubes:
+      - join_path: fact_games
+        includes:
+          - year
+          - time_class
+          - nb_games_played
+          - nb_games_played_current_year
+          - nb_players
+          - win_rate
+          - id1_simple
+          - id2_include
+          - id3_exclude_player
+          - id4_exclude_all_but_player
+          - id5a_cube_intermediate
+          - id5_fixed
+          - id6_intermediate
+          - id6_fixed_context
+          - win_rate_per_player_min
+          - win_rate_per_player_max
+          - win_rate_per_player_avg
+          - is_grouped_by_player
+          - id4_exclude_all_but_player_strict
+
+      - join_path: fact_games.dim_player
+        includes:
+          - username_global

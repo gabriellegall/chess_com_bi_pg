@@ -35,6 +35,10 @@ cubes:
         sql: time_class
         type: string
 
+      - name: game_date
+        sql: game_date
+        type: time
+
     measures:
       - name: nb_wins
         sql: win
@@ -168,6 +172,102 @@ cubes:
         type: number
         format: percent
 
+      # Time intelligence · Rolling windows
+      - name: nb_games_played_cumulative
+        sql: total_games
+        type: sum
+        rolling_window:
+          trailing: unbounded
+
+      - name: nb_games_played_last_12_months
+        sql: total_games
+        type: sum
+        rolling_window:
+          trailing: 1 year
+
+      - name: nb_wins_last_12_months
+        sql: win
+        type: sum
+        rolling_window:
+          trailing: 1 year
+
+      - name: win_rate_last_12_months
+        type: number
+        sql: "1.0 * {nb_wins_last_12_months} / NULLIF({nb_games_played_last_12_months}, 0)"
+        format: percent
+
+      # Workaround: wrong ratio when one of its rolling inputs is also in the query (Tesseract, v1.7.45)
+      - name: nb_wins_last_12_months_hidden
+        sql: win
+        type: sum
+        public: false
+        rolling_window:
+          trailing: 1 year
+
+      - name: nb_games_played_last_12_months_hidden
+        sql: total_games
+        type: sum
+        public: false
+        rolling_window:
+          trailing: 1 year
+
+      - name: win_rate_last_12_months_safe
+        type: number
+        sql: "1.0 * {nb_wins_last_12_months_hidden} / NULLIF({nb_games_played_last_12_months_hidden}, 0)"
+        format: percent
+
+      # Time intelligence · Period-to-date
+      - name: nb_games_played_ytd
+        sql: total_games
+        type: sum
+        rolling_window:
+          type: to_date
+          granularity: year
+
+      - name: nb_wins_ytd
+        sql: win
+        type: sum
+        rolling_window:
+          type: to_date
+          granularity: year
+
+      - name: win_rate_ytd
+        type: number
+        sql: "1.0 * {nb_wins_ytd} / NULLIF({nb_games_played_ytd}, 0)"
+        format: percent
+
+      # Time intelligence · Time shift
+      - name: nb_games_played_prior_year
+        multi_stage: true
+        sql: "{nb_games_played}"
+        type: number
+        time_shift:
+          - interval: 1 year
+            type: prior
+
+      - name: win_rate_prior_year
+        multi_stage: true
+        sql: "{win_rate}"
+        type: number
+        format: percent
+        time_shift:
+          - interval: 1 year
+            type: prior
+
+      - name: nb_games_played_yoy_growth
+        type: number
+        sql: "1.0 * ({nb_games_played} - {nb_games_played_prior_year}) / NULLIF({nb_games_played_prior_year}, 0)"
+        format: percent
+
+      - name: nb_games_played_ytd_prior_year
+        multi_stage: true
+        sql: "{nb_games_played_ytd}"
+        type: number
+        time_shift:
+          - time_dimension: game_date
+            interval: 1 year
+            type: prior
+
 views:
   - name: v_fact_games
 
@@ -193,6 +293,19 @@ views:
           - win_rate_per_player_avg
           - is_grouped_by_player
           - id4_exclude_all_but_player_strict
+          - game_date
+          - nb_games_played_cumulative
+          - nb_games_played_last_12_months
+          - nb_wins_last_12_months
+          - win_rate_last_12_months
+          - win_rate_last_12_months_safe
+          - nb_games_played_ytd
+          - nb_wins_ytd
+          - win_rate_ytd
+          - nb_games_played_prior_year
+          - win_rate_prior_year
+          - nb_games_played_yoy_growth
+          - nb_games_played_ytd_prior_year
 
       - join_path: fact_games.dim_player
         includes:

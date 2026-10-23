@@ -39,6 +39,14 @@ cubes:
         sql: game_date
         type: time
 
+      # Conditional measures · switch dimension (no sql, Tesseract only)
+      - name: metric
+        type: switch
+        values:
+          - games
+          - wins
+          - players
+
     measures:
       - name: nb_wins
         sql: win
@@ -268,6 +276,22 @@ cubes:
             interval: 1 year
             type: prior
 
+      # Conditional measures · case on the switch dimension (metric selector)
+      - name: selected_metric
+        multi_stage: true
+        type: number
+        case:
+          switch: "{CUBE.metric}"
+          when:
+            - value: games
+              sql: "{nb_games_played}"
+            - value: wins
+              sql: "{nb_wins}"
+            - value: players
+              sql: "{nb_players}"
+          else:
+            sql: "{nb_games_played}"
+
 views:
   - name: v_fact_games
 
@@ -306,6 +330,8 @@ views:
           - win_rate_prior_year
           - nb_games_played_yoy_growth
           - nb_games_played_ytd_prior_year
+          - metric
+          - selected_metric
 
       - join_path: fact_games.dim_player
         includes:

@@ -37,7 +37,7 @@ services:
       CUBE_SQL_PORT: 15432
 
   cube:
-    image: cubejs/cube:latest
+    image: cubejs/cube:v1.8.11
     container_name: chess_cube_container
     restart: always
     ports:

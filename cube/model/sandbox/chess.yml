@@ -47,6 +47,16 @@ cubes:
           - wins
           - players
 
+      # Free input (A) · filter on days_ago <= N
+      - name: days_ago
+        sql: "CURRENT_DATE - {CUBE}.game_date"
+        type: number
+
+      # Free input (B) · parameter dimension: renders the filtered value itself, so n_days = N is always true
+      - name: n_days
+        sql: "{FILTER_PARAMS.fact_games.n_days.filter(lambda x: x)}"
+        type: number
+
     measures:
       - name: nb_wins
         sql: win
@@ -292,6 +302,62 @@ cubes:
           else:
             sql: "{nb_games_played}"
 
+      # Free input (B) · win rate over the last N days, N passed with a filter on n_days
+      - name: nb_wins_last_n_days
+        sql: "CASE WHEN {FILTER_PARAMS.fact_games.n_days.filter(lambda x: f'CURRENT_DATE - game_date <= {x}')} THEN win END"
+        type: sum
+
+      - name: nb_games_played_last_n_days
+        sql: "CASE WHEN {FILTER_PARAMS.fact_games.n_days.filter(lambda x: f'CURRENT_DATE - game_date <= {x}')} THEN total_games END"
+        type: sum
+
+      - name: win_rate_last_n_days
+        type: number
+        sql: "1.0 * {nb_wins_last_n_days} / NULLIF({nb_games_played_last_n_days}, 0)"
+        format: percent
+
+  # Last N games per player: the query filters are pushed into the subquery (FILTER_PARAMS),
+  # so ROW_NUMBER() ranks the games that remain AFTER filtering
+  - name: fact_games_last_n
+    extends: fact_games
+    public: false
+    sql: |
+      SELECT
+          *,
+          ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY game_date DESC, game_id DESC) AS game_rank
+      FROM chess.fact_games
+      WHERE {FILTER_GROUP(
+        FILTER_PARAMS.fact_games_last_n.time_class.filter('time_class'),
+        FILTER_PARAMS.fact_games_last_n.year.filter('year'),
+        FILTER_PARAMS.fact_games_last_n.game_date.filter('game_date')
+      )}
+
+    # Inherited from fact_games: joins, dimensions (game_id, year, time_class, ...) and measures (nb_wins, win_rate, ...)
+    dimensions:
+      # 1 = most recent game of the player, among the filtered games
+      - name: game_rank
+        sql: game_rank
+        type: number
+
+      # Input parameter: renders the filtered value itself, so n_games = N is always true
+      - name: n_games
+        sql: "{FILTER_PARAMS.fact_games_last_n.n_games.filter(lambda x: x)}"
+        type: number
+
+    measures:
+      - name: nb_wins_last_n_games
+        sql: "CASE WHEN {FILTER_PARAMS.fact_games_last_n.n_games.filter(lambda x: f'game_rank <= {x}')} THEN win END"
+        type: sum
+
+      - name: nb_games_played_last_n_games
+        sql: "CASE WHEN {FILTER_PARAMS.fact_games_last_n.n_games.filter(lambda x: f'game_rank <= {x}')} THEN total_games END"
+        type: sum
+
+      - name: win_rate_last_n_games
+        type: number
+        sql: "1.0 * {nb_wins_last_n_games} / NULLIF({nb_games_played_last_n_games}, 0)"
+        format: percent
+
 views:
   - name: v_fact_games
 
@@ -332,7 +398,33 @@ views:
           - nb_games_played_ytd_prior_year
           - metric
           - selected_metric
+          - days_ago
+          - n_days
+          - nb_wins_last_n_days
+          - nb_games_played_last_n_days
+          - win_rate_last_n_days
 
       - join_path: fact_games.dim_player
         includes:
           - username_global
+
+  - name: v_fact_games_last_n
+
+    cubes:
+      - join_path: fact_games_last_n
+        includes:
+          - year
+          - time_class
+          - game_date
+          - game_rank
+          - n_games
+          - nb_games_played
+          - win_rate
+          - nb_games_played_last_n_games
+          - win_rate_last_n_games
+
+      - join_path: fact_games_last_n.dim_player
+        includes:
+          - username_global
+
+

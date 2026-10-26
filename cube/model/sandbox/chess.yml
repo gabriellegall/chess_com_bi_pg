@@ -14,7 +14,7 @@ cubes:
         type: string
 
       # ID 5 / ID 6 · Option 2: win rate computed once per player (sub_query), then aggregated by a measure
-      - name: win_rate
+      - name: win_rate_dim_player
         sql: "{fact_games.win_rate_sq}"
         type: number
         sub_query: true
@@ -28,7 +28,7 @@ cubes:
     measures:
       # ID 5 · Option 2 (same result as id5_fixed_option_1)
       - name: id5_fixed_option_2
-        sql: "{win_rate}"
+        sql: "{win_rate_dim_player}"
         type: max
         format: percent
 

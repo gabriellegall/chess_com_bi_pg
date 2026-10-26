@@ -18,8 +18,8 @@ cubes:
         type: string
 
       # Subquery dimensions · computed once per player (primary key), whatever the query groups by
-      # win_rate: all the player's games, the query WHERE is ignored
-      - name: win_rate
+      # win_rate_dim_player: all the player's games, the query WHERE is ignored
+      - name: win_rate_dim_player
         sql: "{cs_fact_games.win_rate_sq}"
         type: number
         sub_query: true
@@ -32,7 +32,7 @@ cubes:
         propagate_filters_to_sub_query: true
 
       - name: player_tier
-        sql: "CASE WHEN {win_rate} >= 0.6 THEN 'strong' WHEN {win_rate} IS NULL THEN 'no game' ELSE 'regular' END"
+        sql: "CASE WHEN {win_rate_dim_player} >= 0.6 THEN 'strong' WHEN {win_rate_dim_player} IS NULL THEN 'no game' ELSE 'regular' END"
         type: string
 
       - name: first_game_date
@@ -57,7 +57,7 @@ cubes:
 
       # AVG of the per-player value as a reusable measure (the dim cube dedupes per player_id)
       - name: avg_win_rate
-        sql: "{win_rate}"
+        sql: "{win_rate_dim_player}"
         type: avg
 
       - name: avg_win_rate_incl_filters
@@ -226,8 +226,7 @@ views:
       - join_path: cs_fact_games.cs_dim_player
         includes:
           - username_global
-          - name: win_rate             # the games measure win_rate is already in this view
-            alias: player_win_rate
+          - win_rate_dim_player
           - win_rate_incl_filters
           - avg_win_rate
           - avg_win_rate_incl_filters

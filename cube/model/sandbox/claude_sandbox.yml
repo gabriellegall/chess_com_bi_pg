@@ -1,0 +1,340 @@
+# Sandbox: subquery dimensions, multi-fact view, players with no game (prefix cs_ = Claude sandbox)
+cubes:
+  # Same players as chess.dim_player + C, who has no game (but has puzzles)
+  - name: cs_dim_player
+    sql: |
+      SELECT player_id, username_global FROM chess.dim_player
+      UNION ALL
+      SELECT 3, 'C'
+
+    dimensions:
+      - name: player_id
+        sql: player_id
+        type: number
+        primary_key: true
+
+      - name: username_global
+        sql: username_global
+        type: string
+
+      # Subquery dimensions · computed once per player (primary key), whatever the query groups by
+      # win_rate: all the player's games, the query WHERE is ignored
+      - name: win_rate
+        sql: "{cs_fact_games.win_rate_sq}"
+        type: number
+        sub_query: true
+
+      # win_rate_incl_filters: only the player's games that pass the query WHERE
+      - name: win_rate_incl_filters
+        sql: "{cs_fact_games.win_rate_incl_filters_sq}"
+        type: number
+        sub_query: true
+        propagate_filters_to_sub_query: true
+
+      - name: player_tier
+        sql: "CASE WHEN {win_rate} >= 0.6 THEN 'strong' WHEN {win_rate} IS NULL THEN 'no game' ELSE 'regular' END"
+        type: string
+
+      - name: first_game_date
+        sql: "{cs_fact_games.first_game_date}"
+        type: time
+        sub_query: true
+
+      - name: nb_games_lifetime_raw
+        sql: "{cs_fact_games.nb_games_played_sq}"
+        type: number
+        sub_query: true
+        public: false
+
+      # COALESCE outside the subquery: a player with no game has no row in it
+      - name: nb_games_lifetime
+        sql: "COALESCE({nb_games_lifetime_raw}, 0)"
+        type: number
+
+    measures:
+      - name: nb_players_registered
+        type: count
+
+      # AVG of the per-player value as a reusable measure (the dim cube dedupes per player_id)
+      - name: avg_win_rate
+        sql: "{win_rate}"
+        type: avg
+
+      - name: avg_win_rate_incl_filters
+        sql: "{win_rate_incl_filters}"
+        type: avg
+
+  # Players with no game · same cube + a reverse join (one_to_many), so views can start from the players.
+  # Kept out of cs_dim_player: a shared dimension of a multi-fact view must not join to the facts
+  - name: cs_dim_player_all
+    extends: cs_dim_player
+
+    joins:
+      - name: cs_fact_games
+        sql: "{CUBE}.player_id = {cs_fact_games}.player_id"
+        relationship: one_to_many
+
+  - name: cs_fact_games
+    sql_table: chess.fact_games
+
+    joins:
+      - name: cs_dim_player
+        sql: "{CUBE}.player_id = {cs_dim_player}.player_id"
+        relationship: many_to_one
+
+      - name: cs_dim_date
+        sql: "{CUBE}.game_date = {cs_dim_date.date}"
+        relationship: many_to_one
+
+    dimensions:
+      - name: game_id
+        sql: game_id
+        type: number
+        primary_key: true
+
+      - name: year
+        sql: year
+        type: number
+
+      - name: time_class
+        sql: time_class
+        type: string
+
+      - name: game_date
+        sql: game_date
+        type: time
+
+    measures:
+      - name: nb_wins
+        sql: win
+        type: sum
+
+      - name: nb_games_played
+        sql: total_games
+        type: sum
+
+      - name: win_rate
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        format: percent
+
+      - name: first_game_date
+        sql: game_date
+        type: min
+
+      # Multi-fact view: a filter on time_class (games only) is refused, so it goes in the measure
+      - name: nb_games_played_blitz
+        sql: total_games
+        type: sum
+        filters:
+          - sql: "{CUBE}.time_class = 'blitz'"
+
+      # Workaround (Tesseract, v1.8.11): one dedicated measure per subquery dimension, otherwise
+      # every member of the query referencing the same measure reads the same subquery column
+      - name: win_rate_sq
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        public: false
+
+      - name: win_rate_incl_filters_sq
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        public: false
+
+      - name: nb_games_played_sq
+        sql: total_games
+        type: sum
+        public: false
+
+      # AVG of the per-player win rate · multi-stage version (same pattern as id5a_cube_intermediate / id5_fixed_option_1 in chess.yml, with avg)
+      - name: win_rate_per_player_all_games
+        multi_stage: true
+        sql: "{win_rate}"
+        type: avg
+        grain:
+          keep_only: []
+          include:
+            - cs_dim_player.username_global
+        filter:
+          keep_only: []
+        public: false
+
+      - name: avg_player_win_rate
+        multi_stage: true
+        sql: "{win_rate_per_player_all_games}"
+        type: avg
+        grain:
+          include:
+            - cs_dim_player.username_global
+
+  # Second fact · puzzles (inline data): A and C solve puzzles, B does not, C plays no game
+  - name: cs_fact_puzzles
+    sql: |
+      SELECT * FROM (VALUES
+          (1001, 1, DATE '2026-01-05', 1),
+          (1002, 1, DATE '2026-03-10', 0),
+          (1003, 1, DATE '2026-06-01', 1),
+          (1004, 3, DATE '2026-02-01', 1),
+          (1005, 3, DATE '2026-02-02', 1)
+      ) AS t (puzzle_id, player_id, puzzle_date, solved)
+
+    joins:
+      - name: cs_dim_player
+        sql: "{CUBE}.player_id = {cs_dim_player}.player_id"
+        relationship: many_to_one
+
+      - name: cs_dim_date
+        sql: "{CUBE}.puzzle_date = {cs_dim_date.date}"
+        relationship: many_to_one
+
+    dimensions:
+      - name: puzzle_id
+        sql: puzzle_id
+        type: number
+        primary_key: true
+
+    measures:
+      - name: nb_puzzles
+        type: count
+
+      - name: nb_puzzles_solved
+        sql: solved
+        type: sum
+
+  # Shared date dimension of the multi-fact view
+  - name: cs_dim_date
+    sql: "SELECT d::date AS date FROM generate_series(DATE '2025-01-01', DATE '2026-12-31', INTERVAL '1 day') AS d"
+
+    dimensions:
+      - name: date
+        sql: date
+        type: time
+        primary_key: true
+
+views:
+  - name: v_cs_players
+
+    cubes:
+      - join_path: cs_fact_games
+        includes:
+          - year
+          - time_class
+          - nb_games_played
+          - win_rate
+          - avg_player_win_rate
+
+      - join_path: cs_fact_games.cs_dim_player
+        includes:
+          - username_global
+          - name: win_rate             # the games measure win_rate is already in this view
+            alias: player_win_rate
+          - win_rate_incl_filters
+          - avg_win_rate
+          - avg_win_rate_incl_filters
+          - player_tier
+          - first_game_date
+          - nb_games_lifetime
+          - nb_players_registered
+
+  # Players with no game · the view starts from dim_player, so C is kept
+  - name: v_cs_player_list
+
+    cubes:
+      - join_path: cs_dim_player_all
+        includes:
+          - username_global
+          - nb_players_registered
+          - nb_games_lifetime
+          - player_tier
+          - first_game_date
+
+      - join_path: cs_dim_player_all.cs_fact_games
+        prefix: true
+        includes:
+          - nb_games_played
+          - win_rate
+          - time_class
+
+  # Multi-fact view · each fact is aggregated on its own, then joined on the shared dimensions
+  - name: v_cs_multi_fact
+
+    cubes:
+      - join_path: cs_fact_games
+        prefix: true
+        includes:
+          - nb_games_played
+          - nb_games_played_blitz
+          - win_rate
+          - time_class
+
+      - join_path: cs_fact_puzzles
+        prefix: true
+        includes:
+          - nb_puzzles
+          - nb_puzzles_solved
+
+      - join_path: cs_dim_player
+        includes:
+          - username_global
+
+      - join_path: cs_dim_date
+        includes:
+          - date
+
+    measures:
+      - name: puzzles_per_game
+        multi_stage: true
+        type: number
+        sql: "1.0 * {cs_fact_puzzles.nb_puzzles} / NULLIF({cs_fact_games.nb_games_played}, 0)"
+
+  # SQL API join between views (Q4)
+  - name: v_cs_games
+
+    cubes:
+      - join_path: cs_fact_games
+        includes:
+          - time_class
+          - nb_games_played
+          - win_rate
+
+      - join_path: cs_dim_player
+        includes:
+          - username_global
+
+  - name: v_cs_puzzles
+
+    cubes:
+      - join_path: cs_fact_puzzles
+        includes:
+          - nb_puzzles
+          - nb_puzzles_solved
+
+      - join_path: cs_dim_player
+        includes:
+          - username_global
+
+  # Q4 · copies of v_fact_games / v_fact_games_last_n with dim_player at a root-level join_path
+  - name: v_cs_fact_games_root
+
+    cubes:
+      - join_path: fact_games
+        includes:
+          - time_class
+          - win_rate
+
+      - join_path: dim_player
+        includes:
+          - username_global
+
+  - name: v_cs_fact_games_last_n_root
+
+    cubes:
+      - join_path: fact_games_last_n
+        includes:
+          - time_class
+          - n_games
+          - win_rate_last_n_games
+
+      - join_path: dim_player
+        includes:
+          - username_global

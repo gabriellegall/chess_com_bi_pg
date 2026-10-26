@@ -13,6 +13,31 @@ cubes:
         sql: username_global
         type: string
 
+      # ID 5 / ID 6 · Option 2: win rate computed once per player (sub_query), then aggregated by a measure
+      - name: win_rate
+        sql: "{fact_games.win_rate_sq}"
+        type: number
+        sub_query: true
+
+      - name: win_rate_incl_filters
+        sql: "{fact_games.win_rate_incl_filters_sq}"
+        type: number
+        sub_query: true
+        propagate_filters_to_sub_query: true
+
+    measures:
+      # ID 5 · Option 2 (same result as id5_fixed_option_1)
+      - name: id5_fixed_option_2
+        sql: "{win_rate}"
+        type: max
+        format: percent
+
+      # ID 6 · Option 2 (same result as id6_fixed_context_option_1)
+      - name: id6_fixed_context_option_2
+        sql: "{win_rate_incl_filters}"
+        type: max
+        format: percent
+
   - name: fact_games
     sql_table: chess.fact_games
 
@@ -81,6 +106,19 @@ cubes:
         sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
         format: percent
 
+      # Workaround (Tesseract, v1.8.11): one dedicated copy of win_rate per sub_query dimension of dim_player,
+      # otherwise every member of the query referencing win_rate reads the same subquery column
+      # https://github.com/cube-js/cube/issues/12020
+      - name: win_rate_sq
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        public: false
+
+      - name: win_rate_incl_filters_sq
+        type: number
+        sql: "1.0 * {nb_wins} / NULLIF({nb_games_played}, 0)"
+        public: false
+
       # ID 1 · Simple win rate
       - name: id1_simple
         type: number
@@ -130,8 +168,8 @@ cubes:
         filter:
           keep_only: []
 
-      # ID 5 · Tableau FIXED (= win_rate_per_player_max_tableau_fixed)
-      - name: id5_fixed
+      # ID 5 · Tableau FIXED · Option 1 (= win_rate_per_player_max_tableau_fixed)
+      - name: id5_fixed_option_1
         multi_stage: true
         sql: "{id5a_cube_intermediate}"
         type: max
@@ -151,8 +189,8 @@ cubes:
           include:
             - dim_player.username_global
 
-      # ID 6 · Tableau FIXED + context filters (= win_rate_per_player_max_tableau_fixed_context)
-      - name: id6_fixed_context
+      # ID 6 · Tableau FIXED + context filters · Option 1 (= win_rate_per_player_max_tableau_fixed_context)
+      - name: id6_fixed_context_option_1
         multi_stage: true
         sql: "{id6_intermediate}"
         type: max
@@ -375,9 +413,9 @@ views:
           - id3_exclude_player
           - id4_exclude_all_but_player
           - id5a_cube_intermediate
-          - id5_fixed
+          - id5_fixed_option_1
           - id6_intermediate
-          - id6_fixed_context
+          - id6_fixed_context_option_1
           - win_rate_per_player_min
           - win_rate_per_player_max
           - win_rate_per_player_avg
@@ -407,6 +445,8 @@ views:
       - join_path: fact_games.dim_player
         includes:
           - username_global
+          - id5_fixed_option_2
+          - id6_fixed_context_option_2
 
   - name: v_fact_games_last_n
 

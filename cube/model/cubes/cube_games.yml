@@ -1,6 +1,6 @@
 cubes:
   - name: cube_games
-    sql_table: marts.dim_games
+    sql_table: marts.fct_games
 
     joins:
       - name: cube_players

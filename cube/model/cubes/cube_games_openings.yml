@@ -1,6 +1,6 @@
 cubes:
   - name: cube_games_openings
-    sql_table: marts.dim_games_openings
+    sql_table: marts.fct_games_openings
 
     dimensions:
       - name: games_sk

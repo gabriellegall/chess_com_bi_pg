@@ -66,9 +66,9 @@ SELECT
     games_stats.score_playing_turn_45,
     games_stats.score_playing_turn_50
 FROM {{ ref('fct_games_stats') }} games_stats
-LEFT OUTER JOIN {{ ref('dim_games_openings') }} games_openings
+LEFT OUTER JOIN {{ ref('fct_games_openings') }} games_openings
     ON games_openings.games_sk = games_stats.games_sk
-LEFT OUTER JOIN {{ ref('dim_games') }} games_info
+LEFT OUTER JOIN {{ ref('fct_games') }} games_info
     ON games_info.games_sk = games_stats.games_sk
 LEFT OUTER JOIN {{ ref('dim_players') }} players
     ON players.players_sk = games_stats.players_sk

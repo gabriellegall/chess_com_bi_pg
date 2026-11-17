@@ -18,8 +18,8 @@ models:
       - name: username_global
         description: "{{ doc('username_global') }}"
 
-  - name: dim_games
-    description: "Publishes the conformed game dimension at one row per game and player, carrying scoped game attributes and durable keys for fact joins."
+  - name: fct_games
+    description: "Publishes the game fact at one row per game and player, carrying ratings and results as measures, game attributes as degenerate dimensions, and the keys used by the other facts."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -126,8 +126,8 @@ models:
       - name: tournament
         description: "{{ doc('tournament') }}"
 
-  - name: dim_games_openings
-    description: "Publishes the game-opening dimension that attaches hierarchical opening labels to each game, enabling consistent slicing of facts by opening context."
+  - name: fct_games_openings
+    description: "Publishes the game-opening fact at one row per game and player, attaching hierarchical opening labels so games can be sliced by opening."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -149,7 +149,7 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('dim_games')
+              to: ref('fct_games')
               field: games_sk
       - name: username
         description: "{{ doc('username') }}"
@@ -222,7 +222,7 @@ models:
           - not_null
           - unique
           - relationships:
-              to: ref('dim_games')
+              to: ref('fct_games')
               field: games_sk
       - name: username
         description: "{{ doc('username') }}"
@@ -475,7 +475,7 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('dim_games')
+              to: ref('fct_games')
               field: games_sk
       - name: game_moves_sk
         description: "{{ doc('game_moves_sk') }}"

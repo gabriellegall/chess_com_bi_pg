@@ -190,6 +190,13 @@ The data warehouse is structured through several layers in order to ensure (1) p
 - **'intermediate'**: transformation layer where the business logic is built. It enriches staging data, joins game, move, time and opening datasets together, and creates derived metrics such as move-level chess evaluations, miss classifications, game-phase flags, opening hierarchies and aggregated per-game stats.
 - **'marts'**: reporting-ready layer built on top of the intermediate models. The core marts follow a clear `dim` / `fct` split and align with a Kimball-style [2NF design](https://en.wikipedia.org/wiki/Second_normal_form): dimensions store descriptive attributes, facts store measurable events, and each model keeps a clear grain for clarity, consistency and modularity. The `obt_*` analytics model is intentionally kept in [1NF](https://en.wikipedia.org/wiki/First_normal_form) as one wide denormalized table to make querying easier for dashboards and ad hoc analysis. In short, the normalized marts serve modeling needs, while the OBT serves consumption needs.
 
+### Dimension vs. fact classification
+A core mart is a fact (`fct_*`) when most of these rules hold. Otherwise, it is a dimension (`dim_*`).
+- **Event-driven:** each row records something that happened (a game played, a move made), not an entity (a player). The table grows with activity. Twice as many games means twice as many rows, while a dimension only grows when new entities appear.
+- **Load pattern:** rows are appended and rarely updated (incremental, append-only).
+- **Foreign keys:** it carries several foreign keys that point to dimensions.
+- **Measures:** its numeric columns make sense to aggregate (ratings, accuracies, blunder counts, time remaining).
+
 ### Business logic placement: intermediate vs. marts
 - Calculated fields, KPIs, and aggregations are implemented in `intermediate` only. `marts` models (`dim_*`, `fct_*`, `obt_*`) exclusively join, filter, and add surrogate keys — no `CASE`, aggregate, or window function.
 - **Rationale:** dbt Labs recommends isolating complex logic in intermediate models for easier refinement, troubleshooting, and testing. Given the volume of derivation required here (window functions, `FILTER` aggregates, percentiles), all business logic is isolated upstream rather than split case-by-case between layers.
@@ -260,7 +267,7 @@ If any pipeline/build step raises an exception, the script sends a failure ping 
 Cube reads the core marts (`dim_*`, `fct_*`) in Postgres and exposes shared dimensions and measures through a REST/GraphQL API and a Postgres-compatible SQL API.
 
 The model is under `cube/model/`:
-- `cubes/`: one cube per core mart. `games` (`dim_games`) is the hub: it joins `players`, `games_stats`, `games_openings` (one-to-one or many-to-one) and `game_moves` (one-to-many).
+- `cubes/`: one cube per core mart. `games` (`fct_games`) is the hub: it joins `players`, `games_stats`, `games_openings` (one-to-one or many-to-one) and `game_moves` (one-to-many).
 - `views/`: the interfaces for consumers.
     - `game_performance`: one row per game. Results, win rate, rating gap, blunder rates by game phase, time management and openings.
     - `move_analysis`: one row per move. Mistakes, blunders and big blunders by game phase, position and time remaining.

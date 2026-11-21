@@ -219,12 +219,12 @@ source: [dbt Labs best practices - intermediate](https://docs.getdbt.com/best-pr
 
 #### Design trade-offs
 
-Using [`end_time`] as the incremental key for chess.com API data scales well for continuous incremental runs, but it has one limitation: when a new player is added with a historical backlog, older games require a full refresh to be backfilled.
+Using [`end_time`] as the incremental key for chess.com API data scales well for continuous incremental runs, but it has one limitation: games arriving with an [`end_time`] older than the latest one already processed are skipped until the next full refresh. This applies to any late-arriving data: historical games of a newly added player, but also late-arriving games of existing players.
 
 For that reason, a periodic full refresh is intentionally kept in orchestration. It also serves as a safety net to:
 - Limit any data drift risk in long-running incremental pipelines.
 - Automatically re-sync full history after business-rule or metric-definition updates.
-- Automatically backfill historical games when new players are added.
+- Automatically backfill historical games when new players are added, and late-arriving games of existing players.
 - Rebuild `int_openings_hierarchy` (which intentionally skips recomputation on regular runs for efficiency).
 
 I also tested a fully UUID-driven strategy using `WHERE NOT EXISTS` across all models to avoid periodic full refreshes. While functionally correct, it did not scale well: anti-join subqueries became increasingly expensive as tables grew, making this approach impractical on large models.

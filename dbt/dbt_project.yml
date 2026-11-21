@@ -116,3 +116,5 @@ vars:
     time_class: ['blitz', 'rapid', 'bullet']
   openings:
     hierarchy_depth: 10
+  sessions:
+    gap_minutes: 120 # More than 2h between two games starts a new session

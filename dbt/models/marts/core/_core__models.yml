@@ -123,8 +123,18 @@ models:
         description: "{{ doc('log_timestamp') }}"
       - name: start_time
         description: "{{ doc('start_time') }}"
-      - name: tournament
-        description: "{{ doc('tournament') }}"
+      - name: sessions_sk
+        description: "{{ doc('sessions_sk') }}"
+        data_tests:
+          - not_null
+      - name: session_start_time
+        description: "{{ doc('session_start_time') }}"
+        data_tests:
+          - not_null
+      - name: session_game_rank
+        description: "{{ doc('session_game_rank') }}"
+      - name: previous_game_result_in_session
+        description: "{{ doc('previous_game_result_in_session') }}"
 
   - name: fct_games_openings
     description: "Publishes the game-opening fact at one row per game and player, attaching hierarchical opening labels so games can be sliced by opening."

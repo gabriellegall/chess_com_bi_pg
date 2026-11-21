@@ -35,7 +35,6 @@ SELECT
     g.accuracies__white,
     g.accuracies__black,
     g.start_time,
-    g.tournament,
     g.end_time_date,
     g.end_time_month,
     g.playing_as,

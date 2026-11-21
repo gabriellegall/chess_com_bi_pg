@@ -38,7 +38,6 @@ WITH incremental_partition AS (
         pg.accuracies__white,
         pg.accuracies__black,
         pg.start_time,
-        pg.tournament,
         pg.end_time_date,
         pg.end_time_month,
         pg.playing_as,

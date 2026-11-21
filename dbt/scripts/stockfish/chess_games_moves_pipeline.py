@@ -147,7 +147,8 @@ target_schema   = config["postgres"]["schemas"]["stockfish"]
 target_table, target_index_field = get_table_settings(config, "stockfish")
 
 engine  = get_engine()
-query   = games_to_process(engine, schema=target_schema, table=target_table)
+games_limit = config["postgres"]["tables"]["stockfish"]["games_limit"]
+query   = games_to_process(engine, schema=target_schema, table=target_table, limit=games_limit)
 games   = pd.read_sql(query, engine)
 print(f"Query executed successfully — {len(games)} rows fetched.")
 

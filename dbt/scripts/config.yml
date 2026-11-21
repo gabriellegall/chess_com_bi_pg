@@ -4,9 +4,9 @@ api:
       usernames:
         - piwi100
         - Zundorn
+        - quentinusdesbois
         # - leprechess
         # - bgdu33
-        # - quentinusdesbois
         # - romainpct
         # - gokhvttttgxdddhjkig345
         # - yorek99
@@ -14,7 +14,7 @@ api:
         # - fluffy128li
         # - d0niphan
         # - djadja0327
-      start_month: "2026/04"
+      start_month: "2010/01"
     # default_users:
     #   usernames:
     #     - aufhebungja
@@ -121,9 +121,11 @@ postgres:
     stockfish:
       name:         "players_games_moves"
       index_field:  "log_timestamp"
+      games_limit:  10 # max games analysed per run
     games_times:
       name:         "players_games_times"
       index_field:  "log_timestamp"
+      games_limit:  10000 # max games processed per run
     openings:
       name:         "chess_openings"
       index_field: # no index needed

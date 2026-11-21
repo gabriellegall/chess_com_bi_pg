@@ -64,8 +64,6 @@ models:
         description: "{{ doc('_dlt_id') }}"
       - name: start_time
         description: "{{ doc('start_time') }}"
-      - name: tournament
-        description: "{{ doc('tournament') }}"
       - name: end_time_date
         description: "{{ doc('end_time_date') }}"
       - name: end_time_month

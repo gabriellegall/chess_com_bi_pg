@@ -25,7 +25,7 @@ STREAMLIT_PORT ?= 8501
 
 .PHONY: \
 	help \
-	run_all_with_reset run_all run_all_no_api \
+	run_all_with_reset run_all run_all_no_api stockfish_loop \
 	sqlfluff_lint sqlfluff_fix test_dbt_doc \
 	streamlit_test streamlit_run \
 	docker_build_project_dbt docker_hub_push_dbt docker_build_project_streamlit docker_hub_push_streamlit \
@@ -36,6 +36,7 @@ help:
 	@echo "  run_all                     - Run orchestrator with API enabled"
 	@echo "  run_all_no_api              - Run orchestrator with API disabled"
 	@echo "  run_all_with_reset          - Reset dbt schemas and run orchestrator"
+	@echo "  stockfish_loop              - Run Stockfish moves pipeline until all games are processed"
 	@echo "  sqlfluff_lint               - Lint dbt models with SQLFluff"
 	@echo "  sqlfluff_fix                - Auto-fix dbt SQL style issues"
 	@echo "  test_dbt_doc                - Validate dbt docs consistency"
@@ -61,6 +62,9 @@ run_all:
 
 run_all_no_api:
 	@cd $(DBT_DIR) && set SKIP_CHESS_COM_API=true && set SLEEP_TIME=0 && $(PYTHON) run_all.py
+
+stockfish_loop:
+	@cd $(DBT_DIR)/scripts/stockfish && $(PYTHON) -u -c "import chess_games_moves_pipeline as p; list(iter(p.main, 0))"
 
 sqlfluff_lint:
 	@cd $(DBT_DIR) && sqlfluff lint $(DBT_MODELS_DIR) --dialect postgres

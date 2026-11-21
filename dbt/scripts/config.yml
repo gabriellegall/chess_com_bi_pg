@@ -121,7 +121,9 @@ postgres:
     stockfish:
       name:         "players_games_moves"
       index_field:  "log_timestamp"
-      games_limit:  10 # max games analysed per run
+      games_limit:  500 # max games analysed by stockfish per run
+      depth:        12  # stockfish search depth per position (higher = more accurate, slower)
+      workers:      6   # parallel stockfish processes (1 = sequential); ~physical CPU cores
     games_times:
       name:         "players_games_times"
       index_field:  "log_timestamp"

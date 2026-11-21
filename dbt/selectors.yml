@@ -1,0 +1,11 @@
+selectors:
+  - name: default_without_evaluator
+    description: "Default selection for dbt commands: everything except the dbt_project_evaluator package. Run the evaluator explicitly with --select package:dbt_project_evaluator."
+    default: true
+    definition:
+      union:
+        - method: fqn
+          value: "*"
+        - exclude:
+            - method: package
+              value: dbt_project_evaluator

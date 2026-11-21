@@ -10,12 +10,12 @@ import io
 import platform
 import shutil
 import glob
+import time
+import multiprocessing
 from pathlib import Path
 
 sys.path.append(os.path.abspath('..'))
 from helper import get_engine, games_to_process, load_config, get_table_settings, create_index_if_not_exists
-
-print("Starting games moves processing")
 
 
 def _extract_stockfish_version(path_str: str) -> tuple:
@@ -33,7 +33,7 @@ def _extract_stockfish_version(path_str: str) -> tuple:
         return tuple(parts)
     return tuple()
 
-def _analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
+def _analyze_chess_game(uuid: str, pgn: str, engine: chess.engine.SimpleEngine, depth: int) -> pd.DataFrame:
     # Load the PGN
     game = chess.pgn.read_game(io.StringIO(pgn))
 
@@ -46,19 +46,19 @@ def _analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
     moves = []
     scores_white = []
 
-    # Analyze the game
-    with chess.engine.SimpleEngine.popen_uci(engine_path) as engine:
-        board = game.board()
+    # Analyze the game (game=uuid resets the engine hash between games, keeps it within a game)
+    board = game.board()
+    limit = chess.engine.Limit(depth=depth)
 
-        for i, move in enumerate(game.mainline_moves(), 1):
-            board.push(move)
-            info = engine.analyse(board, chess.engine.Limit(time=0.1))
-            score_white = info["score"].white().score(mate_score=1000)
+    for i, move in enumerate(game.mainline_moves(), 1):
+        board.push(move)
+        info = engine.analyse(board, limit, game=uuid)
+        score_white = info["score"].white().score(mate_score=1000)
 
-            # Append data to lists
-            move_numbers.append(i)
-            moves.append(move.uci())
-            scores_white.append(score_white)
+        # Append data to lists
+        move_numbers.append(i)
+        moves.append(move.uci())
+        scores_white.append(score_white)
 
     # Create a DataFrame
     df = pd.DataFrame({
@@ -70,22 +70,48 @@ def _analyze_chess_game(uuid: str, pgn: str, engine_path: str) -> pd.DataFrame:
 
     return df
 
-def _analyze_multiple_games(games: pd.DataFrame, engine_path: str) -> pd.DataFrame:
+
+# One Stockfish process per worker, started once and reused for all the games of that worker
+_worker_engine = None
+_worker_depth = None
+
+
+def _init_worker(engine_path: str, depth: int) -> None:
+    global _worker_engine, _worker_depth
+    _worker_engine = chess.engine.SimpleEngine.popen_uci(engine_path)
+    _worker_depth = depth
+
+
+def _analyze_game_worker(uuid_pgn: tuple) -> pd.DataFrame:
+    uuid, pgn = uuid_pgn
+    return _analyze_chess_game(uuid, pgn, _worker_engine, _worker_depth)
+
+
+def _analyze_multiple_games(games: pd.DataFrame, engine_path: str, depth: int, workers: int) -> pd.DataFrame:
+    tasks = list(games[["uuid", "pgn"]].itertuples(index=False, name=None))
     game_dfs = []
-    processed_games = 0
+    start = time.perf_counter()
 
-    # Iterate over each game in the dataframe
-    for _, row in games.iterrows():
-        uuid = row['uuid']
-        pgn = row['pgn']
+    def _log_progress():
+        n = len(game_dfs)
+        if n % 10 == 0 or n == len(tasks):
+            print(f"Processed {n}/{len(tasks)} games ({time.perf_counter() - start:.0f}s)", flush=True)
 
-        # Analyze the game and append the result to the list
-        game_df = _analyze_chess_game(uuid, pgn, engine_path)
-        game_dfs.append(game_df)
-
-        # Increment and print the number of processed games
-        processed_games += 1
-        print(f"Processed {processed_games} games", flush=True)
+    if workers <= 1:
+        _init_worker(engine_path, depth)
+        try:
+            for task in tasks:
+                game_dfs.append(_analyze_game_worker(task))
+                _log_progress()
+        finally:
+            _worker_engine.quit()
+    else:
+        # multiprocessing.Pool (not ProcessPoolExecutor): its exit terminates the workers. python-chess keeps a
+        # non-daemon thread alive per engine, so workers would never exit by themselves and the pool would hang.
+        with multiprocessing.Pool(processes=workers, initializer=_init_worker, initargs=(engine_path, depth)) as pool:
+            for game_df in pool.imap(_analyze_game_worker, tasks):
+                game_dfs.append(game_df)
+                _log_progress()
 
     # Concatenate all dataframes into one
     return pd.concat(game_dfs, ignore_index=True)
@@ -140,41 +166,55 @@ def _get_stockfish_path():
         "or install stockfish so it is available in PATH."
     )
 
-# Import the data to process
-config = load_config()
+def main() -> int:
+    """Analyse one batch of unprocessed games and return the number of games processed (0 = backlog empty)."""
+    print("Starting games moves processing")
 
-target_schema   = config["postgres"]["schemas"]["stockfish"]
-target_table, target_index_field = get_table_settings(config, "stockfish")
+    # Import the data to process
+    config = load_config()
 
-engine  = get_engine()
-games_limit = config["postgres"]["tables"]["stockfish"]["games_limit"]
-query   = games_to_process(engine, schema=target_schema, table=target_table, limit=games_limit)
-games   = pd.read_sql(query, engine)
-print(f"Query executed successfully — {len(games)} rows fetched.")
+    target_schema   = config["postgres"]["schemas"]["stockfish"]
+    target_table, target_index_field = get_table_settings(config, "stockfish")
 
-if not games.empty:
-    games = games[['uuid', 'pgn']]
+    engine  = get_engine()
+    stockfish_config = config["postgres"]["tables"]["stockfish"]
+    games_limit = stockfish_config["games_limit"]
+    depth       = stockfish_config.get("depth", 12)
+    workers     = stockfish_config.get("workers", 1)
+    query   = games_to_process(engine, schema=target_schema, table=target_table, limit=games_limit)
+    games   = pd.read_sql(query, engine)
+    print(f"Query executed successfully — {len(games)} rows fetched.")
 
-    # Calculate all games moves for all games
-    engine_path = _get_stockfish_path()
-    games_moves = _analyze_multiple_games(games, engine_path)
-    games_moves["log_timestamp"] = datetime.now(tz=timezone.utc)
+    if not games.empty:
+        games = games[['uuid', 'pgn']]
 
-    with engine.begin() as conn:
-        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {target_schema}"))
+        # Calculate all games moves for all games
+        engine_path = _get_stockfish_path()
+        print(f"Analysing with Stockfish depth={depth}, workers={workers}")
+        games_moves = _analyze_multiple_games(games, engine_path, depth, workers)
+        games_moves["log_timestamp"] = datetime.now(tz=timezone.utc)
 
-    games_moves.to_sql(
-        name        = target_table,
-        con         = engine,
-        schema      = target_schema,     
-        if_exists   = 'append', # If the table exists
-        index       = False, # Ignore the df index   
-        dtype       = {'log_timestamp': DateTime(timezone=True)}
-    )
+        with engine.begin() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {target_schema}"))
 
-    create_index_if_not_exists(engine, target_schema, target_table, target_index_field)
+        games_moves.to_sql(
+            name        = target_table,
+            con         = engine,
+            schema      = target_schema,     
+            if_exists   = 'append', # If the table exists
+            index       = False, # Ignore the df index   
+            dtype       = {'log_timestamp': DateTime(timezone=True)}
+        )
 
-    print(f"Inserted {len(games_moves)} rows into `{target_schema}.{target_table}`.")
-else:
-    print("No rows to be inserted.")
+        create_index_if_not_exists(engine, target_schema, target_table, target_index_field)
 
+        print(f"Inserted {len(games_moves)} rows into `{target_schema}.{target_table}`.")
+    else:
+        print("No rows to be inserted.")
+
+    return len(games)
+
+
+# Guard required: worker processes re-import this module on Windows (spawn)
+if __name__ == "__main__":
+    main()

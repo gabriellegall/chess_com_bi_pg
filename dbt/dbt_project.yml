@@ -47,7 +47,9 @@ models:
         performance:
           +enabled: true
         dag:
-          +enabled: true 
+          +enabled: true
+          fct_rejoining_of_upstream_concepts: # Forbids joining a model with one of its own children - overkill when the child is a narrow, self-maintained enrichment (own grain or incremental logic) that can't simply carry all its parent's columns.
+            +enabled: false
         documentation:
           +enabled: true
         governance:

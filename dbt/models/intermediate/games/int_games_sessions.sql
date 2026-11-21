@@ -8,11 +8,13 @@
 
 {#
     ### Session logic (gaps and islands):
-    A new session starts when the previous game of the same username ended more than
+    A new session starts when the previous game of the same [username] ended more than
     [sessions.gap_minutes] before the current game ended.
+
     ### Incremental strategy:
-    For each username, the games since the start of their last stored session are re-read as context,
-    so that a session in progress keeps its start time and rank, whatever its length. Only new games are inserted.
+    For each [username], the games since the start of their last stored session are re-read for context.
+    However, only new games are written to the table.
+    This way, a new game that continues the last stored session gets the correct ranking.
 #}
 
 {% set gap_minutes = var('sessions')['gap_minutes'] %}

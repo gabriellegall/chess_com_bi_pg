@@ -17,6 +17,9 @@ views:
           - opponent_rating_range
           - playing_result
           - rated
+          - session_game_rank
+          - previous_game_result_in_session
+          - nb_sessions
           - nb_players
           - nb_players_above_1000
           - nb_games_played

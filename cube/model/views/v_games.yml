@@ -15,6 +15,9 @@ views:
           - playing_rating_range
           - opponent_rating
           - opponent_rating_range
+          - playing_rating_band
+          - opponent_rating_band
+          - rating_gap_category
           - playing_result
           - rated
           - session_game_rank
@@ -24,6 +27,10 @@ views:
           - nb_players_above_1000
           - nb_games_played
           - nb_wins
+          - nb_losses
+          - nb_draws
+          - avg_playing_rating
+          - avg_opponent_rating
           - win_rate
           - win_rate_last_30_days
           - win_rate_per_player_min

@@ -81,6 +81,31 @@ cubes:
         sql: opponent_rating_range
         type: string
 
+      # 50-point rating bands (lower bound), finer than the *_rating_range dims for the ELO matrix
+      - name: playing_rating_band
+        sql: "FLOOR({CUBE}.playing_rating / 50.0) * 50"
+        type: number
+
+      - name: opponent_rating_band
+        sql: "FLOOR({CUBE}.opponent_rating / 50.0) * 50"
+        type: number
+
+      # Opponent strength relative to the player (gap = opponent - player rating)
+      - name: rating_gap_category
+        type: string
+        case:
+          when:
+            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating < -50"
+              label: Much weaker
+            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating < -15"
+              label: Weaker
+            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating <= 15"
+              label: Similar
+            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating <= 50"
+              label: Stronger
+          else:
+            label: Much stronger
+
       - name: sessions_sk
         sql: sessions_sk
         type: string
@@ -135,6 +160,19 @@ cubes:
       - name: nb_games_played
         sql: games_sk
         type: count
+
+      - name: nb_draws
+        type: count
+        filters:
+          - sql: "{CUBE}.playing_result = 'Draw'"
+
+      - name: avg_playing_rating
+        sql: playing_rating
+        type: avg
+
+      - name: avg_opponent_rating
+        sql: opponent_rating
+        type: avg
 
       - name: nb_sessions
         sql: sessions_sk

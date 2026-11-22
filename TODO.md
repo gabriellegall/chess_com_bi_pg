@@ -1,0 +1,4 @@
+- Implement the new dashboard
+- Review project structure and file locations
+- Ensure code is clean (commas, etc.)
+- Ensure comments are consistent (in-code comments vs in-YAML comments)

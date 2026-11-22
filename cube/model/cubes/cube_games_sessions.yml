@@ -1,0 +1,44 @@
+cubes:
+  - name: cube_games_sessions
+    sql_table: marts.fct_games_sessions
+
+    dimensions:
+      - name: games_sk
+        sql: games_sk
+        type: string
+        primary_key: true
+
+      - name: sessions_sk
+        sql: sessions_sk
+        type: string
+
+      - name: session_start_time
+        sql: session_start_time
+        type: time
+
+      # Games in the whole session (all time classes), repeated on each of its games
+      - name: nb_games_in_session
+        sql: nb_games_in_session
+        type: number
+
+      - name: session_game_rank
+        sql: session_game_rank
+        type: number
+
+      - name: previous_game_result_in_session
+        sql: previous_game_result_in_session
+        type: string
+
+      # Tilt flags: NULL when the session has not enough previous games
+      - name: is_last_1_game_loss
+        sql: is_last_1_game_loss
+        type: boolean
+
+      - name: is_last_2_games_loss
+        sql: is_last_2_games_loss
+        type: boolean
+
+    measures:
+      - name: nb_sessions
+        sql: sessions_sk
+        type: count_distinct

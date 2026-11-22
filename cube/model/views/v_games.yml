@@ -20,9 +20,6 @@ views:
           - rating_gap_category
           - playing_result
           - rated
-          - session_game_rank
-          - previous_game_result_in_session
-          - nb_sessions
           - nb_players
           - nb_players_above_1000
           - nb_games_played
@@ -117,6 +114,17 @@ views:
           - prct_games_miss_opp_big_blunder_playing_early
           - prct_games_miss_opp_big_blunder_playing_mid
           - prct_games_miss_opp_big_blunder_playing_late
+
+      - join_path: cube_games.cube_games_sessions
+        includes:
+          - sessions_sk
+          - session_start_time
+          - nb_games_in_session
+          - session_game_rank
+          - previous_game_result_in_session
+          - is_last_1_game_loss
+          - is_last_2_games_loss
+          - nb_sessions
 
       - join_path: cube_games.cube_games_openings
         includes:

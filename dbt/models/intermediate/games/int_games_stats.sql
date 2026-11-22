@@ -63,6 +63,7 @@ WITH agg_definitions AS (
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY games.score_playing) AS median_score_playing,
         MAX(games.score_playing) AS max_score_playing,
         MIN(games.score_playing) AS min_score_playing,
+        (ARRAY_AGG(games.score_playing ORDER BY games.move_number DESC) FILTER (WHERE games.score_playing IS NOT NULL))[1] AS final_score_playing,
         STDDEV_SAMP(games.score_playing) AS std_score_playing,
         CASE
             WHEN MAX(games.score_playing) < {{ var('should_win_range')['low'] }} THEN '0-{{ var('should_win_range')['low'] }}'

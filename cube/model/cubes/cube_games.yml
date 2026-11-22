@@ -286,6 +286,47 @@ cubes:
         sql: "{cube_games_stats.nb_blunder_big_blunder_playing}"
         type: avg
 
+      # Technique. Thresholds in centipawns: decisive advantage > +500 (should_win_range.mid in dbt),
+      # lost position < -500, early resignation = resigned while the last evaluation was above -200.
+      - name: nb_games_decisive_advantage
+        sql: "CASE WHEN {cube_games_stats.max_score_playing} > 500 THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: nb_wins_decisive_advantage
+        sql: "CASE WHEN {cube_games_stats.max_score_playing} > 500 AND {CUBE}.playing_result = 'Win' THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: conversion_rate
+        type: number
+        sql: "1.0 * {nb_wins_decisive_advantage} / NULLIF({nb_games_decisive_advantage}, 0)"
+        format: percent
+
+      - name: nb_games_lost_position
+        sql: "CASE WHEN {cube_games_stats.min_score_playing} < -500 THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: nb_saves_lost_position
+        sql: "CASE WHEN {cube_games_stats.min_score_playing} < -500 AND {CUBE}.playing_result IN ('Win', 'Draw') THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: save_rate
+        type: number
+        sql: "1.0 * {nb_saves_lost_position} / NULLIF({nb_games_lost_position}, 0)"
+        format: percent
+
+      - name: nb_resignations
+        sql: "CASE WHEN {CUBE}.playing_result_detailed = 'resigned' THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: nb_early_resignations
+        sql: "CASE WHEN {CUBE}.playing_result_detailed = 'resigned' AND {cube_games_stats.final_score_playing} > -200 THEN 1 ELSE 0 END"
+        type: sum
+
+      - name: early_resignation_rate
+        type: number
+        sql: "1.0 * {nb_early_resignations} / NULLIF({nb_resignations}, 0)"
+        format: percent
+
       - name: avg_blunder_big_blunder_playing_time_class_rating
         multi_stage: true
         sql: "{avg_blunder_big_blunder_playing}"

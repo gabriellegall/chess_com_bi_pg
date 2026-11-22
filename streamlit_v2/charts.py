@@ -1,6 +1,9 @@
 """Altair charts for the v2 app. They only draw what cube.py returns."""
 from __future__ import annotations
 
+import math
+import zlib
+
 import altair as alt
 import pandas as pd
 
@@ -10,6 +13,9 @@ WIN_RATE_SCALE = alt.Scale(scheme="redyellowgreen", domain=[0.2, 0.8], domainMid
 GREY = "#9aa0a6"
 RECENT_COLOUR = "#4c78a8"
 ROW_HEIGHT = 30
+YOU_COLOUR = RECENT_COLOUR
+BOX_COLOUR = "#c9cdd2"
+DISTRIBUTION_ROW_HEIGHT = 76
 
 
 def elo_trend(df: pd.DataFrame, grain: str) -> alt.Chart:
@@ -153,3 +159,89 @@ def dumbbell(df: pd.DataFrame, label_col: str, order: list[str], max_games: int,
     # give each row its own step instead.
     chart = alt.layer(reference, line, before, recent, notes).properties(height=alt.Step(ROW_HEIGHT))
     return chart.properties(title=title) if title else chart
+
+
+def _share_ticks(bottom: float, top: float) -> list[float]:
+    """At most 6 round ticks covering [bottom, top]; they start at 0% unless the values sit well above it."""
+    bottom = 0 if bottom < (top - bottom) else bottom  # keep the zero baseline when it costs little room
+    step = next((s for s in (0.01, 0.02, 0.05, 0.1, 0.2, 0.25) if (top - bottom) / s <= 5), 0.25)
+    lo = math.floor(bottom / step + 1e-9)
+    return [round(i * step, 4) for i in range(lo, max(lo + 1, math.ceil(top / step - 1e-9)) + 1)]
+
+
+def peer_distribution(peers: pd.DataFrame, you: pd.DataFrame, text_colour: str, axis_title: str | None) -> alt.LayerChart:
+    """A rate for you against the other players, on one row with its own x scale (built by benchmark.compare).
+
+    peers: username_global, games, row, share. The other players: grey box (min, quartiles, max) and one dot each.
+    you: one row with row, whole, whole_games, recent, recent_games, change, trend, better_than, label.
+    Your share over the whole period (blue bar), then an arrow to the recent days: it points the way the share moved
+    and is green when that is better for you (trend), red otherwise. `label` is written on the right.
+    """
+    peers = peers.assign(
+        jitter=peers["username_global"].map(lambda u: zlib.crc32(u.encode()) % 1000 / 1000 - 0.5)
+    )
+    you = you.assign(angle=you["change"].apply(lambda c: 270 if pd.notna(c) and c < 0 else 90))
+    values = pd.concat([peers["share"], you["whole"], you["recent"]]).dropna()
+    ticks = _share_ticks(values.min() if not values.empty else 0, max(values.max() if not values.empty else 0, 0.01))
+    span = (ticks[-1] - ticks[0]) * 1.9
+    # The axis stops at the last tick; the extra room on the right holds the label.
+    x_scale = alt.Scale(domain=[ticks[0], ticks[0] + span], nice=False)
+    # The head needs a shaft of about 20 px; the plot is roughly 380 px wide, so shorter arrows show the dot only.
+    you = you.assign(head=you["change"].abs() / span * 380 >= 20)
+    x_axis = alt.Axis(format=".0%", values=ticks, title=axis_title)
+    y = alt.Y("row:N", title=None, axis=alt.Axis(labelLimit=170))
+    trend_scale = alt.Scale(domain=["Better", "Worse"], range=[TREND_COLOURS["Better"], TREND_COLOURS["Worse"]])
+    you_tooltip = [
+        alt.Tooltip("row:N", title="Row"),
+        alt.Tooltip("whole:Q", title="You, whole period", format=".1%"),
+        alt.Tooltip("whole_games:Q", title="Games, whole period"),
+        alt.Tooltip("recent:Q", title="You, recent days", format=".1%"),
+        alt.Tooltip("recent_games:Q", title="Games, recent days"),
+        alt.Tooltip("change:Q", title="Change", format="+.1%"),
+        alt.Tooltip("better_than:Q", title="Better than this share of players", format=".0%"),
+    ]
+
+    layers = []
+    if not peers.empty:
+        peer_base = alt.Chart(peers)
+        layers += [
+            peer_base.mark_boxplot(extent="min-max", size=28, color=BOX_COLOUR, opacity=0.55,
+                                   median={"color": GREY, "strokeWidth": 2}, rule={"color": GREY},
+                                   ticks=False, outliers=False)
+            .encode(x=alt.X("share:Q", scale=x_scale, axis=x_axis), y=y),
+            peer_base.mark_circle(size=28, color=GREY, opacity=0.6).encode(
+                x=alt.X("share:Q", scale=x_scale),
+                y=y,
+                yOffset=alt.YOffset("jitter:Q", scale=alt.Scale(domain=[-0.9, 0.9])),
+                tooltip=[alt.Tooltip("username_global:N", title="Player"),
+                         alt.Tooltip("share:Q", title="Rate", format=".1%"),
+                         alt.Tooltip("games:Q", title="Games counted")],
+            ),
+        ]
+    base = alt.Chart(you)
+    trend = alt.Color("trend:N", scale=trend_scale, legend=None)
+    layers += [
+        base.mark_tick(thickness=4, size=40, color=YOU_COLOUR, opacity=1).encode(
+            x=alt.X("whole:Q", scale=x_scale, axis=x_axis), y=y, tooltip=you_tooltip,
+        ),
+        # Arrow: shaft from the whole period to the recent days, head pointing the way the share moved.
+        base.mark_rule(strokeWidth=3).encode(
+            x=alt.X("whole:Q", scale=x_scale), x2="recent:Q", y=y, color=trend, tooltip=you_tooltip,
+        ),
+        # Head just before the dot (offset in pixels, towards where the arrow comes from), then the dot on the exact value.
+        *[
+            base.transform_filter(f"datum.angle == {angle} && datum.head")
+            .mark_point(shape="triangle", filled=True, size=130, opacity=1, strokeWidth=0, xOffset=offset)
+            .encode(x=alt.X("recent:Q", scale=x_scale), y=y, color=trend,
+                    angle=alt.Angle("angle:Q", scale=None), tooltip=you_tooltip)
+            for angle, offset in ((90, -11), (270, 11))
+        ],
+        base.mark_circle(size=70, opacity=1, stroke="white", strokeWidth=1).encode(
+            x=alt.X("recent:Q", scale=x_scale), y=y, color=trend, tooltip=you_tooltip,
+        ),
+        base.mark_text(align="left", baseline="middle", lineBreak="\n", fontSize=12, lineHeight=16,
+                       color=text_colour).encode(
+            x=alt.datum(ticks[-1] + span * 0.03), y=y, text="label:N",
+        ),
+    ]
+    return alt.layer(*layers).properties(height=alt.Step(DISTRIBUTION_ROW_HEIGHT))

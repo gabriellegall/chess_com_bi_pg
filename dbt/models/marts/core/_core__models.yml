@@ -413,6 +413,8 @@ models:
         description: "{{ doc('max_score_playing') }}"
       - name: min_score_playing
         description: "{{ doc('min_score_playing') }}"
+      - name: final_score_playing
+        description: "{{ doc('final_score_playing') }}"
       - name: std_score_playing
         description: "{{ doc('std_score_playing') }}"
       - name: max_score_playing_range

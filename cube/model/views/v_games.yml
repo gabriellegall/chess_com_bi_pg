@@ -46,6 +46,15 @@ views:
           - avg_blunder_big_blunder_playing_time_class_rating_2
           - avg_blunder_big_blunder_playing_peers
           - avg_blunder_big_blunder_playing_vs_peers
+          - nb_games_decisive_advantage
+          - nb_wins_decisive_advantage
+          - conversion_rate
+          - nb_games_lost_position
+          - nb_saves_lost_position
+          - save_rate
+          - nb_resignations
+          - nb_early_resignations
+          - early_resignation_rate
 
       - join_path: cube_games.cube_players
         includes:
@@ -55,6 +64,9 @@ views:
         includes:
           - games_sk
           - nb_moves
+          - max_score_playing
+          - min_score_playing
+          - final_score_playing
           - prct_time_remaining_playing_early
           - prct_time_remaining_playing_mid
           - prct_time_remaining_playing_late
@@ -89,6 +101,22 @@ views:
           - score_playing_turn_45
           - score_playing_turn_50
           - max_score_playing_type
+          - prct_games_throw_blunder_playing
+          - prct_games_throw_blunder_playing_early
+          - prct_games_throw_blunder_playing_mid
+          - prct_games_throw_blunder_playing_late
+          - prct_games_throw_big_blunder_playing
+          - prct_games_throw_big_blunder_playing_early
+          - prct_games_throw_big_blunder_playing_mid
+          - prct_games_throw_big_blunder_playing_late
+          - prct_games_miss_opp_blunder_playing
+          - prct_games_miss_opp_blunder_playing_early
+          - prct_games_miss_opp_blunder_playing_mid
+          - prct_games_miss_opp_blunder_playing_late
+          - prct_games_miss_opp_big_blunder_playing
+          - prct_games_miss_opp_big_blunder_playing_early
+          - prct_games_miss_opp_big_blunder_playing_mid
+          - prct_games_miss_opp_big_blunder_playing_late
 
       - join_path: cube_games.cube_games_openings
         includes:

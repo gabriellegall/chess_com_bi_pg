@@ -97,6 +97,7 @@ SELECT
     gs.median_score_playing,
     gs.max_score_playing,
     gs.min_score_playing,
+    gs.final_score_playing,
     gs.std_score_playing,
     gs.max_score_playing_range,
     gs.max_score_playing_type,

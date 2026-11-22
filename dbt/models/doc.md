@@ -615,6 +615,10 @@ Maximum evaluation score reached by username during the game.
 Minimum evaluation score reached by username during the game.
 {% enddocs %}
 
+{% docs final_score_playing %}
+Evaluation score for username after the last evaluated move of the game (e.g. the position at resignation).
+{% enddocs %}
+
 {% docs std_score_playing %}
 Standard deviation of the evaluation scores, indicating the volatility of the game.
 {% enddocs %}

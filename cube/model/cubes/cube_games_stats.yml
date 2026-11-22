@@ -16,6 +16,19 @@ cubes:
         sql: nb_moves
         type: number
 
+      # Evaluation (centipawns, from the player's side): best and worst of the game, and after the last evaluated move
+      - name: max_score_playing
+        sql: max_score_playing
+        type: number
+
+      - name: min_score_playing
+        sql: min_score_playing
+        type: number
+
+      - name: final_score_playing
+        sql: final_score_playing
+        type: number
+
       - name: nb_blunder_big_blunder_playing
         sql: nb_blunder_big_blunder_playing
         type: number
@@ -151,3 +164,16 @@ cubes:
       - name: score_playing_turn_50
         sql: score_playing_turn_50
         type: number
+
+    measures:
+      # Share of games with at least one blunder of each kind (has_* flags are 0/1 per game), overall and per phase
+      {%- for context in ["throw", "miss_opp"] %}
+      {%- for severity in ["blunder", "big_blunder"] %}
+      {%- for phase in ["", "_early", "_mid", "_late"] %}
+      - name: prct_games_{{ context | safe }}_{{ severity | safe }}_playing{{ phase | safe }}
+        sql: "{CUBE}.has_{{ context | safe }}_{{ severity | safe }}_playing{{ phase | safe }}"
+        type: avg
+        format: percent
+      {%- endfor %}
+      {%- endfor %}
+      {%- endfor %}

@@ -9,7 +9,6 @@
 SELECT
     {{ dbt_utils.generate_surrogate_key(['g.username']) }} AS players_sk,
     {{ dbt_utils.generate_surrogate_key(['g.uuid', 'g.username']) }} AS games_sk,
-    {{ dbt_utils.generate_surrogate_key(['g.username', 's.session_start_time']) }} AS sessions_sk,
     g.end_time,
     g.url,
     g.pgn,
@@ -46,15 +45,8 @@ SELECT
     g.opponent_rating,
     g.playing_rating_range,
     g.opponent_rating_range,
-    g.playing_result,
-    s.session_start_time,
-    s.session_game_rank,
-    s.previous_game_result_in_session
+    g.playing_result
 FROM {{ ref('int_games_filtered') }} AS g
-LEFT JOIN {{ ref('int_games_sessions') }} AS s
-    ON
-        s.uuid = g.uuid
-        AND s.username = g.username
 WHERE
     TRUE
     {% if is_incremental() %}

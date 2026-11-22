@@ -14,12 +14,24 @@ Hash surrogate key for the session grain (username + session_start_time). A sess
 End time of the first game of the session. A new session starts when the previous game of the same username ended more than `sessions.gap_minutes` before.
 {% enddocs %}
 
+{% docs nb_games_in_session %}
+Number of games played by username in the session (all time classes), repeated on every game of the session.
+{% enddocs %}
+
 {% docs session_game_rank %}
 Rank of the game within its session, starting from 1 for the first game of the session.
 {% enddocs %}
 
 {% docs previous_game_result_in_session %}
 Result (from the username perspective) of the previous game in the same session. Null for the first game of a session.
+{% enddocs %}
+
+{% docs is_last_1_game_loss %}
+True when the previous game in the same session was lost by the username (draws count as not lost). Null for the first game of a session. Used for tilt analysis.
+{% enddocs %}
+
+{% docs is_last_2_games_loss %}
+True when the two previous games in the same session were both lost by the username (draws count as not lost). Null for the first two games of a session. Used for tilt analysis.
 {% enddocs %}
 
 {% docs game_moves_sk %}
@@ -135,7 +147,7 @@ Timestamp indicating when the record was processed by the data loading pipeline.
 {% enddocs %}
 
 {% docs run_timestamp %}
-Timestamp set to the current time when dbt inserted this row. Unlike log_timestamp (which tracks when a game was processed by the Python pipeline), run_timestamp reflects when dbt ran and is used as the incremental key in models downstream of int_game_moves_enriched.
+Timestamp set to the current time when dbt inserted this row. Unlike log_timestamp (which tracks when a game was processed by the Python pipeline), run_timestamp reflects when dbt ran and is used as the incremental key in models downstream of int_game_moves_enriched (and of int_games_sessions).
 {% enddocs %}
 
 {% docs _dlt_load_id %}

@@ -67,7 +67,7 @@ models:
           compare_row_condition: "{{ games_scope_condition() }}"
 
   - name: int_games_sessions
-    description: "Groups each player's games into sessions (a gap of more than {{ var('sessions')['gap_minutes'] }} minutes between two games starts a new session), with the game's rank in its session and the previous result in the same session."
+    description: "Groups each player's games into sessions (a gap of more than {{ var('sessions')['gap_minutes'] }} minutes between two games starts a new session), with the session size, the game's rank in its session and the previous result in the same session."
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -80,10 +80,22 @@ models:
         description: "{{ doc('session_start_time') }}"
         data_tests:
           - not_null
+      - name: nb_games_in_session
+        description: "{{ doc('nb_games_in_session') }}"
+        data_tests:
+          - not_null
+      - name: run_timestamp
+        description: "{{ doc('run_timestamp') }}"
+        data_tests:
+          - not_null
       - name: session_game_rank
         description: "{{ doc('session_game_rank') }}"
         data_tests:
           - not_null
+      - name: is_last_1_game_loss
+        description: "{{ doc('is_last_1_game_loss') }}"
+      - name: is_last_2_games_loss
+        description: "{{ doc('is_last_2_games_loss') }}"
 
   - name: int_games_openings
     description: "Maps observed early move sequences to opening hierarchy labels, enabling opening-based analysis at the game level."

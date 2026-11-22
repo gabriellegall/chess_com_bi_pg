@@ -123,18 +123,6 @@ models:
         description: "{{ doc('log_timestamp') }}"
       - name: start_time
         description: "{{ doc('start_time') }}"
-      - name: sessions_sk
-        description: "{{ doc('sessions_sk') }}"
-        data_tests:
-          - not_null
-      - name: session_start_time
-        description: "{{ doc('session_start_time') }}"
-        data_tests:
-          - not_null
-      - name: session_game_rank
-        description: "{{ doc('session_game_rank') }}"
-      - name: previous_game_result_in_session
-        description: "{{ doc('previous_game_result_in_session') }}"
 
   - name: fct_games_openings
     description: "Publishes the game-opening fact at one row per game and player, attaching hierarchical opening labels so games can be sliced by opening."
@@ -205,6 +193,57 @@ models:
         description: "{{ doc('opener_x_moves') }}"
       - name: uci_hierarchy_level_10_name
         description: "{{ doc('uci_hierarchy_level_x_name') }}"
+      - name: run_timestamp
+        description: "{{ doc('run_timestamp') }}"
+
+  - name: fct_games_sessions
+    description: "Publishes the session of each game at one row per game and player (consecutive games of a username with gaps under sessions.gap_minutes), with the session size, the game's rank in it and the previous result, so games can be filtered and compared by session."
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_equal_other_table:
+          arguments:
+            compare_model: ref('int_games_sessions')
+    columns:
+      - name: players_sk
+        description: "{{ doc('players_sk') }}"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_players')
+              field: players_sk
+      - name: games_sk
+        description: "{{ doc('games_sk') }}"
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_games')
+              field: games_sk
+      - name: sessions_sk
+        description: "{{ doc('sessions_sk') }}"
+        data_tests:
+          - not_null
+      - name: username
+        description: "{{ doc('username') }}"
+      - name: uuid
+        description: "{{ doc('uuid') }}"
+      - name: end_time
+        description: "{{ doc('end_time') }}"
+      - name: session_start_time
+        description: "{{ doc('session_start_time') }}"
+        data_tests:
+          - not_null
+      - name: nb_games_in_session
+        description: "{{ doc('nb_games_in_session') }}"
+        data_tests:
+          - not_null
+      - name: session_game_rank
+        description: "{{ doc('session_game_rank') }}"
+      - name: previous_game_result_in_session
+        description: "{{ doc('previous_game_result_in_session') }}"
+      - name: is_last_1_game_loss
+        description: "{{ doc('is_last_1_game_loss') }}"
+      - name: is_last_2_games_loss
+        description: "{{ doc('is_last_2_games_loss') }}"
       - name: run_timestamp
         description: "{{ doc('run_timestamp') }}"
 

@@ -1,0 +1,6 @@
+streamlit>=1.57
+altair>=5
+pandas
+sqlalchemy>=2
+psycopg[binary]>=3.1
+python-dotenv

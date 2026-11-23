@@ -2,13 +2,12 @@
 
 Reads the global filters set by app.py from st.session_state.
 """
-from datetime import timedelta
-
 import pandas as pd
 import streamlit as st
 
 import charts
 import cube
+import period
 
 filters: cube.Filters = st.session_state.filters
 start, end, today = filters.start, filters.end, st.session_state.today
@@ -48,19 +47,24 @@ with st.container(border=True):
 # ---------- Progression ----------
 with st.container(border=True):
     # The title reads the period control drawn just below it: Streamlit stores a widget's new value before the rerun.
-    st.subheader(f"Progression: the last {st.session_state.get('pg_days') or 90} days against the games before")
+    title_period = period.label(st.session_state.get("pg_days") or period.DEFAULT).lower()
+    st.subheader(f"Progression: the {title_period} against the games before")
     st.caption("Lever: see against which opponents the work pays off. "
                "Each line runs from your win rate before (hollow grey dot) to the recent period (filled blue dot).")
     with st.container(horizontal=True, gap="large"):
-        days = st.segmented_control(
-            "Recent period", [30, 60, 90, 180], default=90, format_func=lambda d: f"Last {d} days", key="pg_days",
-        ) or 90
+        choice = period.control("pg_days")
         pg_split = st.segmented_control(
             "White vs Black", ["All games", "Split White / Black"], default="All games", key="pg_split",
         ) == "Split White / Black"
+    recent_period = period.resolve(choice, filters, today)
+    if recent_period.is_session and recent_period.session is None:
+        st.stop()  # resolve() already says why; the progression is the last section of the page
+    # A cutoff day, or the session: the games before it are the ones ended before the session started.
+    split_point = recent_period.session or recent_period.cutoff
+    split_label = (f"{recent_period.session.start:%d %b %Y %H:%M}" if recent_period.is_session
+                   else f"{recent_period.cutoff:%d %b %Y}")
 
-    cutoff = today - timedelta(days=days)
-    summary = cube.progression_summary(filters, cutoff)
+    summary = cube.progression_summary(filters, split_point)
     before, recent = summary.loc["before"], summary.loc["recent"]
 
     def delta(field: str, as_points: bool = False) -> str | None:
@@ -71,7 +75,7 @@ with st.container(border=True):
         return f"{diff * 100:+.1f} pts" if as_points else f"{diff:+,.0f}"
 
     with st.container(horizontal=True):
-        st.metric(f"Games, last {days} days", f"{int(recent['games']):,}", border=True,
+        st.metric(f"Games, {recent_period.label.lower()}",f"{int(recent['games']):,}", border=True,
                   help=f"{int(before['games']):,} games before, from {start:%d %b %Y}.")
         st.metric("Win rate", "—" if pd.isna(recent["win_rate"]) else f"{recent['win_rate']:.1%}",
                   delta("win_rate", as_points=True), border=True, help="Wins ÷ (wins + losses), vs the games before.")
@@ -82,13 +86,13 @@ with st.container(border=True):
 
     if not before["games"]:
         st.info(
-            f"No games before {cutoff:%d %b %Y} in the selected dates, so there is nothing to compare with. "
+            f"No games before {split_label} in the selected dates, so there is nothing to compare with. "
             "Widen the game end date or shorten the recent period.",
             icon=":material/compare_arrows:",
         )
 
-    gap = cube.progression(filters, cutoff, "rating_gap_category", pg_split)
-    band = cube.progression(filters, cutoff, "opponent_rating_band", pg_split)
+    gap = cube.progression(filters, split_point, "rating_gap_category", pg_split)
+    band = cube.progression(filters, split_point, "opponent_rating_band", pg_split)
     if not band.empty:
         band["band"] = band["opponent_rating_band"].astype(int).map(lambda b: f"{b}–{b + 49}")
     gap_order = [g for g in cube.GAP_ORDER if not gap.empty and g in set(gap["rating_gap_category"])]

@@ -67,6 +67,10 @@ views:
           - prct_time_remaining_playing_early
           - prct_time_remaining_playing_mid
           - prct_time_remaining_playing_late
+          - avg_first_big_blunder_prct_time_remaining
+          - avg_prct_time_remaining_playing_early
+          - avg_prct_time_remaining_playing_mid
+          - avg_prct_time_remaining_playing_late
           - has_throw_blunder_playing
           - has_throw_blunder_playing_early
           - has_throw_blunder_playing_mid

@@ -9,6 +9,7 @@ import pandas as pd
 
 TIME_CLASS_COLOURS = {"bullet": "#f58518", "blitz": "#e45756", "rapid": "#4c78a8", "daily": "#54a24b"}
 TREND_COLOURS = {"Better": "#2e9e5b", "Worse": "#d1495b", "No change": "#9aa0a6"}
+NEUTRAL_CHANGE_COLOUR = "#8e6cc9"  # a change on a rate with no better side
 WIN_RATE_SCALE = alt.Scale(scheme="redyellowgreen", domain=[0.2, 0.8], domainMid=0.5, clamp=True)
 GREY = "#9aa0a6"
 RECENT_COLOUR = "#4c78a8"
@@ -190,7 +191,8 @@ def peer_distribution(peers: pd.DataFrame, you: pd.DataFrame, text_colour: str, 
     you = you.assign(head=you["change"].abs() / span * 380 >= 20)
     x_axis = alt.Axis(format=".0%", values=ticks, title=axis_title)
     y = alt.Y("row:N", title=None, axis=alt.Axis(labelLimit=170))
-    trend_scale = alt.Scale(domain=["Better", "Worse"], range=[TREND_COLOURS["Better"], TREND_COLOURS["Worse"]])
+    trend_scale = alt.Scale(domain=["Better", "Worse", "Change"],
+                            range=[TREND_COLOURS["Better"], TREND_COLOURS["Worse"], NEUTRAL_CHANGE_COLOUR])
     you_tooltip = [
         alt.Tooltip("row:N", title="Row"),
         alt.Tooltip("whole:Q", title="You, whole period", format=".1%"),
@@ -198,7 +200,7 @@ def peer_distribution(peers: pd.DataFrame, you: pd.DataFrame, text_colour: str, 
         alt.Tooltip("recent:Q", title="You, recent days", format=".1%"),
         alt.Tooltip("recent_games:Q", title="Games, recent days"),
         alt.Tooltip("change:Q", title="Change", format="+.1%"),
-        alt.Tooltip("better_than:Q", title="Better than this share of players", format=".0%"),
+        alt.Tooltip("better_than:Q", title="Better than (or above) this share of players", format=".0%"),
     ]
 
     layers = []

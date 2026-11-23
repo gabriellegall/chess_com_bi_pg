@@ -2,16 +2,15 @@
 
 Reads the global filters set by app.py from st.session_state.
 """
-from datetime import timedelta
-
 import pandas as pd
 import streamlit as st
 
 import benchmark
 import charts
 import cube
+import period
 
-MIN_PEER_GAMES = 10
+MIN_PEER_GAMES = benchmark.MIN_GAMES
 RESULTS = {"All games": None, "Won": "Win", "Lost": "Lose"}
 PHASES = {"all": "All phases", "early": "Early · moves 1–15", "mid": "Mid · moves 16–35", "late": "Late · moves 36–65"}
 SEVERITIES = {
@@ -43,23 +42,22 @@ with st.container(border=True):
     st.subheader("Blunders against similar players")
     st.caption(
         "Lever: puzzles, aimed at the kind of blunder and the game phase where you stand out. "
-        f"Each figure is the share of games with at least one blunder of that kind, compared with every other player "
-        f"with at least {MIN_PEER_GAMES} games under the same filters (time class, both ELO ranges, game end dates, result)."
+        "Each figure is the share of games with at least one blunder of that kind, compared with "
+        f"{benchmark.SCOPE}. The games filter (all, won, lost) applies to both."
     )
     with st.container(horizontal=True, gap="large"):
         result_label = st.segmented_control(
             "Games", list(RESULTS), default="All games", key="tac_result",
             help="Keep only the games you won or lost. The other players are filtered the same way.",
         ) or "All games"
-        days = st.segmented_control(
-            "Recent period", [30, 60, 90, 180], default=90, format_func=lambda d: f"Last {d} days", key="tac_days",
-        ) or 90
+        choice = period.control("tac_days")
     result = RESULTS[result_label]
+    recent_period = period.resolve(choice, filters, today)
 
-    recent_start = max(filters.start, today - timedelta(days=days))
-    has_recent = recent_start > filters.start
+    recent_scope = recent_period.scope(filters)
+    has_recent = recent_scope is not None
     whole = cube.blunder_shares(filters, result=result)
-    recent = cube.blunder_shares(filters, start=recent_start, result=result) if has_recent else whole.iloc[0:0]
+    recent = cube.blunder_shares(filters, result=result, **recent_scope) if has_recent else whole.iloc[0:0]
     peers = cube.blunder_shares(filters, all_players=True, min_games=MIN_PEER_GAMES, result=result)
     peers = peers[peers["username_global"] != filters.player]
 
@@ -72,19 +70,18 @@ with st.container(border=True):
     st.markdown(
         f":gray[**●** {nb_peers} other players (box: middle half, line: median)]  ·  "
         f":blue[**┃** you, whole period ({nb_games:,} games)]  ·  "
-        f"arrow to you, last {days} days ({nb_recent:,} games): :green[**●◀** fewer blunders], :red[more blunders **▶●**]"
+        f"arrow to you, {recent_period.label.lower()} ({nb_recent:,} games): :green[**●◀** fewer blunders], :red[more blunders **▶●**]"
     )
     if st.session_state.several_time_classes:
         st.warning("Several time classes are selected: faster games bring more blunders, so players who play "
                    "more bullet or blitz look worse. Pick one time class for a fair comparison.", icon=":material/info:")
     if not nb_peers:
-        st.info(f"No other player has {MIN_PEER_GAMES} games or more under these filters. "
-                "Widen the ELO ranges or the game end date to get a comparison.", icon=":material/group_off:")
+        st.info(f"No other player has {MIN_PEER_GAMES} games or more under this time class and these ELO ranges.", icon=":material/group_off:")
     if nb_games < MIN_PEER_GAMES:
         st.warning(f"Only {nb_games} games for you under these filters: your shares are not reliable yet.",
                    icon=":material/warning:")
-    if not has_recent:
-        st.caption(f"The last {days} days cover the whole selected period, so there is no recent trend to show. "
+    if not has_recent and not recent_period.is_session:
+        st.caption(f"The {recent_period.label.lower()} cover the whole selected period, so there is no recent trend to show. "
                    "Widen the game end date or shorten the recent period.")
 
 
@@ -95,7 +92,7 @@ def summary(context: str, severity: str, phases: list[str]) -> tuple[pd.DataFram
 
     others = pick(peers).assign(row=lambda d: d["phase"].map(PHASES))
     you = benchmark.compare(others, pick(whole), pick(recent), "phase", higher_is_better=False, unit="of games",
-                            days=days, has_recent=has_recent)
+                            period=recent_period.label, has_recent=has_recent)
     you["row"] = you["phase"].map(PHASES)
     return others, you
 

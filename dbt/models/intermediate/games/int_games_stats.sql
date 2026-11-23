@@ -44,10 +44,10 @@ WITH agg_definitions AS (
             {% endfor %}
         {% endfor %}
 
-        MIN(CASE WHEN games.miss_category_playing IN ('Blunder', 'Big Blunder') THEN games.prct_time_remaining ELSE NULL END) AS first_blunder_big_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN games.miss_category_playing = 'Big Blunder' THEN games.prct_time_remaining ELSE NULL END) AS first_big_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN games.miss_category_playing = 'Big Blunder' AND games.miss_context_playing = 'Missed Opportunity' THEN games.prct_time_remaining ELSE NULL END) AS first_miss_opp_big_blunder_playing_prct_time_remaining,
-        MIN(CASE WHEN games.miss_category_playing = 'Big Blunder' AND games.miss_context_playing = 'Throw' THEN games.prct_time_remaining ELSE NULL END) AS first_throw_big_blunder_playing_prct_time_remaining,
+        (ARRAY_AGG(games.prct_time_remaining ORDER BY games.move_number) FILTER (WHERE games.miss_category_playing IN ('Blunder', 'Big Blunder')))[1] AS first_blunder_big_blunder_playing_prct_time_remaining,
+        (ARRAY_AGG(games.prct_time_remaining ORDER BY games.move_number) FILTER (WHERE games.miss_category_playing = 'Big Blunder'))[1] AS first_big_blunder_playing_prct_time_remaining,
+        (ARRAY_AGG(games.prct_time_remaining ORDER BY games.move_number) FILTER (WHERE games.miss_category_playing = 'Big Blunder' AND games.miss_context_playing = 'Missed Opportunity'))[1] AS first_miss_opp_big_blunder_playing_prct_time_remaining,
+        (ARRAY_AGG(games.prct_time_remaining ORDER BY games.move_number) FILTER (WHERE games.miss_category_playing = 'Big Blunder' AND games.miss_context_playing = 'Throw'))[1] AS first_throw_big_blunder_playing_prct_time_remaining,
         {% for phase, values in var('game_phases').items() %}
             {% if 'end_game_move' in values %}
                 MIN(

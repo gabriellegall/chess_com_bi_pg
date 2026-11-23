@@ -166,6 +166,19 @@ cubes:
         type: number
 
     measures:
+      # Clock (shares of the clock, 0-1), averaged over the games where the value exists
+      - name: avg_first_big_blunder_prct_time_remaining
+        sql: "{CUBE}.first_big_blunder_playing_prct_time_remaining"
+        type: avg
+        format: percent
+      {%- for phase in ["early", "mid", "late"] %}
+
+      - name: avg_prct_time_remaining_playing_{{ phase | safe }}
+        sql: "{CUBE}.prct_time_remaining_playing_{{ phase | safe }}"
+        type: avg
+        format: percent
+      {%- endfor %}
+
       # Share of games with at least one blunder of each kind (has_* flags are 0/1 per game), overall and per phase
       {%- for context in ["throw", "miss_opp"] %}
       {%- for severity in ["blunder", "big_blunder"] %}

@@ -19,6 +19,7 @@ page = st.navigation(
         st.Page("app_pages/results.py", title="Results & context", icon=":material/trending_up:", default=True),
         st.Page("app_pages/tactics.py", title="Tactics", icon=":material/extension:", url_path="tactics"),
         st.Page("app_pages/technique.py", title="Technique", icon=":material/chess:", url_path="technique"),
+        st.Page("app_pages/clock.py", title="Clock", icon=":material/timer:", url_path="clock"),
     ],
     position="top",
 )
@@ -72,69 +73,75 @@ def sync_slider(key: str, bounds: tuple[int, int]) -> None:
     st.session_state[f"_{key}_bounds"] = bounds
 
 
-with st.container(border=True):
-    c_player, c_tc, c_date, c_elo, c_opp = st.columns([1.2, 1.3, 1.3, 1.2, 1.2], gap="medium")
+g_you, g_all = st.columns([2, 3], gap="small")
+with g_you.container(border=True, height="stretch"):
+    st.markdown(":material/person: **You only**")
+    c_player, c_date = st.columns(2, gap="medium")
+with g_all.container(border=True, height="stretch"):
+    st.markdown(":material/groups: **You and the players you are compared with**")
+    c_tc, c_elo, c_opp = st.columns([1.1, 1, 1], gap="medium")
 
-    # Player, time class and game end date are independent of each other.
-    with c_player:
-        player = st.selectbox(
-            "Player",
-            players["username_global"].tolist(),
-            format_func=lambda u: f"{u} ({int(players.set_index('username_global').at[u, 'games']):,} games)",
-            key="player",
-        )
 
-    profile = cube.player_profile(player)
-    profile["day"] = pd.to_datetime(profile["day"]).dt.date
-    first_day = profile["day"].min()
+# Player, time class and game end date are independent of each other.
+with c_player:
+    player = st.selectbox(
+        "Player",
+        players["username_global"].tolist(),
+        format_func=lambda u: f"{u} ({int(players.set_index('username_global').at[u, 'games']):,} games)",
+        key="player",
+    )
 
-    # A new player starts again from the full ELO ranges.
-    if st.session_state.get("_elo_player") != player:
-        for key in ("elo", "opp_elo"):
-            st.session_state.pop(key, None)
-            st.session_state.pop(f"_{key}_bounds", None)
-        st.session_state["_elo_player"] = player
+profile = cube.player_profile(player)
+profile["day"] = pd.to_datetime(profile["day"]).dt.date
+first_day = profile["day"].min()
 
-    with c_tc:
-        tc_options = [t for t in charts.TIME_CLASS_COLOURS if t in set(profile["time_class"])]
-        time_classes = st.pills(
-            "Time class", tc_options, selection_mode="multi", format_func=str.capitalize,
-            default=["rapid"] if "rapid" in tc_options else tc_options[:1],
-            key=f"tc_{player}", help="Leave empty to include every time class.",
-        )
+# A new player starts again from the full ELO ranges.
+if st.session_state.get("_elo_player") != player:
+    for key in ("elo", "opp_elo"):
+        st.session_state.pop(key, None)
+        st.session_state.pop(f"_{key}_bounds", None)
+    st.session_state["_elo_player"] = player
 
-    with c_date:
-        preset = st.selectbox("Game end date", list(PERIODS), index=3, key="period")
-        months = PERIODS[preset]
-        if months == "custom":
-            picked = st.date_input("From / to", (first_day, today), min_value=first_day, max_value=today,
-                                   key=f"dates_{player}", label_visibility="collapsed")
-            start, end = (picked[0], picked[1]) if len(picked) == 2 else (picked[0] if picked else first_day, today)
-        elif months is None:
-            start, end = first_day, today
-        else:
-            start, end = (pd.Timestamp(today) - pd.DateOffset(months=months)).date(), today
-        st.caption(f"{start:%d %b %Y} – {end:%d %b %Y}")
+with c_tc:
+    tc_options = [t for t in charts.TIME_CLASS_COLOURS if t in set(profile["time_class"])]
+    time_classes = st.pills(
+        "Time class", tc_options, selection_mode="multi", format_func=str.capitalize,
+        default=["rapid"] if "rapid" in tc_options else tc_options[:1],
+        key=f"tc_{player}", help="Leave empty to include every time class.",
+    )
 
-    # The ELO sliders only offer the ratings met with the player, time classes and dates above,
-    # and each one only those met within the other's selection when that one is narrowed.
-    scope = profile[(profile["day"] >= start) & (profile["day"] <= end)]
-    if time_classes:
-        scope = scope[scope["time_class"].isin(time_classes)]
-    if scope.empty:
-        scope = profile  # no games: keep usable sliders, the pages say there is nothing to show
-    elo_rows = scope[overlapping(scope["opponent_rating_band"], narrowed("opp_elo"))]
-    opp_rows = scope[overlapping(scope["playing_rating_band"], narrowed("elo"))]
-    elo_bounds = band_bounds(elo_rows if not elo_rows.empty else scope, "playing_rating_band")
-    opp_bounds = band_bounds(opp_rows if not opp_rows.empty else scope, "opponent_rating_band")
-    sync_slider("elo", elo_bounds)
-    sync_slider("opp_elo", opp_bounds)
+with c_date:
+    preset = st.selectbox("Game end date", list(PERIODS), index=3, key="period")
+    months = PERIODS[preset]
+    if months == "custom":
+        picked = st.date_input("From / to", (first_day, today), min_value=first_day, max_value=today,
+                               key=f"dates_{player}", label_visibility="collapsed")
+        start, end = (picked[0], picked[1]) if len(picked) == 2 else (picked[0] if picked else first_day, today)
+    elif months is None:
+        start, end = first_day, today
+    else:
+        start, end = (pd.Timestamp(today) - pd.DateOffset(months=months)).date(), today
+    st.caption(f"{start:%d %b %Y} – {end:%d %b %Y}")
 
-    with c_elo:
-        elo = st.slider("Player ELO", *elo_bounds, step=25, key="elo")
+# The ELO sliders only offer the ratings met with the player, time classes and dates above,
+# and each one only those met within the other's selection when that one is narrowed.
+scope = profile[(profile["day"] >= start) & (profile["day"] <= end)]
+if time_classes:
+    scope = scope[scope["time_class"].isin(time_classes)]
+if scope.empty:
+    scope = profile  # no games: keep usable sliders, the pages say there is nothing to show
+elo_rows = scope[overlapping(scope["opponent_rating_band"], narrowed("opp_elo"))]
+opp_rows = scope[overlapping(scope["playing_rating_band"], narrowed("elo"))]
+elo_bounds = band_bounds(elo_rows if not elo_rows.empty else scope, "playing_rating_band")
+opp_bounds = band_bounds(opp_rows if not opp_rows.empty else scope, "opponent_rating_band")
+sync_slider("elo", elo_bounds)
+sync_slider("opp_elo", opp_bounds)
 
-    with c_opp:
-        opp_elo = st.slider("Opponent ELO", *opp_bounds, step=25, key="opp_elo")
+with c_elo:
+    elo = st.slider("Player ELO", *elo_bounds, step=25, key="elo")
+
+with c_opp:
+    opp_elo = st.slider("Opponent ELO", *opp_bounds, step=25, key="opp_elo")
 
 filters = cube.Filters(
     player=player,

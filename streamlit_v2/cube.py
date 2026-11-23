@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -76,28 +76,64 @@ class Filters:
     start: date
     end: date  # inclusive
 
-    def where(self, start: date | None = None, end: date | None = None, all_players: bool = False) -> tuple[str, dict]:
-        """all_players drops the player filter and keeps the others: the peers of the selected player."""
-        start = self.start if start is None else start
-        end = self.end if end is None else end
+    def where(self, start: date | None = None, end: date | None = None, all_players: bool = False,
+              session: str | None = None, until: datetime | None = None) -> tuple[str, dict]:
+        """The selected player's games under every filter.
+
+        all_players returns the benchmark instead: every player's games under the time class and both ELO ranges
+        (the player, date, session and until filters apply to the selected player alone).
+        session keeps only the games of that session (sessions_sk); until keeps only the games ended before it.
+        """
         clauses = [
             "playing_rating BETWEEN :elo_lo AND :elo_hi",
             "opponent_rating BETWEEN :opp_lo AND :opp_hi",
-            "end_time >= :start",
-            "end_time < :end_excl",
         ]
-        params = {
-            "elo_lo": self.elo[0], "elo_hi": self.elo[1],
-            "opp_lo": self.opp_elo[0], "opp_hi": self.opp_elo[1],
-            "start": start.isoformat(), "end_excl": (end + timedelta(days=1)).isoformat(),
-        }
-        if not all_players:
-            clauses.insert(0, "username_global = :player")
-            params["player"] = self.player
+        params = {"elo_lo": self.elo[0], "elo_hi": self.elo[1], "opp_lo": self.opp_elo[0], "opp_hi": self.opp_elo[1]}
+        if all_players:
+            session = until = None
+        else:
+            start = self.start if start is None else start
+            end = self.end if end is None else end
+            clauses = ["username_global = :player", *clauses, "end_time >= :start", "end_time < :end_excl"]
+            params |= {
+                "player": self.player,
+                "start": start.isoformat(), "end_excl": (end + timedelta(days=1)).isoformat(),
+            }
         if self.time_classes:
             clauses.append("time_class IN :time_classes")
             params["time_classes"] = list(self.time_classes)
+        if session is not None:
+            clauses.append("sessions_sk = :session")
+            params["session"] = session
+        if until is not None:
+            clauses.append("end_time < :until")
+            params["until"] = until.isoformat()
         return "WHERE " + " AND ".join(clauses), params
+
+
+@dataclass(frozen=True)
+class Session:
+    """A session of the selected player: see int_games_sessions in dbt."""
+
+    sessions_sk: str
+    start: datetime  # end time of its first game
+    games: int  # games of the session under the filters
+
+
+@st.cache_data(ttl="10m")
+def last_session(f: Filters, min_games: int) -> Session | None:
+    """The most recent session with at least min_games games under the filters, or None."""
+    where, params = f.where()
+    params["min_games"] = min_games
+    df = run(
+        f"SELECT sessions_sk, session_start_time, MEASURE(nb_games_played) AS games FROM v_games {where} "
+        "GROUP BY 1, 2 HAVING MEASURE(nb_games_played) >= :min_games ORDER BY 2 DESC LIMIT 1",
+        params,
+    )
+    if df.empty:
+        return None
+    row = df.iloc[0]
+    return Session(row["sessions_sk"], pd.Timestamp(row["session_start_time"]).to_pydatetime(), int(row["games"]))
 
 
 @st.cache_data(ttl="10m")
@@ -141,21 +177,28 @@ def elo_matrix(f: Filters, split: bool) -> pd.DataFrame:
     return df
 
 
-def _periods(f: Filters, cutoff: date) -> dict[str, tuple[date, date]]:
-    """Before = from the filter start to the day before the cutoff; recent = from the cutoff to the filter end."""
+def _periods(f: Filters, recent: date | Session) -> dict[str, dict | None]:
+    """The f.where() arguments of each period, None when the period is empty.
+
+    recent is a cutoff day: before = from the filter start to the day before it, recent = from it to the filter end.
+    recent is a session: before = the games ended before the session started, recent = the games of the session.
+    """
+    if isinstance(recent, Session):
+        return {"before": {"until": recent.start}, "recent": {"session": recent.sessions_sk}}
+    before_end, recent_start = min(f.end, recent - timedelta(days=1)), max(f.start, recent)
     return {
-        "before": (f.start, min(f.end, cutoff - timedelta(days=1))),
-        "recent": (max(f.start, cutoff), f.end),
+        "before": {"end": before_end} if f.start <= before_end else None,
+        "recent": {"start": recent_start} if recent_start <= f.end else None,
     }
 
 
 @st.cache_data(ttl="10m")
-def progression_summary(f: Filters, cutoff: date) -> pd.DataFrame:
+def progression_summary(f: Filters, recent: date | Session) -> pd.DataFrame:
     rows = []
-    for period, (start, end) in _periods(f, cutoff).items():
+    for period, scope in _periods(f, recent).items():
         row = {"period": period, "games": 0, "win_rate": None, "avg_rating": None, "avg_opponent_rating": None}
-        if start <= end:
-            where, params = f.where(start, end)
+        if scope is not None:
+            where, params = f.where(**scope)
             df = run(
                 "SELECT MEASURE(nb_games_played) AS games, MEASURE(win_rate) AS win_rate, "
                 "MEASURE(avg_playing_rating) AS avg_rating, MEASURE(avg_opponent_rating) AS avg_opponent_rating "
@@ -169,16 +212,16 @@ def progression_summary(f: Filters, cutoff: date) -> pd.DataFrame:
 
 
 @st.cache_data(ttl="10m")
-def progression(f: Filters, cutoff: date, dimension: str, split: bool) -> pd.DataFrame:
+def progression(f: Filters, recent: date | Session, dimension: str, split: bool) -> pd.DataFrame:
     """Results before vs recent, one row per dimension value (and colour when split), with the win rate change."""
     if dimension not in PROGRESSION_DIMENSIONS:
         raise ValueError(dimension)
     dims = (["playing_as"] if split else []) + [dimension]
     frames = []
-    for period, (start, end) in _periods(f, cutoff).items():
-        if start > end:
+    for period, scope in _periods(f, recent).items():
+        if scope is None:
             continue
-        where, params = f.where(start, end)
+        where, params = f.where(**scope)
         df = run(
             f"SELECT {', '.join(dims)}, {RESULT_MEASURES} FROM v_games {where} "
             f"GROUP BY {', '.join(str(i + 1) for i in range(len(dims)))}",
@@ -202,13 +245,14 @@ def progression(f: Filters, cutoff: date, dimension: str, split: bool) -> pd.Dat
 
 @st.cache_data(ttl="10m")
 def blunder_shares(f: Filters, start: date | None = None, all_players: bool = False, min_games: int = 0,
-                   result: str | None = None) -> pd.DataFrame:
+                   result: str | None = None, session: str | None = None) -> pd.DataFrame:
     """Share of games with at least one blunder of each kind, one row per player and (context, severity, phase).
 
-    all_players returns every player matching the other filters with at least min_games games (HAVING in Cube).
+    all_players returns the benchmark: every player with at least min_games games under the shared filters (HAVING in Cube).
     result keeps only the games with that playing_result ('Win', 'Lose' or 'Draw').
+    session keeps only the games of that session.
     """
-    where, params = f.where(start=start, all_players=all_players)
+    where, params = f.where(start=start, all_players=all_players, session=session)
     if result:
         where, params["result"] = where + " AND playing_result = :result", result
     having = ""
@@ -238,18 +282,49 @@ TECHNIQUE_KPIS = {
 
 @st.cache_data(ttl="10m")
 def technique_rate(f: Filters, kpi: str, start: date | None = None, all_players: bool = False,
-                   min_games: int = 0) -> pd.DataFrame:
+                   min_games: int = 0, session: str | None = None) -> pd.DataFrame:
     """One technique rate per player: username_global, kpi, games (the games it is computed on), share.
 
-    all_players returns every player matching the other filters with at least min_games such games (HAVING in Cube).
+    all_players returns the benchmark: every player with at least min_games games under the shared filters (HAVING in Cube).
+    session keeps only the games of that session.
     """
     rate, base = TECHNIQUE_KPIS[kpi]
-    where, params = f.where(start=start, all_players=all_players)
+    where, params = f.where(start=start, all_players=all_players, session=session)
     having = ""
     if min_games:
-        having, params["min_games"] = f"HAVING MEASURE({base}) >= :min_games", min_games
+        having, params["min_games"] = "HAVING MEASURE(nb_games_played) >= :min_games", min_games
     df = run(
         f"SELECT username_global, MEASURE({base}) AS games, MEASURE({rate}) AS share FROM v_games {where} "
+        f"GROUP BY 1 {having}",
+        params,
+    )
+    df["games"] = pd.to_numeric(df["games"]).fillna(0).astype(int)
+    df["share"] = pd.to_numeric(df["share"], errors="coerce")
+    return df.assign(kpi=kpi)
+
+
+# Clock KPIs: the average measure of each.
+CLOCK_KPIS = {
+    "first_big_blunder": "avg_first_big_blunder_prct_time_remaining",
+    **{f"end_{p}": f"avg_prct_time_remaining_playing_{p}" for p in ("early", "mid", "late")},
+}
+
+
+@st.cache_data(ttl="10m")
+def clock_rate(f: Filters, kpi: str, start: date | None = None, all_players: bool = False,
+               min_games: int = 0, session: str | None = None) -> pd.DataFrame:
+    """One clock rate per player: username_global, kpi, games (games played), share.
+
+    all_players returns the benchmark: every player with at least min_games games under the shared filters (HAVING in Cube).
+    session keeps only the games of that session.
+    """
+    rate = CLOCK_KPIS[kpi]
+    where, params = f.where(start=start, all_players=all_players, session=session)
+    having = ""
+    if min_games:
+        having, params["min_games"] = "HAVING MEASURE(nb_games_played) >= :min_games", min_games
+    df = run(
+        f"SELECT username_global, MEASURE(nb_games_played) AS games, MEASURE({rate}) AS share FROM v_games {where} "
         f"GROUP BY 1 {having}",
         params,
     )

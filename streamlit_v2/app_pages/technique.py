@@ -2,15 +2,14 @@
 
 Reads the global filters set by app.py from st.session_state.
 """
-from datetime import timedelta
-
 import streamlit as st
 
 import benchmark
 import charts
 import cube
+import period
 
-MIN_PEER_GAMES = 10
+MIN_PEER_GAMES = benchmark.MIN_GAMES
 # kpi: title, icon, definition, lever, higher is better, label unit, axis title
 KPIS = {
     "conversion": (
@@ -41,23 +40,20 @@ text_colour = "#fafafa" if st.context.theme.type == "dark" else "#31333f"
 with st.container(border=True):
     st.subheader("Technique against similar players")
     st.caption(
-        "What happens once the game is decided on the board. Each rate is compared with every other player with "
-        f"at least {MIN_PEER_GAMES} games counted for that rate under the same filters (time class, both ELO ranges, "
-        "game end dates). Evaluations are in centipawns, from your side."
+        f"What happens once the game is decided on the board. Each rate is compared with {benchmark.SCOPE}. "
+        "Evaluations are in centipawns, from your side."
     )
-    days = st.segmented_control(
-        "Recent period", [30, 60, 90, 180], default=90, format_func=lambda d: f"Last {d} days", key="tech_days",
-    ) or 90
-    recent_start = max(filters.start, today - timedelta(days=days))
-    has_recent = recent_start > filters.start
+    recent_period = period.resolve(period.control("tech_days"), filters, today)
+    recent_scope = recent_period.scope(filters)
+    has_recent = recent_scope is not None
     st.markdown(
         ":gray[**●** other players (box: middle half, line: median)]  ·  :blue[**┃** you, whole period]  ·  "
-        f"arrow to you, last {days} days: :green[**green** when better], :red[**red** when worse]"
+        f"arrow to you, {recent_period.label.lower()}: :green[**green** when better], :red[**red** when worse]"
     )
     if st.session_state.several_time_classes:
         st.warning(cube.TC_HINT, icon=":material/info:")
-    if not has_recent:
-        st.caption(f"The last {days} days cover the whole selected period, so there is no recent trend to show. "
+    if not has_recent and not recent_period.is_session:
+        st.caption(f"The {recent_period.label.lower()} cover the whole selected period, so there is no recent trend to show. "
                    "Widen the game end date or shorten the recent period.")
 
 # ---------- One section per KPI ----------
@@ -66,7 +62,7 @@ for kpi, (title, icon, definition, lever, higher_is_better, unit, axis_title) in
         st.subheader(f"{icon} {title}")
         st.caption(f"{definition} {lever}")
         whole = cube.technique_rate(filters, kpi)
-        recent = cube.technique_rate(filters, kpi, start=recent_start) if has_recent else whole.iloc[0:0]
+        recent = cube.technique_rate(filters, kpi, **recent_scope) if has_recent else whole.iloc[0:0]
         others = cube.technique_rate(filters, kpi, all_players=True, min_games=MIN_PEER_GAMES)
         others = others[others["username_global"] != filters.player]
 
@@ -75,18 +71,18 @@ for kpi, (title, icon, definition, lever, higher_is_better, unit, axis_title) in
             st.info("None of your games under these filters counts for this rate.", icon=":material/filter_alt_off:")
             continue
         you = benchmark.compare(others, whole, recent, "kpi", higher_is_better=higher_is_better, unit=unit,
-                                days=days, has_recent=has_recent)
+                                period=recent_period.label, has_recent=has_recent)
         you["row"] = f"You: {nb_games:,} games"
         others = others.assign(row=you["row"].iloc[0])
 
         st.altair_chart(charts.peer_distribution(others, you, text_colour, axis_title=axis_title))
         notes = []
         if others.empty:
-            notes.append(f"No other player has {MIN_PEER_GAMES} such games under these filters: widen them to compare.")
+            notes.append(f"No other player has {MIN_PEER_GAMES} games under this time class and these ELO ranges.")
         else:
             notes.append(f"{len(others)} other players.")
         if nb_games < MIN_PEER_GAMES:
             notes.append(f"Only {nb_games} such games for you: the rate is not reliable yet.")
         if has_recent:
-            notes.append(f"{int(you['recent_games'].iloc[0]):,} such games in the last {days} days.")
+            notes.append(f"{int(you['recent_games'].iloc[0]):,} such games in the {recent_period.label.lower()}.")
         st.caption(" ".join(notes))

@@ -20,6 +20,7 @@ page = st.navigation(
         st.Page("app_pages/tactics.py", title="Tactics", icon=":material/extension:", url_path="tactics"),
         st.Page("app_pages/technique.py", title="Technique", icon=":material/chess:", url_path="technique"),
         st.Page("app_pages/clock.py", title="Clock", icon=":material/timer:", url_path="clock"),
+        st.Page("app_pages/openings.py", title="Openings", icon=":material/menu_book:", url_path="openings"),
     ],
     position="top",
 )

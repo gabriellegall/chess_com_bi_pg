@@ -6,6 +6,8 @@ import zlib
 
 import altair as alt
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 TIME_CLASS_COLOURS = {"bullet": "#f58518", "blitz": "#e45756", "rapid": "#4c78a8", "daily": "#54a24b"}
 TREND_COLOURS = {"Better": "#2e9e5b", "Worse": "#d1495b", "No change": "#9aa0a6"}
@@ -247,3 +249,62 @@ def peer_distribution(peers: pd.DataFrame, you: pd.DataFrame, text_colour: str, 
         ),
     ]
     return alt.layer(*layers).properties(height=alt.Step(DISTRIBUTION_ROW_HEIGHT))
+
+
+def opening_sunburst(tree: pd.DataFrame, levels: list[str]) -> go.Figure:
+    """Openings as rings, from the family (centre) to the exact first moves (outside).
+
+    Size: games played. Colour: win rate, red below 50%, green above (a parent gets the games-weighted average).
+    """
+    df = tree[tree["games"] > 0].assign(win_rate=lambda d: d["win_rate"].fillna(0.5))
+    fig = px.sunburst(
+        df, path=levels, values="games", color="win_rate",
+        color_continuous_scale="RdYlGn", color_continuous_midpoint=0.5, range_color=[0.2, 0.8],
+    )
+    fig.update_traces(
+        hovertemplate="<b>%{label}</b><br>%{value} games<br>Win rate %{color:.0%}<extra></extra>",
+        insidetextorientation="radial",
+    )
+    fig.update_layout(height=620, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False,
+                      paper_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+
+# Evaluation colours: red when you are worse, grey when balanced, green when you are better (centipawns).
+SCORE_SCALE = alt.Scale(domain=[-300, -100, -25, 25, 100, 300], interpolate="rgb", clamp=True,
+                        range=["#c0182b", "#e8534f", "#a8adb3", "#a8adb3", "#3cb371", "#0f8a3c"])
+
+
+def score_by_move(games: pd.DataFrame, turns: list[int], title: str) -> alt.LayerChart:
+    """Evaluation after every 5 moves over the games of one opening.
+
+    Box per move coloured by its median (red: you are worse, green: you are better), median as a line,
+    red / green background below / above 0.
+    """
+    long = games.melt(value_vars=[f"score_playing_turn_{t}" for t in turns], var_name="turn", value_name="score")
+    long = long.dropna(subset=["score"])
+    long["move"] = long["turn"].str.rsplit("_", n=1).str[-1].astype(int)
+    long["median"] = long.groupby("move")["score"].transform("median")
+    x = alt.X("move:O", title="Move", axis=alt.Axis(labelAngle=0))
+    y_scale = alt.Scale(domain=[-1000, 1000])
+    colour = alt.Color("median:Q", scale=SCORE_SCALE, legend=None)
+
+    bands = alt.Chart(pd.DataFrame({"lo": [0, -1000], "hi": [1000, 0], "c": ["#2e9e5b", "#d1495b"]})).mark_rect(
+        opacity=0.07).encode(y=alt.Y("lo:Q", scale=y_scale), y2="hi:Q", color=alt.Color("c:N", scale=None))
+    zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(color=GREY, opacity=0.6).encode(y="y:Q")
+    boxes = alt.Chart(long).mark_boxplot(extent=1.5, outliers=False, size=22, opacity=0.9,
+                                        median={"color": "white", "strokeWidth": 2},
+                                        rule={"color": GREY, "opacity": 0.6}, ticks=False).encode(
+        x=x, y=alt.Y("score:Q", title="Evaluation (centipawns)", scale=y_scale), color=colour,
+    )
+    medians = long.drop_duplicates("move").assign(games=lambda d: d["move"].map(long.groupby("move").size()))
+    line = alt.Chart(medians).mark_line(color=GREY, strokeWidth=1.5, strokeDash=[4, 3], interpolate="monotone").encode(
+        x=x, y=alt.Y("median:Q", scale=y_scale))
+    points = alt.Chart(medians).mark_point(shape="diamond", size=110, filled=True, opacity=1,
+                                           stroke="white", strokeWidth=1).encode(
+        x=x, y=alt.Y("median:Q", scale=y_scale), color=colour,
+        tooltip=[alt.Tooltip("move:O", title="Move"), alt.Tooltip("median:Q", title="Median", format="+.0f"),
+                 alt.Tooltip("games:Q", title="Games")],
+    )
+    return (bands + zero + boxes + line + points).properties(
+        height=280, title=alt.TitleParams(title, anchor="start", fontSize=13))

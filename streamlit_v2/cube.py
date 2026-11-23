@@ -331,3 +331,45 @@ def clock_rate(f: Filters, kpi: str, start: date | None = None, all_players: boo
     df["games"] = pd.to_numeric(df["games"]).fillna(0).astype(int)
     df["share"] = pd.to_numeric(df["share"], errors="coerce")
     return df.assign(kpi=kpi)
+
+
+# Openings: the hierarchy from the broadest family to the exact first 7 moves.
+OPENING_LEVELS = ["opening_level_1_name", "opening_level_2_name", "opening_level_7_name", "opener_7_moves"]
+SCORE_TURNS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+
+
+def _with_colour(where: str, params: dict, playing_as: str | None) -> tuple[str, dict]:
+    if playing_as:
+        where, params["playing_as"] = where + " AND playing_as = :playing_as", playing_as
+    return where, params
+
+
+@st.cache_data(ttl="10m")
+def opening_tree(f: Filters, playing_as: str | None, start: date | None = None,
+                 session: str | None = None) -> pd.DataFrame:
+    """Games and win rate per opening path (OPENING_LEVELS). start or session keeps the recent games only."""
+    where, params = _with_colour(*f.where(start=start, session=session), playing_as)
+    cols = ", ".join(OPENING_LEVELS)
+    df = run(
+        f"SELECT {cols}, MEASURE(nb_games_played) AS games, MEASURE(win_rate) AS win_rate FROM v_games {where} "
+        f"GROUP BY {', '.join(str(i + 1) for i in range(len(OPENING_LEVELS)))}",
+        params,
+    )
+    df["games"] = pd.to_numeric(df["games"]).fillna(0).astype(int)
+    df["win_rate"] = pd.to_numeric(df["win_rate"], errors="coerce")
+    df[OPENING_LEVELS] = df[OPENING_LEVELS].fillna("Unknown")
+    return df
+
+
+@st.cache_data(ttl="10m")
+def opening_games(f: Filters, playing_as: str | None) -> pd.DataFrame:
+    """One row per game of the selected player: its opening, result and evaluation every 5 moves."""
+    where, params = _with_colour(*f.where(), playing_as)
+    scores = ", ".join(f"score_playing_turn_{t}" for t in SCORE_TURNS)
+    df = run(
+        f"SELECT end_time, url, time_class, playing_as, playing_result, playing_rating, opponent_rating, eco, "
+        f"{', '.join(OPENING_LEVELS)}, {scores} FROM v_games {where} ORDER BY end_time DESC",
+        params,
+    )
+    df[OPENING_LEVELS] = df[OPENING_LEVELS].fillna("Unknown")
+    return df

@@ -16,7 +16,8 @@ st.set_page_config(page_title="Chess improvement", page_icon=":material/chess:",
 
 page = st.navigation(
     [
-        st.Page("app_pages/results.py", title="Results & context", icon=":material/trending_up:", default=True),
+        st.Page("app_pages/summary.py", title="Summary", icon=":material/summarize:", default=True),
+        st.Page("app_pages/results.py", title="Results & context", icon=":material/trending_up:", url_path="results"),
         st.Page("app_pages/tactics.py", title="Tactics", icon=":material/extension:", url_path="tactics"),
         st.Page("app_pages/technique.py", title="Technique", icon=":material/chess:", url_path="technique"),
         st.Page("app_pages/clock.py", title="Clock", icon=":material/timer:", url_path="clock"),

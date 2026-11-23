@@ -373,3 +373,42 @@ def opening_games(f: Filters, playing_as: str | None) -> pd.DataFrame:
     )
     df[OPENING_LEVELS] = df[OPENING_LEVELS].fillna("Unknown")
     return df
+
+
+# ---------- Summary page ----------
+@st.cache_data(ttl="10m")
+def results(f: Filters, start: date | None = None, session: str | None = None) -> pd.Series:
+    """Games, wins, draws, losses and win rate of the selected player."""
+    where, params = f.where(start=start, session=session)
+    df = run(f"SELECT {RESULT_MEASURES} FROM v_games {where}", params)
+    out = df.iloc[0] if not df.empty else pd.Series({"games": 0})
+    return pd.to_numeric(out, errors="coerce").fillna({"games": 0, "wins": 0, "draws": 0, "losses": 0})
+
+
+@st.cache_data(ttl="10m")
+def opening_results(f: Filters, start: date | None = None, session: str | None = None) -> pd.DataFrame:
+    """Results per colour and opening (opening_level_2_name)."""
+    where, params = f.where(start=start, session=session)
+    df = run(f"SELECT playing_as, opening_level_2_name AS opening, {RESULT_MEASURES} FROM v_games {where} GROUP BY 1, 2",
+             params)
+    df["opening"] = df["opening"].fillna("Unknown")
+    for col in ("games", "wins", "draws", "losses"):
+        df[col] = pd.to_numeric(df[col]).fillna(0).astype(int)
+    df["win_rate"] = pd.to_numeric(df["win_rate"], errors="coerce")
+    return df
+
+
+@st.cache_data(ttl="10m")
+def games_detail(f: Filters, start: date | None = None, session: str | None = None) -> pd.DataFrame:
+    """One row per game of the selected player, oldest first: what is needed to pick the games to review."""
+    where, params = f.where(start=start, session=session)
+    df = run(
+        "SELECT end_time, url, time_class, playing_as, playing_result, playing_result_detailed, playing_rating, "
+        "opponent_rating, rating_gap_category, opening_level_2_name, opening_level_7_name, nb_moves, "
+        "max_score_playing, min_score_playing, final_score_playing, nb_blunder_big_blunder_playing, "
+        "first_big_blunder_playing_prct_time_remaining, first_throw_big_blunder_playing_prct_time_remaining, "
+        f"first_miss_opp_big_blunder_playing_prct_time_remaining FROM v_games {where} ORDER BY end_time",
+        params,
+    )
+    df["end_time"] = pd.to_datetime(df["end_time"])
+    return df

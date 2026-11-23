@@ -14,6 +14,15 @@ def pct(value: float) -> str:
     return "—" if pd.isna(value) else f"{value:.0%}" if value >= 0.1 else f"{value:.1%}"
 
 
+def rank(others: pd.Series, value: float, higher_is_better: bool | None) -> float:
+    """Share of the others you beat with value (below you; above you when lower is better), ties count half."""
+    s = others.dropna()
+    if s.empty or pd.isna(value):
+        return float("nan")
+    beaten = (s > value).sum() if higher_is_better is False else (s < value).sum()
+    return (beaten + 0.5 * (s == value).sum()) / len(s)
+
+
 def compare(others: pd.DataFrame, whole: pd.DataFrame, recent: pd.DataFrame, key: str, *,
             higher_is_better: bool | None, unit: str, period: str, has_recent: bool) -> pd.DataFrame:
     """Your rate over the whole period and the recent period, your rank among the others and a two-line label.
@@ -39,11 +48,7 @@ def compare(others: pd.DataFrame, whole: pd.DataFrame, recent: pd.DataFrame, key
     )
 
     def better_than(r: pd.Series) -> float:
-        s = others.loc[others[key] == r[key], "share"].dropna()
-        if s.empty or pd.isna(r["whole"]):
-            return float("nan")
-        beaten = (s > r["whole"]).sum() if higher_is_better is False else (s < r["whole"]).sum()
-        return (beaten + 0.5 * (s == r["whole"]).sum()) / len(s)
+        return rank(others.loc[others[key] == r[key], "share"], r["whole"], higher_is_better)
 
     you["better_than"] = you.apply(better_than, axis=1) if not you.empty else pd.Series(dtype=float)
 

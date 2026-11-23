@@ -36,9 +36,9 @@ def label(choice: int | str) -> str:
     return "Last session" if choice == LAST_SESSION else f"Last {choice} days"
 
 
-def control(key: str) -> int | str:
+def control(key: str, default: int | str = DEFAULT) -> int | str:
     """Draw the period control; read its value before it is drawn with st.session_state.get(key)."""
-    return st.segmented_control("Recent period", OPTIONS, default=DEFAULT, format_func=label, key=key) or DEFAULT
+    return st.segmented_control("Recent period", OPTIONS, default=default, format_func=label, key=key) or default
 
 
 def resolve(choice: int | str, f: cube.Filters, today: date) -> Recent:

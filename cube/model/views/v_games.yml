@@ -19,6 +19,7 @@ views:
           - opponent_rating_band
           - rating_gap_category
           - playing_result
+          - playing_result_detailed
           - rated
           - nb_players
           - nb_players_above_1000
@@ -61,6 +62,7 @@ views:
         includes:
           - games_sk
           - nb_moves
+          - nb_blunder_big_blunder_playing
           - max_score_playing
           - min_score_playing
           - final_score_playing

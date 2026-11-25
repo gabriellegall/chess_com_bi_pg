@@ -16,15 +16,14 @@ TC_HINT = cube.TC_HINT
 
 # ---------- ELO trend ----------
 with st.container(border=True):
-    grain = "day" if (end - start).days <= 92 else "week"
     st.subheader("ELO trend by time class")
-    st.caption(f"Context: am I improving? Average ELO per {grain}.")
-    trend = cube.elo_trend(filters, grain)
+    st.caption("Context: am I improving? Your ELO after every game (one point per game). Hover a point for the game.")
+    trend = cube.elo_trend(filters)
     if trend.empty:
         st.info("No games match these filters.", icon=":material/filter_alt_off:")
     else:
-        trend["period"] = pd.to_datetime(trend["period"])
-        st.altair_chart(charts.elo_trend(trend, grain))
+        trend["end_time"] = pd.to_datetime(trend["end_time"])
+        st.altair_chart(charts.elo_trend(trend))
 
 # ---------- ELO matrix ----------
 with st.container(border=True):

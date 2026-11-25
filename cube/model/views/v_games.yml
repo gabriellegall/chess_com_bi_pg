@@ -120,6 +120,14 @@ views:
           - prct_games_miss_opp_big_blunder_playing_early
           - prct_games_miss_opp_big_blunder_playing_mid
           - prct_games_miss_opp_big_blunder_playing_late
+          - prct_games_throw_any_blunder_playing
+          - prct_games_throw_any_blunder_playing_early
+          - prct_games_throw_any_blunder_playing_mid
+          - prct_games_throw_any_blunder_playing_late
+          - prct_games_miss_opp_any_blunder_playing
+          - prct_games_miss_opp_any_blunder_playing_early
+          - prct_games_miss_opp_any_blunder_playing_mid
+          - prct_games_miss_opp_any_blunder_playing_late
 
       - join_path: cube_games.cube_games_sessions
         includes:

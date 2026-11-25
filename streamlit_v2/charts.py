@@ -21,21 +21,23 @@ BOX_COLOUR = "#c9cdd2"
 DISTRIBUTION_ROW_HEIGHT = 76
 
 
-def elo_trend(df: pd.DataFrame, grain: str) -> alt.Chart:
+def elo_trend(df: pd.DataFrame) -> alt.Chart:
+    """ELO after each game, one line per time class; small points so that thousands of games stay readable."""
     tcs = [t for t in TIME_CLASS_COLOURS if t in set(df["time_class"])] + sorted(set(df["time_class"]) - set(TIME_CLASS_COLOURS))
     colour = alt.Scale(domain=tcs, range=[TIME_CLASS_COLOURS.get(t, GREY) for t in tcs])
     return (
         alt.Chart(df)
-        .mark_line(point=alt.OverlayMarkDef(size=28), strokeWidth=2)
+        .mark_line(point=alt.OverlayMarkDef(size=10), strokeWidth=1.5, interpolate="monotone")
         .encode(
-            x=alt.X("period:T", title=None),
-            y=alt.Y("avg_rating:Q", title="Average ELO", scale=alt.Scale(zero=False)),
+            x=alt.X("end_time:T", title=None),
+            y=alt.Y("playing_rating:Q", title="ELO", scale=alt.Scale(zero=False)),
             color=alt.Color("time_class:N", scale=colour, title=None, legend=alt.Legend(orient="top")),
             tooltip=[
                 alt.Tooltip("time_class:N", title="Time class"),
-                alt.Tooltip("period:T", title="Week of" if grain == "week" else "Day"),
-                alt.Tooltip("avg_rating:Q", title="Average ELO", format=",.0f"),
-                alt.Tooltip("games:Q", title="Games"),
+                alt.Tooltip("end_time:T", title="Game ended", format="%d %b %Y %H:%M"),
+                alt.Tooltip("playing_rating:Q", title="ELO", format=",.0f"),
+                alt.Tooltip("playing_result:N", title="Result"),
+                alt.Tooltip("opponent_rating:Q", title="Opponent ELO", format=",.0f"),
             ],
         )
         .properties(height=300)

@@ -13,12 +13,16 @@ import period
 MIN_PEER_GAMES = benchmark.MIN_GAMES
 RESULTS = {"All games": None, "Won": "Win", "Lost": "Lose"}
 PHASES = {"all": "All phases", "early": "Early · moves 1–15", "mid": "Mid · moves 16–35", "late": "Late · moves 36–65"}
+ANY_SEVERITY = "any_blunder"
 SEVERITIES = {
+    ANY_SEVERITY: ("All blunders (small + big)", "A blunder or a big blunder. A game with both counts once, "
+                                                 "so this share is at most the sum of the two below."),
     "blunder": ("Blunders", "A move that drops the engine evaluation by 250 to 600 centipawns, from a position "
                             "that was not already lost (above −200) to one that is no longer winning (below +200)."),
     "big_blunder": ("Big blunders", "Same as a blunder, with a drop of more than 600 centipawns. "
                                     "Each move counts in one severity only."),
 }
+SPLIT_SEVERITIES = [s for s in SEVERITIES if s != ANY_SEVERITY]
 CONTEXTS = {
     "throw": (
         "Throws", ":material/crisis_alert:",
@@ -114,13 +118,15 @@ for context, (title, icon, definition, lever) in CONTEXTS.items():
     with st.container(border=True):
         st.subheader(f"{icon} {title}")
         st.caption(f"{definition} {lever}")
-        for col, severity in zip(st.columns(2, gap="large"), SEVERITIES):
+        with st.columns([1, 2, 1], gap="large")[1]:  # centred, same width as the two charts below
+            render(context, ANY_SEVERITY, ["all"])
+        for col, severity in zip(st.columns(2, gap="large"), SPLIT_SEVERITIES):
             with col:
                 render(context, severity, ["all"])
         with st.expander("Breakdown by game phase", icon=":material/timeline:"):
             st.caption("Share of games with at least one blunder of that kind in each phase. Each phase has its own "
                        "scale: compare your position among the players, not the lengths between phases. "
                        "Moves after 65 belong to no phase: they only count in the overall figure above.")
-            for col, severity in zip(st.columns(2, gap="large"), SEVERITIES):
+            for col, severity in zip(st.columns(2, gap="large"), SPLIT_SEVERITIES):
                 with col:
                     render(context, severity, ["early", "mid", "late"])

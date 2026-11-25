@@ -30,9 +30,9 @@ GAP_ORDER = ["Much stronger", "Stronger", "Similar", "Weaker", "Much weaker"]
 TC_HINT = "Several time classes are selected and their rating scales differ a lot. Pick one time class for a clean reading."
 
 # Share of games with at least one blunder, by (context, severity, phase): measures prct_games_* of cube_games_stats.
-# A "blunder" here excludes big blunders: each move counts in one severity only.
+# A "blunder" here excludes big blunders: each move counts in one severity only. "any_blunder" is either severity.
 BLUNDER_CONTEXTS = ("throw", "miss_opp")
-BLUNDER_SEVERITIES = ("blunder", "big_blunder")
+BLUNDER_SEVERITIES = ("any_blunder", "blunder", "big_blunder")
 GAME_PHASES = ("all", "early", "mid", "late")
 BLUNDER_MEASURES = {
     (c, s, p): f"prct_games_{c}_{s}_playing" + ("" if p == "all" else f"_{p}")
@@ -152,13 +152,12 @@ def player_profile(player: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl="10m")
-def elo_trend(f: Filters, grain: str) -> pd.DataFrame:
-    if grain not in {"day", "week"}:
-        raise ValueError(grain)
+def elo_trend(f: Filters) -> pd.DataFrame:
+    """One row per game: its time class, end time, the player's rating after it, the opponent's rating and the result."""
     where, params = f.where()
     return run(
-        f"SELECT time_class, DATE_TRUNC('{grain}', end_time) AS period, MEASURE(avg_playing_rating) AS avg_rating, "
-        f"MEASURE(nb_games_played) AS games FROM v_games {where} GROUP BY 1, 2 ORDER BY 2",
+        "SELECT time_class, end_time, games_sk, playing_rating, opponent_rating, playing_result, "
+        f"MEASURE(nb_games_played) AS games FROM v_games {where} GROUP BY 1, 2, 3, 4, 5, 6 ORDER BY 2",
         params,
     )
 

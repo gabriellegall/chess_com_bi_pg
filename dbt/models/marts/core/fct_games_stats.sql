@@ -116,7 +116,15 @@ SELECT
     gs.has_miss_opp_big_blunder_playing,
     gs.has_miss_opp_big_blunder_playing_early,
     gs.has_miss_opp_big_blunder_playing_mid,
-    gs.has_miss_opp_big_blunder_playing_late
+    gs.has_miss_opp_big_blunder_playing_late,
+    gs.has_throw_playing,
+    gs.has_throw_playing_early,
+    gs.has_throw_playing_mid,
+    gs.has_throw_playing_late,
+    gs.has_miss_opp_playing,
+    gs.has_miss_opp_playing_early,
+    gs.has_miss_opp_playing_mid,
+    gs.has_miss_opp_playing_late
 FROM {{ ref('int_games_stats') }} gs
 {% if is_incremental() %}
     WHERE gs.run_timestamp > (

@@ -189,4 +189,12 @@ cubes:
         format: percent
       {%- endfor %}
       {%- endfor %}
+
+      # Same, any severity (blunder or big blunder): a game counts once even if it has both
+      {%- for phase in ["", "_early", "_mid", "_late"] %}
+      - name: prct_games_{{ context | safe }}_any_blunder_playing{{ phase | safe }}
+        sql: "{CUBE}.has_{{ context | safe }}_playing{{ phase | safe }}"
+        type: avg
+        format: percent
+      {%- endfor %}
       {%- endfor %}

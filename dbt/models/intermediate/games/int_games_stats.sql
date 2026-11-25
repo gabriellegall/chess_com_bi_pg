@@ -35,6 +35,8 @@ WITH agg_definitions AS (
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder') AS nb_miss_opp_blunder_{{ prefix }},
             COUNT(*) FILTER (WHERE miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Big Blunder') AS nb_miss_opp_big_blunder_{{ prefix }},
             {% for phase, values in var('game_phases').items() %}
+                COUNT(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Throw') AS nb_throw_{{ prefix }}_{{ phase }},
+                COUNT(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity') AS nb_miss_opp_{{ prefix }}_{{ phase }},
                 COUNT(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} = 'Big Blunder') AS nb_big_blunder_{{ prefix }}_{{ phase }},
                 COUNT(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_category_{{ prefix }} IN ('Blunder', 'Big Blunder')) AS nb_blunder_big_blunder_{{ prefix }}_{{ phase }},
                 COUNT(*) FILTER (WHERE games.game_phase = {{ values['name'] }} AND miss_context_{{ prefix }} = 'Missed Opportunity' AND miss_category_{{ prefix }} = 'Blunder') AS nb_miss_opp_blunder_{{ prefix }}_{{ phase }},
@@ -101,5 +103,14 @@ SELECT
     CASE WHEN agg_definitions.nb_miss_opp_big_blunder_playing > 0 THEN 1 ELSE 0 END AS has_miss_opp_big_blunder_playing,
     CASE WHEN agg_definitions.nb_miss_opp_big_blunder_playing_early > 0 THEN 1 ELSE 0 END AS has_miss_opp_big_blunder_playing_early,
     CASE WHEN agg_definitions.nb_miss_opp_big_blunder_playing_mid > 0 THEN 1 ELSE 0 END AS has_miss_opp_big_blunder_playing_mid,
-    CASE WHEN agg_definitions.nb_miss_opp_big_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_miss_opp_big_blunder_playing_late
+    CASE WHEN agg_definitions.nb_miss_opp_big_blunder_playing_late > 0 THEN 1 ELSE 0 END AS has_miss_opp_big_blunder_playing_late,
+    -- Any severity (blunder or big blunder)
+    CASE WHEN agg_definitions.nb_throw_playing > 0 THEN 1 ELSE 0 END AS has_throw_playing,
+    CASE WHEN agg_definitions.nb_throw_playing_early > 0 THEN 1 ELSE 0 END AS has_throw_playing_early,
+    CASE WHEN agg_definitions.nb_throw_playing_mid > 0 THEN 1 ELSE 0 END AS has_throw_playing_mid,
+    CASE WHEN agg_definitions.nb_throw_playing_late > 0 THEN 1 ELSE 0 END AS has_throw_playing_late,
+    CASE WHEN agg_definitions.nb_miss_opp_playing > 0 THEN 1 ELSE 0 END AS has_miss_opp_playing,
+    CASE WHEN agg_definitions.nb_miss_opp_playing_early > 0 THEN 1 ELSE 0 END AS has_miss_opp_playing_early,
+    CASE WHEN agg_definitions.nb_miss_opp_playing_mid > 0 THEN 1 ELSE 0 END AS has_miss_opp_playing_mid,
+    CASE WHEN agg_definitions.nb_miss_opp_playing_late > 0 THEN 1 ELSE 0 END AS has_miss_opp_playing_late
 FROM agg_definitions

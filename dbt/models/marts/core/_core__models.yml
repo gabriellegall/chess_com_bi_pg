@@ -495,6 +495,22 @@ models:
         description: "{{ doc('has_miss_opp_big_blunder_playing_mid') }}"
       - name: has_miss_opp_big_blunder_playing_late
         description: "{{ doc('has_miss_opp_big_blunder_playing_late') }}"
+      - name: has_throw_playing
+        description: "{{ doc('has_throw_playing') }}"
+      - name: has_throw_playing_early
+        description: "{{ doc('has_throw_playing_early') }}"
+      - name: has_throw_playing_mid
+        description: "{{ doc('has_throw_playing_mid') }}"
+      - name: has_throw_playing_late
+        description: "{{ doc('has_throw_playing_late') }}"
+      - name: has_miss_opp_playing
+        description: "{{ doc('has_miss_opp_playing') }}"
+      - name: has_miss_opp_playing_early
+        description: "{{ doc('has_miss_opp_playing_early') }}"
+      - name: has_miss_opp_playing_mid
+        description: "{{ doc('has_miss_opp_playing_mid') }}"
+      - name: has_miss_opp_playing_late
+        description: "{{ doc('has_miss_opp_playing_late') }}"
     meta:
       definition_game_phases: |
         The early game phase is defined from move 1 to {{ var('game_phases')['early']['end_game_move'] }}.

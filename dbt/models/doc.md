@@ -479,6 +479,38 @@ Boolean flag (0 or 1) indicating if the game contains any big blunders that are 
 Boolean flag (0 or 1) indicating if the game contains any big blunders that are missed opportunities for username in the late-game.
 {% enddocs %}
 
+{% docs has_throw_playing %}
+Boolean flag (0 or 1) indicating if the game contains any throw (blunder or big blunder) for username.
+{% enddocs %}
+
+{% docs has_throw_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any throw (blunder or big blunder) for username in the early-game.
+{% enddocs %}
+
+{% docs has_throw_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any throw (blunder or big blunder) for username in the mid-game.
+{% enddocs %}
+
+{% docs has_throw_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any throw (blunder or big blunder) for username in the late-game.
+{% enddocs %}
+
+{% docs has_miss_opp_playing %}
+Boolean flag (0 or 1) indicating if the game contains any missed opportunity (blunder or big blunder) for username.
+{% enddocs %}
+
+{% docs has_miss_opp_playing_early %}
+Boolean flag (0 or 1) indicating if the game contains any missed opportunity (blunder or big blunder) for username in the early-game.
+{% enddocs %}
+
+{% docs has_miss_opp_playing_mid %}
+Boolean flag (0 or 1) indicating if the game contains any missed opportunity (blunder or big blunder) for username in the mid-game.
+{% enddocs %}
+
+{% docs has_miss_opp_playing_late %}
+Boolean flag (0 or 1) indicating if the game contains any missed opportunity (blunder or big blunder) for username in the late-game.
+{% enddocs %}
+
 {% docs nb_miss_opp_blunder_playing_very_late %}
 Number of blunders that are missed opportunities for username in the very-late-game. I.e. `miss_category_playing` = 'Blunder' AND `miss_context_playing` = 'Missed Opportunity' AND `game_phase` = 'very_late'.
 {% enddocs %}

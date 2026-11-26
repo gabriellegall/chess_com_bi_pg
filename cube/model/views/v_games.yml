@@ -15,8 +15,12 @@ views:
           - playing_rating_range
           - opponent_rating
           - opponent_rating_range
+          - prev_playing_rating
+          - playing_rating_delta
+          - opponent_prev_rating_estimated
           - playing_rating_band
           - opponent_rating_band
+          - rating_gap
           - rating_gap_category
           - playing_result
           - playing_result_detailed
@@ -29,6 +33,10 @@ views:
           - nb_draws
           - avg_playing_rating
           - avg_opponent_rating
+          - sum_rating_delta
+          - avg_rating_delta
+          - avg_rating_delta_win
+          - avg_rating_delta_loss
           - win_rate
           - win_rate_last_30_days
           - win_rate_per_player_min

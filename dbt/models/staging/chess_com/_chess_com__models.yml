@@ -76,3 +76,9 @@ models:
         description: "{{ doc('playing_rating') }}"
       - name: opponent_rating
         description: "{{ doc('opponent_rating') }}"
+      - name: prev_playing_rating
+        description: "{{ doc('prev_playing_rating') }}"
+      - name: playing_rating_delta
+        description: "{{ doc('playing_rating_delta') }}"
+      - name: opponent_prev_rating_estimated
+        description: "{{ doc('opponent_prev_rating_estimated') }}"

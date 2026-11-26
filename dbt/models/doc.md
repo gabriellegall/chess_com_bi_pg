@@ -235,6 +235,18 @@ ELO rating of the username playing.
 ELO rating of the opponent of username.
 {% enddocs %}
 
+{% docs prev_playing_rating %}
+ELO rating of the username before the game, i.e. the post-game rating of their previous rated game with the same rules and time class (chess.com stores post-game ratings). NULL for unrated games and for the first rated game of each rules / time class.
+{% enddocs %}
+
+{% docs playing_rating_delta %}
+ELO points won (positive) or lost (negative) by the username in this game: playing_rating - prev_playing_rating.
+{% enddocs %}
+
+{% docs opponent_prev_rating_estimated %}
+Estimated ELO rating of the opponent before the game: opponent_rating + playing_rating_delta, assuming the points exchanged are zero-sum. Exact under Elo; under chess.com's Glicko it is off by a few points when both players' rating deviations differ (e.g. new or inactive accounts).
+{% enddocs %}
+
 {% docs playing_result %}
 Simplified result of the game, from the perspective of the username playing.
 {% enddocs %}
@@ -268,11 +280,11 @@ Describes the player's turn: 'Opponent' if the opponent has played, 'Playing' if
 {% enddocs %}
 
 {% docs playing_rating_range %}
-ELO range based on the username's rating.
+ELO range based on the username's rating before the game (prev_playing_rating), falling back to their post-game rating (playing_rating) when there is no previous game (unrated games, first rated game in a time class).
 {% enddocs %}
 
 {% docs opponent_rating_range %}
-ELO range based on the opponent's rating.
+ELO range based on the opponent's estimated rating before the game (opponent_prev_rating_estimated), falling back to their post-game rating (opponent_rating) when no estimate is available (unrated games, first rated game of the username in a time class).
 {% enddocs %}
 
 {% docs score_playing %}

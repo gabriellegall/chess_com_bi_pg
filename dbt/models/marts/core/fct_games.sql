@@ -43,6 +43,9 @@ SELECT
     g.playing_result_detailed,
     g.playing_rating,
     g.opponent_rating,
+    g.prev_playing_rating,
+    g.playing_rating_delta,
+    g.opponent_prev_rating_estimated,
     g.playing_rating_range,
     g.opponent_rating_range,
     g.playing_result

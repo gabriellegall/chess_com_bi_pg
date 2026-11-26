@@ -1,16 +1,17 @@
 {{ config(materialized = 'view') }}
 
+{#
+    ### Rating deltas:
+    chess.com stores the post-game rating in each game, so the pre-game rating is the rating of the previous
+    rated game of the same [username], [rules] and [time_class] (each one has its own rating pool).
+    It is computed on the whole source BEFORE [processable_games_condition] is applied: filtered-out rated games
+    (e.g. no clock data) still moved the rating. As this model is a view, the window always sees the full history,
+    so the downstream incremental models need no lookback logic.
+#}
+
 WITH source_data AS (
     SELECT *
     FROM {{ source('chess_com', 'players_games') }}
-)
-
-, filter_table AS (
-    SELECT *
-    FROM source_data game
-    WHERE
-        TRUE
-        AND {{ var('processable_games_condition') }}
 )
 
 , cast_types AS (
@@ -18,7 +19,7 @@ WITH source_data AS (
         *,
         end_time::date AS end_time_date,
         TO_CHAR(end_time, 'YYYY-MM') AS end_time_month
-    FROM filter_table
+    FROM source_data
 )
 
 , define_playing AS (
@@ -53,5 +54,35 @@ WITH source_data AS (
     FROM define_playing
 )
 
+, define_prev_rating AS (
+    SELECT
+        *,
+        CASE
+            WHEN rated THEN
+                LAG(playing_rating) OVER (
+                    PARTITION BY username, rules, time_class, rated
+                    ORDER BY end_time ASC, uuid ASC
+                )
+        END AS prev_playing_rating
+    FROM define_result
+)
+
+, define_rating_delta AS (
+    SELECT
+        *,
+        playing_rating - prev_playing_rating AS playing_rating_delta,
+        -- Zero-sum estimate: exact under Elo, approximate under Glicko when both players' RDs differ
+        opponent_rating + (playing_rating - prev_playing_rating) AS opponent_prev_rating_estimated
+    FROM define_prev_rating
+)
+
+, filter_table AS (
+    SELECT *
+    FROM define_rating_delta AS game
+    WHERE
+        TRUE
+        AND {{ var('processable_games_condition') }}
+)
+
 SELECT *
-FROM define_result
+FROM filter_table

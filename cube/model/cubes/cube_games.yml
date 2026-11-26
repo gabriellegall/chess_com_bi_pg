@@ -77,6 +77,19 @@ cubes:
         sql: opponent_rating
         type: number
 
+      # Rating before the game / points exchanged (chess.com stores post-game ratings)
+      - name: prev_playing_rating
+        sql: prev_playing_rating
+        type: number
+
+      - name: playing_rating_delta
+        sql: playing_rating_delta
+        type: number
+
+      - name: opponent_prev_rating_estimated
+        sql: opponent_prev_rating_estimated
+        type: number
+
       - name: playing_rating_range
         sql: playing_rating_range
         type: string
@@ -85,27 +98,34 @@ cubes:
         sql: opponent_rating_range
         type: string
 
-      # 50-point rating bands (lower bound), finer than the *_rating_range dims for the ELO matrix
+      # 50-point rating bands (lower bound) on pre-game ratings, finer than the *_rating_range dims for the ELO matrix.
+      # Fallback to the post-game rating when there is no previous game (same rule as the *_rating_range dims in dbt).
       - name: playing_rating_band
-        sql: "FLOOR({CUBE}.playing_rating / 50.0) * 50"
+        sql: "FLOOR(COALESCE({CUBE}.prev_playing_rating, {CUBE}.playing_rating) / 50.0) * 50"
         type: number
 
       - name: opponent_rating_band
-        sql: "FLOOR({CUBE}.opponent_rating / 50.0) * 50"
+        sql: "FLOOR(COALESCE({CUBE}.opponent_prev_rating_estimated, {CUBE}.opponent_rating) / 50.0) * 50"
         type: number
 
-      # Opponent strength relative to the player (gap = opponent - player rating)
+      # Pre-game opponent strength relative to the player (opponent - player rating, same fallback as above)
+      - name: rating_gap
+        sql: >
+          COALESCE({CUBE}.opponent_prev_rating_estimated, {CUBE}.opponent_rating)
+          - COALESCE({CUBE}.prev_playing_rating, {CUBE}.playing_rating)
+        type: number
+
       - name: rating_gap_category
         type: string
         case:
           when:
-            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating < -50"
+            - sql: "{rating_gap} < -50"
               label: Much weaker
-            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating < -15"
+            - sql: "{rating_gap} < -15"
               label: Weaker
-            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating <= 15"
+            - sql: "{rating_gap} <= 15"
               label: Similar
-            - sql: "{CUBE}.opponent_rating - {CUBE}.playing_rating <= 50"
+            - sql: "{rating_gap} <= 50"
               label: Stronger
           else:
             label: Much stronger
@@ -164,6 +184,26 @@ cubes:
       - name: avg_opponent_rating
         sql: opponent_rating
         type: avg
+
+      - name: sum_rating_delta
+        sql: playing_rating_delta
+        type: sum
+
+      - name: avg_rating_delta
+        sql: playing_rating_delta
+        type: avg
+
+      - name: avg_rating_delta_win
+        sql: playing_rating_delta
+        type: avg
+        filters:
+          - sql: "{CUBE}.playing_result = 'Win'"
+
+      - name: avg_rating_delta_loss
+        sql: playing_rating_delta
+        type: avg
+        filters:
+          - sql: "{CUBE}.playing_result = 'Lose'"
 
       - name: win_rate
         type: number

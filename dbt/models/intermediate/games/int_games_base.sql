@@ -43,7 +43,10 @@ WITH incremental_partition AS (
         pg.playing_as,
         pg.playing_result_detailed,
         pg.playing_rating,
-        pg.opponent_rating
+        pg.opponent_rating,
+        pg.prev_playing_rating,
+        pg.playing_rating_delta,
+        pg.opponent_prev_rating_estimated
     FROM {{ ref('stg_chess_com__players_games') }} pg
     {% if is_incremental() %}
         WHERE pg.end_time > (
@@ -58,14 +61,14 @@ WITH incremental_partition AS (
         *,
         CASE
             {% for idx in range(elo_range_values|length) %}
-                WHEN playing_rating < {{ elo_range_values[idx] }} THEN
+                WHEN COALESCE(prev_playing_rating, playing_rating) < {{ elo_range_values[idx] }} THEN
                     '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
             {% endfor %}
             ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
         END AS playing_rating_range,
         CASE
             {% for idx in range(elo_range_values|length) %}
-                WHEN opponent_rating < {{ elo_range_values[idx] }} THEN
+                WHEN COALESCE(opponent_prev_rating_estimated, opponent_rating) < {{ elo_range_values[idx] }} THEN
                     '{{ "%04d"|format(elo_range_values[idx-1] if idx > 0 else 0) }}-{{ "%04d"|format(elo_range_values[idx]) }}'
             {% endfor %}
             ELSE '{{ "%04d"|format(elo_range_values[-1]) }}+'
